@@ -2382,17 +2382,17 @@ export default function App() {
 
   // ─── HEDEF CHIPS ───
   const HEDEF_CHIPS = [
-    { v: 'hanik_push_legs', s: 'HANİK PUSH' },
-    { v: 'hanik_pull_core', s: 'HANİK PULL' },
-    { v: 'hybrid',          s: 'HYBRİD'     },
-    { v: 'prime',           s: 'PRİME'       },
-    { v: 'gvt',             s: 'GVT ALT'     },
-    { v: 'gvt_push',        s: 'GVT ÜST'     },
-    { v: 'ovt',             s: 'OVT ÜST'     },
-    { v: 'ovt_pull',        s: 'OVT ALT'     },
-    { v: 'fbb',             s: 'FBB'         },
-    { v: 'engine',          s: 'ENGİNE'      },
-    { v: 'recovery',        s: 'RECOVERY'    },
+    { v: 'hanik_push_legs', s: 'HANİK PUSH',  l: 'HANİK – Push & Legs (Göğüs, Omuz, Bacak)' },
+    { v: 'hanik_pull_core', s: 'HANİK PULL',  l: 'HANİK – Pull & Core (Sırt, Biseps, Karın)' },
+    { v: 'hybrid',          s: 'HYBRİD',      l: 'Spartan Hybrid (Kuvvet + Kondisyon)' },
+    { v: 'prime',           s: 'PRİME',        l: 'Arete Prime (Tam Vücut Güç)' },
+    { v: 'gvt',             s: 'GVT ALT',      l: 'GVT 10×10 – Alt Vücut' },
+    { v: 'gvt_push',        s: 'GVT ÜST',      l: 'GVT 10×10 – Üst Vücut' },
+    { v: 'ovt',             s: 'OVT ÜST',      l: 'OVT Superset – Üst Vücut' },
+    { v: 'ovt_pull',        s: 'OVT ALT',      l: 'OVT Superset – Alt Vücut' },
+    { v: 'fbb',             s: 'FBB',          l: 'FBB – Fonksiyonel Vücut Geliştirme' },
+    { v: 'engine',          s: 'ENGİNE',       l: 'Engine – MetCon Ağırlıklı' },
+    { v: 'recovery',        s: 'RECOVERY',     l: 'Recovery – Aktif Toparlanma' },
   ];
 
   // ─── KAHIN SWIRL CARD ───
@@ -2567,10 +2567,30 @@ export default function App() {
           <BicepsFlexed size={18} style={{ color: 'var(--gold-accent)' }} />
           <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.12em', color: 'var(--text-primary)' }}>HEDEF</span>
         </div>
-        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
-          {HEDEF_CHIPS.map(({ v, s }) => (
-            <button key={v} onClick={() => setConfig({ ...config, focus: v })} style={chipBtn(config.focus === v)}>{s}</button>
-          ))}
+        <div style={{ position: 'relative' }}>
+          <select
+            value={config.focus}
+            onChange={e => setConfig({ ...config, focus: e.target.value })}
+            style={{
+              width: '100%',
+              padding: '13px 42px 13px 14px',
+              background: 'var(--bg-elevated)',
+              border: `1px solid ${config.focus ? 'var(--border-active)' : 'var(--border-card)'}`,
+              borderRadius: 10,
+              color: 'var(--text-primary)',
+              fontSize: 14,
+              fontFamily: 'var(--font-body)',
+              fontWeight: 600,
+              appearance: 'none',
+              outline: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            {HEDEF_CHIPS.map(({ v, l }) => (
+              <option key={v} value={v}>{l}</option>
+            ))}
+          </select>
+          <ChevronDown size={18} style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', color: 'var(--gold-accent)', pointerEvents: 'none' }} />
         </div>
       </div>
 
