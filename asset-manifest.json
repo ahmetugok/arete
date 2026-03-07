@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/arete/static/css/main.2b313e85.css",
+    "main.js": "/arete/static/js/main.96d551a4.js",
+    "static/js/453.7f12ca00.chunk.js": "/arete/static/js/453.7f12ca00.chunk.js",
+    "index.html": "/arete/index.html",
+    "main.2b313e85.css.map": "/arete/static/css/main.2b313e85.css.map",
+    "main.96d551a4.js.map": "/arete/static/js/main.96d551a4.js.map",
+    "453.7f12ca00.chunk.js.map": "/arete/static/js/453.7f12ca00.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.2b313e85.css",
+    "static/js/main.96d551a4.js"
+  ]
+}
