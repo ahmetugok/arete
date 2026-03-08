@@ -15,12 +15,10 @@ const callGemini = async (userQuery, systemInstruction) => {
     ? `[Sistem Talimatı]: ${systemInstruction}\n\n[Kullanıcı]: ${userQuery}`
     : userQuery;
 
-  // Sadece kesin çalışan model adlarını kullan (v1beta destekli)
+  // Mart 2026 itibarıyla v1beta'da aktif modeller (1.5-x serisi kaldırıldı)
   const MODELS = [
     'gemini-2.0-flash',
-    'gemini-1.5-flash',
-    'gemini-1.5-flash-8b',
-    'gemini-1.5-pro',
+    'gemini-2.0-flash-lite',
   ];
 
   const makePayload = (text) => ({
@@ -29,47 +27,50 @@ const callGemini = async (userQuery, systemInstruction) => {
 
   for (const model of MODELS) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    console.log(`[Kahin] Deneniyor: ${model}`);
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(makePayload(fullPrompt))
-      });
 
-      console.log(`[Kahin] ${model} → HTTP ${res.status}`);
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      console.log(`[Kahin] Deneniyor: ${model} (deneme ${attempt})`);
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(makePayload(fullPrompt))
+        });
 
-      if (res.status === 404 || res.status === 400) {
-        const e = await res.json().catch(() => ({}));
-        console.warn(`[Kahin] ${model} skip:`, e?.error?.message);
-        continue;
+        console.log(`[Kahin] ${model} → HTTP ${res.status}`);
+
+        if (res.status === 404 || res.status === 400) {
+          const e = await res.json().catch(() => ({}));
+          console.warn(`[Kahin] ${model} skip:`, e?.error?.message);
+          break; // Bu model yok, sonraki modele geç
+        }
+
+        if (res.status === 429) {
+          const waitSec = attempt * 15; // 15s → 30s → 45s
+          console.warn(`[Kahin] ${model} rate limited, ${waitSec}s bekliyor... (deneme ${attempt}/3)`);
+          await new Promise(r => setTimeout(r, waitSec * 1000));
+          continue; // Aynı modeli tekrar dene
+        }
+
+        if (!res.ok) {
+          const e = await res.json().catch(() => ({}));
+          console.warn(`[Kahin] ${model} error:`, e?.error?.message);
+          break;
+        }
+
+        const data = await res.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) return text;
+        break;
+
+      } catch (err) {
+        console.warn(`[Kahin] ${model} catch:`, err.message);
+        break;
       }
-
-      if (res.status === 429) {
-        console.warn(`[Kahin] ${model} rate limited, 12s bekliyor...`);
-        await new Promise(r => setTimeout(r, 12000));
-        // Bir sonraki model ile devam et
-        continue;
-      }
-
-      if (!res.ok) {
-        const e = await res.json().catch(() => ({}));
-        console.warn(`[Kahin] ${model} error:`, e?.error?.message);
-        continue;
-      }
-
-      const data = await res.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (text) return text;
-      continue;
-
-    } catch (err) {
-      console.warn(`[Kahin] ${model} catch:`, err.message);
-      continue;
     }
   }
 
-  return '⚠️ Kahin şu an yanıt veremiyor. Konsolu açıp [Kahin] loglarını bize iletir misin?';
+  return '⚠️ Kahin şu an yanıt veremiyor — günlük limit dolmuş olabilir, birkaç dakika sonra tekrar dene.';
 };
 
 
