@@ -10,73 +10,70 @@ const ThemeContext = React.createContext(true); // default: dark
 const apiKey = "AIzaSyCt139xdI8NSwHkQSt88KFHDVwroP4awXE"; // API Key
 
 const callGemini = async (userQuery, systemInstruction) => {
-  // Ücretsiz kota sırası: düşük latency + yüksek RPM modellerden başla
+  // systemInstruction'ı her zaman user mesajına gömüyoruz — eski modeller de destekler
+  const fullPrompt = systemInstruction
+    ? `[Sistem Talimatı]: ${systemInstruction}\n\n[Kullanıcı]: ${userQuery}`
+    : userQuery;
+
+  // Sadece kesin çalışan model adlarını kullan (v1beta destekli)
   const MODELS = [
-    'gemini-2.0-flash-lite',   // ~30 RPM free tier — en yüksek kota
-    'gemini-2.0-flash',        // ~15 RPM
-    'gemini-1.5-flash-8b',     // ~15 RPM — küçük model, hızlı
-    'gemini-1.5-flash-latest', // fallback
-    'gemini-pro',              // son çare
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
+    'gemini-1.5-flash-8b',
+    'gemini-1.5-pro',
   ];
 
-  const payload = {
-    contents: [{ parts: [{ text: userQuery }] }],
-    ...(systemInstruction ? { systemInstruction: { parts: [{ text: systemInstruction }] } } : {})
-  };
-
-  let lastError = '';
+  const makePayload = (text) => ({
+    contents: [{ parts: [{ text }] }]
+  });
 
   for (const model of MODELS) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    console.log(`[Kahin] Deneniyor: ${model}`);
     try {
-      const response = await fetch(url, {
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(makePayload(fullPrompt))
       });
 
-      // Model mevcut değil — sonrakini dene
-      if (response.status === 404) { continue; }
+      console.log(`[Kahin] ${model} → HTTP ${res.status}`);
 
-      // Rate limit — 15 sn bekle ve AYNI modeli tekrar dene
-      if (response.status === 429) {
-        await new Promise(r => setTimeout(r, 15000));
-        const retry = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (retry.status === 429) { continue; } // sonraki modeli dene
-        if (retry.ok) {
-          const d = await retry.json();
-          return d.candidates?.[0]?.content?.parts?.[0]?.text || 'Cevap alınamadı.';
-        }
+      if (res.status === 404 || res.status === 400) {
+        const e = await res.json().catch(() => ({}));
+        console.warn(`[Kahin] ${model} skip:`, e?.error?.message);
         continue;
       }
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        lastError = errData?.error?.message || `HTTP ${response.status}`;
-        // 400 bad request — muhtemelen bu model systemInstruction desteklemiyor
-        if (response.status === 400) continue;
-        throw new Error(lastError);
+      if (res.status === 429) {
+        console.warn(`[Kahin] ${model} rate limited, 12s bekliyor...`);
+        await new Promise(r => setTimeout(r, 12000));
+        // Bir sonraki model ile devam et
+        continue;
       }
 
-      const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Cevap alınamadı.';
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        console.warn(`[Kahin] ${model} error:`, e?.error?.message);
+        continue;
+      }
 
-    } catch (error) {
-      lastError = error.message;
-      console.warn(`[Kahin] ${model} failed:`, error.message);
+      const data = await res.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) return text;
+      continue;
+
+    } catch (err) {
+      console.warn(`[Kahin] ${model} catch:`, err.message);
       continue;
     }
   }
 
-  return `⚠️ Servis geçici olarak ulaşılamıyor. Lütfen 1 dakika bekleyip tekrar deneyin. (${lastError})`;
+  return '⚠️ Kahin şu an yanıt veremiyor. Konsolu açıp [Kahin] loglarını bize iletir misin?';
 };
 
 
-// --- DATA & LOGIC --- 
+// --- DATA & LOGIC ---
 
 const getImgUrl = (text) => `https://placehold.co/600x400/1e293b/d97706?text=${encodeURIComponent(text)}&font=montserrat`;
 const getGifSearchUrl = (exerciseName) => `https://www.google.com/search?q=${encodeURIComponent(exerciseName + " exercise technique gif")}&tbm=isch`;
