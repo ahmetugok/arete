@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/arete/static/css/main.f7e3f7f5.css",
-    "main.js": "/arete/static/js/main.95822a06.js",
+    "main.css": "/arete/static/css/main.be15789f.css",
+    "main.js": "/arete/static/js/main.cbb1e5eb.js",
     "static/js/453.7f12ca00.chunk.js": "/arete/static/js/453.7f12ca00.chunk.js",
     "index.html": "/arete/index.html",
-    "main.f7e3f7f5.css.map": "/arete/static/css/main.f7e3f7f5.css.map",
-    "main.95822a06.js.map": "/arete/static/js/main.95822a06.js.map",
+    "main.be15789f.css.map": "/arete/static/css/main.be15789f.css.map",
+    "main.cbb1e5eb.js.map": "/arete/static/js/main.cbb1e5eb.js.map",
     "453.7f12ca00.chunk.js.map": "/arete/static/js/453.7f12ca00.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.f7e3f7f5.css",
-    "static/js/main.95822a06.js"
+    "static/css/main.be15789f.css",
+    "static/js/main.cbb1e5eb.js"
   ]
 }
