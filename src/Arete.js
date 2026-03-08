@@ -10,42 +10,53 @@ const ThemeContext = React.createContext(true); // default: dark
 const apiKey = "AIzaSyCt139xdI8NSwHkQSt88KFHDVwroP4awXE"; // API Key
 
 const callGemini = async (userQuery, systemInstruction) => {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  // Model fallback sırası: en güncel → en stabil
+  const MODELS = [
+    'gemini-2.0-flash',
+    'gemini-1.5-flash-latest',
+    'gemini-1.5-pro-latest',
+    'gemini-pro',
+  ];
+
   const payload = {
     contents: [{ parts: [{ text: userQuery }] }],
     systemInstruction: { parts: [{ text: systemInstruction || '' }] }
   };
 
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+  for (const model of MODELS) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
 
-      if (response.status === 429) {
-        if (attempt < 2) {
-          await new Promise(r => setTimeout(r, (attempt + 1) * 3000));
-          continue;
+        if (response.status === 429) {
+          if (attempt < 1) { await new Promise(r => setTimeout(r, 3000)); continue; }
+          return "⚠️ Çok fazla istek. Lütfen 30 saniye bekleyip tekrar deneyin.";
         }
-        return "⚠️ Çok fazla istek. Lütfen 30 saniye bekleyip tekrar deneyin.";
-      }
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        const errMsg = errData?.error?.message || `HTTP ${response.status}`;
-        throw new Error(errMsg);
-      }
+        // Model bulunamadıysa sonraki modeli dene
+        if (response.status === 404 || response.status === 400) break;
 
-      const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || "Cevap alınamadı.";
-    } catch (error) {
-      if (attempt < 2) { await new Promise(r => setTimeout(r, 2000)); continue; }
-      console.error("Gemini API Error:", error);
-      return `❌ Hata: ${error.message}. Lütfen tekrar deneyin.`;
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          const errMsg = errData?.error?.message || `HTTP ${response.status}`;
+          throw new Error(errMsg);
+        }
+
+        const data = await response.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Cevap alınamadı.";
+      } catch (error) {
+        if (attempt < 1) { await new Promise(r => setTimeout(r, 1500)); continue; }
+        console.warn(`Model ${model} failed:`, error.message);
+        break; // sonraki modeli dene
+      }
     }
   }
+  return "❌ Tüm modeller başarısız oldu. İnternet bağlantınızı kontrol edin.";
 };
 
 
