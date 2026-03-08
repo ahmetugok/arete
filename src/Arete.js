@@ -6,6 +6,8 @@ import { BESLENME_DB } from './beslenmeData';
 // Theme context — propagates darkMode to all sub-components without prop drilling
 const ThemeContext = React.createContext(true); // default: dark
 
+// --- GEMINI API CONFIGURATION ---
+const apiKey = "AIzaSyCt139xdI8NSwHkQSt88KFHDVwroP4awXE"; // API Key
 
 const callGemini = async (userQuery, systemInstruction) => {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
