@@ -10,53 +10,69 @@ const ThemeContext = React.createContext(true); // default: dark
 const apiKey = "AIzaSyCt139xdI8NSwHkQSt88KFHDVwroP4awXE"; // API Key
 
 const callGemini = async (userQuery, systemInstruction) => {
-  // Model fallback sırası: en güncel → en stabil
+  // Ücretsiz kota sırası: düşük latency + yüksek RPM modellerden başla
   const MODELS = [
-    'gemini-2.0-flash',
-    'gemini-1.5-flash-latest',
-    'gemini-1.5-pro-latest',
-    'gemini-pro',
+    'gemini-2.0-flash-lite',   // ~30 RPM free tier — en yüksek kota
+    'gemini-2.0-flash',        // ~15 RPM
+    'gemini-1.5-flash-8b',     // ~15 RPM — küçük model, hızlı
+    'gemini-1.5-flash-latest', // fallback
+    'gemini-pro',              // son çare
   ];
 
   const payload = {
     contents: [{ parts: [{ text: userQuery }] }],
-    systemInstruction: { parts: [{ text: systemInstruction || '' }] }
+    ...(systemInstruction ? { systemInstruction: { parts: [{ text: systemInstruction }] } } : {})
   };
+
+  let lastError = '';
 
   for (const model of MODELS) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        const response = await fetch(url, {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      // Model mevcut değil — sonrakini dene
+      if (response.status === 404) { continue; }
+
+      // Rate limit — 15 sn bekle ve AYNI modeli tekrar dene
+      if (response.status === 429) {
+        await new Promise(r => setTimeout(r, 15000));
+        const retry = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-
-        if (response.status === 429) {
-          if (attempt < 1) { await new Promise(r => setTimeout(r, 3000)); continue; }
-          return "⚠️ Çok fazla istek. Lütfen 30 saniye bekleyip tekrar deneyin.";
+        if (retry.status === 429) { continue; } // sonraki modeli dene
+        if (retry.ok) {
+          const d = await retry.json();
+          return d.candidates?.[0]?.content?.parts?.[0]?.text || 'Cevap alınamadı.';
         }
-
-        // Model bulunamadıysa sonraki modeli dene
-        if (response.status === 404 || response.status === 400) break;
-
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          const errMsg = errData?.error?.message || `HTTP ${response.status}`;
-          throw new Error(errMsg);
-        }
-
-        const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Cevap alınamadı.";
-      } catch (error) {
-        if (attempt < 1) { await new Promise(r => setTimeout(r, 1500)); continue; }
-        console.warn(`Model ${model} failed:`, error.message);
-        break; // sonraki modeli dene
+        continue;
       }
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        lastError = errData?.error?.message || `HTTP ${response.status}`;
+        // 400 bad request — muhtemelen bu model systemInstruction desteklemiyor
+        if (response.status === 400) continue;
+        throw new Error(lastError);
+      }
+
+      const data = await response.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Cevap alınamadı.';
+
+    } catch (error) {
+      lastError = error.message;
+      console.warn(`[Kahin] ${model} failed:`, error.message);
+      continue;
     }
   }
-  return "❌ Tüm modeller başarısız oldu. İnternet bağlantınızı kontrol edin.";
+
+  return `⚠️ Servis geçici olarak ulaşılamıyor. Lütfen 1 dakika bekleyip tekrar deneyin. (${lastError})`;
 };
 
 
@@ -714,20 +730,35 @@ const ChatModal = ({ isOpen, onClose, workoutContext }) => {
   const [messages, setMessages] = useState([{ role: 'system', text: "Ben Arete. Elit performans koçunum. Bugünkü antrenmanınla ilgili ne sormak istersin?" }]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [cooldown, setCooldown] = useState(0); // saniye cinsinden geri sayım
   const messagesEndRef = useRef(null);
+  const cooldownRef = useRef(null);
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   useEffect(() => scrollToBottom(), [messages, isOpen]);
+  useEffect(() => () => clearInterval(cooldownRef.current), []);
+
+  const startCooldown = (seconds) => {
+    setCooldown(seconds);
+    cooldownRef.current = setInterval(() => {
+      setCooldown(prev => {
+        if (prev <= 1) { clearInterval(cooldownRef.current); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  };
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isTyping || cooldown > 0) return;
     const userMsg = input;
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setInput("");
     setIsTyping(true);
-    const systemPrompt = `Sen "Arete" isimli elit bir performans koçusun. Dilin disiplinli. Antrenman bağlamı: ${JSON.stringify(workoutContext)}. Soruya göre alternatif hareket öner veya teknik açıkla.`;
+    const systemPrompt = `Sen "Arete" isimli elit bir performans koçusun. Dil: Türkçe, kısa ve disiplinli. Antrenman bağlamı: ${JSON.stringify(workoutContext)}. Soruya göre alternatif hareket öner veya teknik açıkla. Maksimum 3 paragraf.`;
     const aiResponse = await callGemini(userMsg, systemPrompt);
     setMessages(prev => [...prev, { role: 'system', text: aiResponse }]);
     setIsTyping(false);
+    // Cevaptan sonra kısa bir bekleme öner (rate limit önlemi)
+    startCooldown(8);
   };
 
   if (!isOpen) return null;
@@ -747,9 +778,31 @@ const ChatModal = ({ isOpen, onClose, workoutContext }) => {
           {isTyping && <div className="text-xs text-slate-500 ml-2">Yazıyor...</div>}
           <div ref={messagesEndRef} />
         </div>
-        <div className="p-4 border-t border-white/10 flex gap-3 rounded-b-2xl bg-slate-950/50">
-          <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} className="flex-1 bg-slate-900/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-amber-500 outline-none transition-all" placeholder="Soru sor..." />
-          <button onClick={handleSend} className="bg-gradient-to-r from-amber-600 to-amber-500 text-white p-3 rounded-xl hover:from-amber-500 hover:to-amber-400 transition-all hover:scale-105 active:scale-95"><Send size={20} /></button>
+        <div className="p-3 border-t border-white/10 flex flex-col gap-2 rounded-b-2xl bg-slate-950/50">
+          {cooldown > 0 && (
+            <div className="flex items-center gap-2 px-1">
+              <div className="flex-1 h-1 rounded-full bg-slate-800 overflow-hidden">
+                <div className="h-full bg-amber-500/60 rounded-full transition-all duration-1000" style={{ width: `${(cooldown / 8) * 100}%` }} />
+              </div>
+              <span className="text-[10px] text-amber-500/70 font-mono shrink-0">{cooldown}s</span>
+            </div>
+          )}
+          <div className="flex gap-3">
+            <input
+              type="text" value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              disabled={isTyping || cooldown > 0}
+              className="flex-1 bg-slate-900/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-amber-500 outline-none transition-all disabled:opacity-40"
+              placeholder={cooldown > 0 ? `${cooldown} saniye bekle...` : isTyping ? 'Yanıt geliyor...' : 'Soru sor...'}
+            />
+            <button
+              onClick={handleSend}
+              disabled={isTyping || cooldown > 0 || !input.trim()}
+              className="bg-gradient-to-r from-amber-600 to-amber-500 text-white p-3 rounded-xl hover:from-amber-500 hover:to-amber-400 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed">
+              {isTyping ? <RefreshCw size={20} className="animate-spin" /> : <Send size={20} />}
+            </button>
+          </div>
         </div>
       </div>
     </div>
