@@ -807,6 +807,66 @@ const RecipeCard = ({ recipe }) => {
   );
 };
 
+// ─── ARETE LOGO SVG ────────────────────────────────────────
+const AreteLogo = ({ size = 38 }) => (
+  <svg viewBox="0 0 100 100" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="ag" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#fde68a"/>
+        <stop offset="45%" stopColor="#f59e0b"/>
+        <stop offset="100%" stopColor="#92400e"/>
+      </linearGradient>
+    </defs>
+
+    {/* ── COLUMN SHAFT (behind barbell) ── */}
+    <rect x="42" y="34" width="16" height="52" rx="1" fill="url(#ag)"/>
+    {/* Fluting */}
+    {[44,47,50,53,56].map(x => (
+      <line key={x} x1={x} y1="35" x2={x} y2="84" stroke="#78350f" strokeWidth="1.2" opacity="0.45"/>
+    ))}
+
+    {/* Column base */}
+    <rect x="36" y="83" width="28" height="5" rx="2" fill="url(#ag)"/>
+    <rect x="32" y="88" width="36" height="4" rx="2" fill="url(#ag)"/>
+
+    {/* ── IONIC CAPITAL ── */}
+    {/* Top abacus plate */}
+    <rect x="26" y="11" width="48" height="5" rx="2.5" fill="url(#ag)"/>
+
+    {/* Left volute */}
+    <path d="M 28 16 C 18 16 14 22 14 27 C 14 35 20 40 30 37 C 36 35 37 29 32 26 C 29 24 26 27 28 30"
+      stroke="url(#ag)" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+    {/* Left volute eye */}
+    <circle cx="28" cy="30" r="2" fill="url(#ag)"/>
+
+    {/* Right volute */}
+    <path d="M 72 16 C 82 16 86 22 86 27 C 86 35 80 40 70 37 C 64 35 63 29 68 26 C 71 24 74 27 72 30"
+      stroke="url(#ag)" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+    {/* Right volute eye */}
+    <circle cx="72" cy="30" r="2" fill="url(#ag)"/>
+
+    {/* Echinus (ovolo) */}
+    <rect x="28" y="16" width="44" height="8" rx="4" fill="url(#ag)"/>
+    {/* Neck ring */}
+    <rect x="40" y="24" width="20" height="5" rx="1.5" fill="url(#ag)"/>
+    <rect x="42" y="29" width="16" height="4" rx="1" fill="url(#ag)"/>
+
+    {/* ── BARBELL (on top) ── */}
+    {/* Bar */}
+    <rect x="16" y="44" width="68" height="12" rx="4" fill="url(#ag)"/>
+
+    {/* Left inner disc */}
+    <rect x="5" y="35" width="12" height="30" rx="4" fill="url(#ag)"/>
+    {/* Left outer disc */}
+    <rect x="-1" y="39" width="7" height="22" rx="3" fill="url(#ag)"/>
+
+    {/* Right inner disc */}
+    <rect x="83" y="35" width="12" height="30" rx="4" fill="url(#ag)"/>
+    {/* Right outer disc */}
+    <rect x="94" y="39" width="7" height="22" rx="3" fill="url(#ag)"/>
+  </svg>
+);
+
 const MealSection = ({ emoji, title, time, recipes, darkMode }) => (
   <div className="mb-5">
     <div className={`flex items-center justify-between px-1 mb-2 pb-1.5 border-b ${darkMode ? 'border-slate-800/60' : 'border-gray-200'}`}>
@@ -1899,6 +1959,7 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(() => loadFromStorage('arete_darkMode', true));
   const [workedOutToday, setWorkedOutToday] = useState(() => loadFromStorage('arete_workedOut', false));
   const [dietMode, setDietMode] = useState(() => loadFromStorage('arete_dietMode', 'normal'));
+  const [dailyMeal, setDailyMeal] = useState(() => loadFromStorage('arete_dailyMeal', null));
 
   // Persist state changes to localStorage
   useEffect(() => { saveToStorage('arete_config', config); }, [config]);
@@ -1908,6 +1969,19 @@ export default function App() {
   useEffect(() => { saveToStorage('arete_darkMode', darkMode); }, [darkMode]);
   useEffect(() => { saveToStorage('arete_workedOut', workedOutToday); }, [workedOutToday]);
   useEffect(() => { saveToStorage('arete_dietMode', dietMode); }, [dietMode]);
+  useEffect(() => { saveToStorage('arete_dailyMeal', dailyMeal); }, [dailyMeal]);
+
+  const generateDailyMeal = () => {
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    const aksamPool = dietMode === 'vegan'
+      ? BESLENME_DB.vegan
+      : workedOutToday ? BESLENME_DB.anaYemek : BESLENME_DB.bowl;
+    setDailyMeal({
+      kahvaltilik: pick(dietMode === 'vegan' ? BESLENME_DB.vegan : BESLENME_DB.kahvaltilik),
+      tatli:       pick(dietMode === 'vegan' ? BESLENME_DB.vegan : BESLENME_DB.tatli),
+      aksam:       pick(aksamPool),
+    });
+  };
 
   const handleLogUpdate = (exerciseName, field, value) => {
     setLogs(prev => ({ ...prev, [exerciseName]: { ...prev[exerciseName], [field]: value } }));
@@ -2569,7 +2643,7 @@ export default function App() {
 
   return (
     <div
-      className={`min-h-screen font-sans selection:bg-amber-500 selection:text-slate-900 pb-20 relative ${darkMode ? 'bg-slate-950 text-slate-200' : 'bg-gray-100 text-gray-800'}`}
+      className={`min-h-screen font-sans selection:bg-amber-500 selection:text-slate-900 pb-24 relative ${darkMode ? 'bg-slate-950 text-slate-200' : 'bg-gray-100 text-gray-800'}`}
       data-theme={darkMode ? 'dark' : 'light'}
     >
       <GuideModal isOpen={showGuide} onClose={() => setShowGuide(false)} />
@@ -2580,11 +2654,9 @@ export default function App() {
       <header className={`border-b sticky top-0 z-50 shadow-xl ${darkMode ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-gray-200 shadow-gray-200/80'}`}>
         <div className="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2.5">
-            <div className="relative">
-              <div className="absolute inset-0 bg-amber-500 rounded-full blur-md opacity-25"></div>
-              <div className="relative w-9 h-9 bg-gradient-to-tr from-amber-700 via-amber-500 to-yellow-400 rounded-full flex items-center justify-center text-slate-900 shadow border border-amber-400/30">
-                <Landmark size={18} strokeWidth={2.5} />
-              </div>
+            <div className="relative shrink-0">
+              <div className="absolute inset-0 bg-amber-500 rounded-full blur-md opacity-20"></div>
+              <AreteLogo size={38} />
             </div>
             <div>
               <h1 className="text-xl font-black tracking-tighter text-white font-serif text-glow leading-none">ARETE</h1>
@@ -2786,7 +2858,7 @@ export default function App() {
             {/* Diyet Modu Butonları */}
             <div className="flex gap-2 mb-3">
               <button
-                onClick={() => setDietMode('normal')}
+                onClick={() => { setDietMode('normal'); setDailyMeal(null); }}
                 className={`flex-1 py-2 rounded-xl font-bold text-xs transition-all ${
                   dietMode === 'normal'
                     ? 'bg-amber-500 text-slate-900 shadow-md shadow-amber-900/30'
@@ -2795,7 +2867,7 @@ export default function App() {
                 🍳 Normal
               </button>
               <button
-                onClick={() => setDietMode('vegan')}
+                onClick={() => { setDietMode('vegan'); setDailyMeal(null); }}
                 className={`flex-1 py-2 rounded-xl font-bold text-xs transition-all ${
                   dietMode === 'vegan'
                     ? 'bg-green-500 text-white shadow-md shadow-green-900/30'
@@ -2818,7 +2890,7 @@ export default function App() {
                 </p>
               </div>
               <button
-                onClick={() => setWorkedOutToday(p => !p)}
+                onClick={() => { setWorkedOutToday(p => !p); setDailyMeal(null); }}
                 className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 ${
                   workedOutToday ? 'bg-amber-500' : darkMode ? 'bg-slate-700' : 'bg-gray-300'
                 }`}>
@@ -2828,36 +2900,64 @@ export default function App() {
               </button>
             </div>
 
-            {/* Normal Mod */}
-            {dietMode === 'normal' && (
-              <>
-                <MealSection
-                  emoji="🍳" title="Kahvaltılıklar ve Hamur İşleri" time="12:00 - 13:00 Arası"
-                  recipes={BESLENME_DB.kahvaltilik} darkMode={darkMode}
-                />
-                <MealSection
-                  emoji="🍪" title="Tatlılar ve Atıştırmalıklar" time="15:00 - 16:00 Arası"
-                  recipes={BESLENME_DB.tatli} darkMode={darkMode}
-                />
-                {workedOutToday
-                  ? <MealSection
-                      emoji="🍲" title="Ana Yemekler ve Tavalar" time="19:00 - 20:00 Arası"
-                      recipes={BESLENME_DB.anaYemek} darkMode={darkMode}
-                    />
-                  : <MealSection
-                      emoji="🥗" title="Bowllar ve Salatalar" time="19:00 - 20:00 Arası"
-                      recipes={BESLENME_DB.bowl} darkMode={darkMode}
-                    />
-                }
-              </>
+            {/* Öğün Oluşturulmadıysa */}
+            {!dailyMeal && (
+              <div className="text-center py-14">
+                <div className="mb-5 opacity-30">
+                  <Utensils size={48} className="mx-auto text-amber-500" />
+                </div>
+                <p className={`text-sm font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Günlük Öğün Planı</p>
+                <p className="text-[11px] text-slate-500 mb-6">
+                  {dietMode === 'vegan' ? 'Vegan tarifleri' : workedOutToday ? 'Yüksek proteinli aktif gün öğünleri' : 'Dinlenme günü hafif öğünleri'}
+                </p>
+                <button
+                  onClick={generateDailyMeal}
+                  className="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-amber-900/30 active:scale-[0.97] transition-all flex items-center gap-2 mx-auto text-sm">
+                  <Utensils size={16} /> Günlük Öğün Oluştur
+                </button>
+              </div>
             )}
 
-            {/* Vegan Mod */}
-            {dietMode === 'vegan' && (
-              <MealSection
-                emoji="🌱" title="Vegan Özel Tarifleri" time="Tüm öğünler için"
-                recipes={BESLENME_DB.vegan} darkMode={darkMode}
-              />
+            {/* Oluşturulan Öğün Planı */}
+            {dailyMeal && (
+              <div className="animate-fade-in-scale">
+                <MealSection
+                  emoji={dietMode === 'vegan' ? '🌱' : '🍳'}
+                  title="Kahvaltı / Öğle"
+                  time="12:00 - 13:00 Arası"
+                  recipes={[dailyMeal.kahvaltilik]}
+                  darkMode={darkMode}
+                />
+                <MealSection
+                  emoji={dietMode === 'vegan' ? '🌱' : '🍪'}
+                  title="Ara Öğün"
+                  time="15:00 - 16:00 Arası"
+                  recipes={[dailyMeal.tatli]}
+                  darkMode={darkMode}
+                />
+                <MealSection
+                  emoji={dietMode === 'vegan' ? '🌱' : workedOutToday ? '🍲' : '🥗'}
+                  title={workedOutToday ? 'Akşam Yemeği' : 'Akşam (Hafif)'}
+                  time="19:00 - 20:00 Arası"
+                  recipes={[dailyMeal.aksam]}
+                  darkMode={darkMode}
+                />
+
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={generateDailyMeal}
+                    className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-2.5 rounded-xl text-xs shadow-md active:scale-[0.97] transition-all">
+                    <RefreshCw size={13} /> Yeni Plan
+                  </button>
+                  <button
+                    onClick={() => setDailyMeal(null)}
+                    className={`px-4 py-2.5 rounded-xl font-bold text-xs transition-all ${
+                      darkMode ? 'bg-slate-800 text-slate-400 border border-slate-700/50 hover:text-white' : 'bg-gray-100 text-gray-500 border border-gray-200'
+                    }`}>
+                    Sıfırla
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -2949,14 +3049,14 @@ export default function App() {
               <button
                 key={id}
                 onClick={() => id === 'calendar' ? setShowCalendar(true) : setActiveTab(id)}
-                className={`flex-1 flex flex-col items-center py-1.5 gap-0.5 transition-colors ${
+                className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${
                   isActive
                     ? 'text-amber-400'
                     : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
-                <TabIcon size={18} />
-                <span className="text-[9px] font-medium">{label}</span>
+                <TabIcon size={22} />
+                <span className="text-[10px] font-semibold tracking-wide">{label}</span>
               </button>
             );
           })}
