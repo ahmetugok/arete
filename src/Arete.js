@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Timer, Waves, Activity, RefreshCw, CheckCircle, ChevronDown, ChevronUp, Eye, PlayCircle, BookOpen, X, BicepsFlexed, Landmark, Crown, Utensils, Send, Sparkles, Calendar, Trash2, Zap, Layout } from 'lucide-react';
+import { Dumbbell, Timer, Flame, Waves, Activity, AlertCircle, RefreshCw, CheckCircle, ChevronDown, ChevronUp, Info, Eye, PlayCircle, BookOpen, X, BicepsFlexed, Landmark, Crown, MessageSquare, Utensils, Send, Sparkles, Save, Calendar, Trash2, Zap, BrainCircuit, Layout, Target } from 'lucide-react';
 import HANIK_DB from './hanikData';
 
 // --- GEMINI API CONFIGURATION --- 
@@ -902,7 +902,6 @@ const MuscleDiagram = ({ exercise }) => {
   );
 };
 
-// eslint-disable-next-line no-unused-vars
 const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog }) => {
 
   const [isOpen, setIsOpen] = useState(false);
@@ -951,7 +950,6 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog }) =
   );
 };
 
-// eslint-disable-next-line no-unused-vars
 const SectionCard = ({ title, subTitle, icon: Icon, children, className = "" }) => (
   <div className={`bg-slate-900/40 border-l-2 border-amber-500 rounded-r mb-3 overflow-hidden ${className}`}>
     <div className="bg-slate-900/80 px-3 py-2 flex items-center gap-2 border-b border-slate-800/50">
@@ -962,404 +960,222 @@ const SectionCard = ({ title, subTitle, icon: Icon, children, className = "" }) 
   </div>
 );
 
-// PrimaryButton - Gold gradient reusable button
-const PrimaryButton = ({ children, onClick, disabled, className = '' }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className={`btn-primary ${className}`}
-  >
-    {children}
-  </button>
-);
-
-// StepperInput - Premium stepper with large number display
-const StepperInput = ({ value, onChange, min = 0, max = 999, step = 1, label, unit }) => (
-  <div className="flex flex-col items-center gap-3">
-    <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>{label}</span>
-    <div className="flex items-center gap-5">
+// Stepper Component - Artı/Eksi butonlu sayı girişi (mobil uyumlu)
+const Stepper = ({ value, onChange, min = 0, max = 999, step = 1, label, unit }) => (
+  <div className="flex flex-col items-center">
+    <span className="text-[9px] text-slate-400 uppercase tracking-wider mb-1">{label}</span>
+    <div className="flex items-center gap-2">
       <button
-        className="stepper-btn"
         onClick={() => onChange(Math.max(min, value - step))}
-        aria-label={`${label} azalt`}
+        className="w-10 h-10 rounded-full bg-slate-800 border border-slate-600 text-white text-xl font-bold flex items-center justify-center active:scale-90 active:bg-amber-600"
       >−</button>
-      <div className="text-center" style={{ minWidth: 72 }}>
-        <span style={{ fontFamily: 'var(--font-body)', fontSize: 48, fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1, display: 'block' }}>{value}</span>
-        <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--gold-accent)' }}>{unit}</span>
+      <div className="text-center w-16">
+        <span className="text-2xl font-black text-white tabular-nums">{value}</span>
+        <span className="block text-[9px] text-amber-500 uppercase">{unit}</span>
       </div>
       <button
-        className="stepper-btn"
         onClick={() => onChange(Math.min(max, value + step))}
-        aria-label={`${label} artır`}
+        className="w-10 h-10 rounded-full bg-slate-800 border border-slate-600 text-white text-xl font-bold flex items-center justify-center active:scale-90 active:bg-amber-600"
       >+</button>
     </div>
   </div>
 );
 
-// Legacy Stepper alias
-// eslint-disable-next-line no-unused-vars
-const Stepper = StepperInput;
-
-// Güç Bloku Odak Modu — Tasarım Sistemi v2
-const StrengthFocusScreen = ({ workout, onComplete, onExit, onShowSyllabus }) => {
-  const [currentExIdx, setCurrentExIdx] = useState(0);
+// Güç Bloku Odak Modu
+const StrengthFocusScreen = ({ workout, onComplete, onExit }) => {
+  const [currentBlockIndex, setCurrentBlockIndex] = useState(0);
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [currentSet, setCurrentSet] = useState(1);
   const [weight, setWeight] = useState(20);
   const [reps, setReps] = useState(5);
-  const [phase, setPhase] = useState('set'); // 'set' | 'rest' | 'superset_prompt'
+  const [isResting, setIsResting] = useState(false);
   const [restTime, setRestTime] = useState(120);
-  const [maxRestTime, setMaxRestTime] = useState(120);
   const [completedSets, setCompletedSets] = useState([]);
   const [setLogs, setSetLogs] = useState([]);
-  const [showSyllabus, setShowSyllabus] = useState(false);
-  const [alarmActive, setAlarmActive] = useState(false);
 
-  // Flatten all exercises with block info
   const allExercises = workout.strength.flatMap((block, bIdx) =>
-    block.exercises.map((ex, eIdx) => ({
-      ...ex,
-      blockIndex: bIdx,
-      blockLabel: block.type,
-      exerciseIndex: eIdx,
-      blockExCount: block.exercises.length,
-      blockId: bIdx,
-      posInBlock: eIdx,
-    }))
+    block.exercises.map((ex, eIdx) => ({ ...ex, blockIndex: bIdx, blockType: block.type, exerciseIndex: eIdx }))
   );
 
-  const totalEx = allExercises.length;
-  const cur = allExercises[currentExIdx] || allExercises[0];
-  const targetSets = cur?.sets || 5;
-  const targetReps = cur?.reps || 5;
+  const totalExercises = allExercises.length;
+  const currentExercise = allExercises[currentExerciseIndex] || allExercises[0];
+  const targetSets = currentExercise?.sets || 5;
+  const targetReps = currentExercise?.reps || 5;
 
-  // Previous session data (memory fill)
-  const getMemory = (exName) => {
-    const history = JSON.parse(localStorage.getItem('arete_history') || '[]');
-    for (const entry of history) {
-      if (entry.exercises?.[exName]) return entry.exercises[exName];
-    }
-    return null;
-  };
+  const totalSetsAll = allExercises.reduce((sum, ex) => sum + (ex.sets || 5), 0);
+  const completedSetsCount = completedSets.length;
+  const progress = (completedSetsCount / totalSetsAll) * 100;
 
-  // On exercise change, fill from memory
   useEffect(() => {
-    const mem = getMemory(cur?.name);
-    if (mem) {
-      if (mem.weight) setWeight(parseFloat(mem.weight) || 20);
-      if (mem.reps) setReps(parseInt(mem.reps) || 5);
-    } else {
-      setReps(parseInt(targetReps) || 5);
+    let timer;
+    if (isResting && restTime > 0) {
+      timer = setInterval(() => setRestTime(prev => prev - 1), 1000);
+    } else if (isResting && restTime === 0) {
+      setIsResting(false);
+      setRestTime(120);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentExIdx]);
-
-  // Rest timer countdown
-  useEffect(() => {
-    if (phase !== 'rest') return;
-    if (restTime <= 0) {
-      setAlarmActive(true);
-      setTimeout(() => setAlarmActive(false), 4000);
-      return;
-    }
-    if (restTime <= 3) setAlarmActive(true);
-    else setAlarmActive(false);
-    const t = setInterval(() => setRestTime(p => p - 1), 1000);
-    return () => clearInterval(t);
-  }, [phase, restTime]);
-
-  const formatTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-
-  const totalSetsAll = allExercises.reduce((s, ex) => s + (parseInt(ex.sets) || 5), 0);
-  const doneCount = completedSets.length;
-  const progress = totalSetsAll > 0 ? (doneCount / totalSetsAll) * 100 : 0;
-
-  // Is cur part of a superset block?
-  const isSupersetBlock = cur?.blockExCount > 1;
-  const isLastInBlock = cur?.posInBlock === cur?.blockExCount - 1;
-  const nextInBlock = isSupersetBlock && !isLastInBlock
-    ? allExercises.find(e => e.blockId === cur.blockId && e.posInBlock === cur.posInBlock + 1)
-    : null;
+    return () => clearInterval(timer);
+  }, [isResting, restTime]);
 
   const handleCompleteSet = () => {
-    const log = { exercise: cur.name, set: currentSet, weight, reps, timestamp: Date.now() };
-    setSetLogs(prev => [...prev, log]);
-    setCompletedSets(prev => [...prev, `${currentExIdx}-${currentSet}`]);
+    const setLog = {
+      exercise: currentExercise.name,
+      set: currentSet,
+      weight,
+      reps,
+      timestamp: Date.now()
+    };
+    setSetLogs(prev => [...prev, setLog]);
+    setCompletedSets(prev => [...prev, `${currentExerciseIndex}-${currentSet}`]);
 
     if (currentSet < targetSets) {
-      // More sets remain for this exercise
       setCurrentSet(prev => prev + 1);
-
-      if (nextInBlock) {
-        // Superset → prompt to start next movement in block
-        setPhase('superset_prompt');
-      } else {
-        // Normal rest
-        const rt = parseInt(cur.rest) || 120;
-        setMaxRestTime(rt); setRestTime(rt);
-        setPhase('rest');
-      }
+      setIsResting(true);
+      setRestTime(120);
     } else {
-      // All sets done for this exercise
-      if (currentExIdx < totalEx - 1) {
-        setCurrentExIdx(prev => prev + 1);
+      // Move to next exercise
+      if (currentExerciseIndex < totalExercises - 1) {
+        setCurrentExerciseIndex(prev => prev + 1);
         setCurrentSet(1);
-        const rt = 120;
-        setMaxRestTime(rt); setRestTime(rt);
-        setPhase('rest');
+        setReps(allExercises[currentExerciseIndex + 1]?.reps || 5);
       } else {
+        // Workout complete
         onComplete(setLogs);
       }
     }
   };
 
-  const startNextAfterRest = () => {
-    setPhase('set');
-    setAlarmActive(false);
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const skipRest = () => {
-    setRestTime(0);
-    startNextAfterRest();
-  };
-
-  const addTime = (secs) => {
-    setRestTime(p => p + secs);
-    setMaxRestTime(p => p + secs);
-  };
-
-  // Superset: start B movement
-  const startSupersetB = () => {
-    if (nextInBlock) {
-      setCurrentExIdx(allExercises.indexOf(nextInBlock));
-      setCurrentSet(currentSet); // same set number within superset
-      setPhase('set');
-    }
-  };
-
-  // Syllabus overlay
-  const SyllabusOverlay = () => (
-    <div className="fixed inset-0 z-[300] flex flex-col" style={{ background: 'rgba(18,18,18,0.97)' }}>
-      <div className="flex items-center justify-between px-5 py-5" style={{ borderBottom: '1px solid var(--border-card)' }}>
-        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 700, letterSpacing: '0.12em', color: 'var(--text-primary)' }}>MÜFREDAT</h2>
-        <button onClick={() => setShowSyllabus(false)} style={{ color: 'var(--text-secondary)' }}><X size={24} /></button>
-      </div>
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-        {workout.strength.map((block, bIdx) => (
-          <div key={bIdx}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--gold-accent)', marginBottom: 8 }}>{block.type}</p>
-            {block.exercises.map((ex, eIdx) => {
-              const globalIdx = allExercises.findIndex(a => a.blockId === bIdx && a.posInBlock === eIdx);
-              const isDone = completedSets.filter(k => k.startsWith(`${globalIdx}-`)).length >= (parseInt(ex.sets) || 5);
-              const isActive = globalIdx === currentExIdx;
-              return (
-                <div key={eIdx} className="flex items-center gap-3 px-4 py-3 rounded-xl mb-2"
-                  style={{ background: isActive ? 'var(--gold-dim)' : 'var(--bg-card)', border: `1px solid ${isActive ? 'var(--gold-accent)' : 'var(--border-card)'}`, opacity: isDone && !isActive ? 0.45 : 1 }}>
-                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: isDone ? 'var(--success)' : isActive ? 'var(--gold-accent)' : 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {isDone && <CheckCircle size={12} color="white" />}
-                    {isActive && !isDone && <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--bg-primary)' }} />}
-                  </div>
-                  <div className="flex-1">
-                    <p style={{ fontSize: 14, fontWeight: 600, color: isActive ? 'var(--gold-accent)' : isDone ? 'var(--text-secondary)' : 'var(--text-primary)' }}>{ex.name}</p>
-                    <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{ex.sets} set × {ex.reps} tekrar</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  if (!cur) return null;
+  if (!currentExercise) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex flex-col" style={{ background: 'var(--bg-primary)' }}>
-      {showSyllabus && <SyllabusOverlay />}
-
+    <div className="fixed inset-0 z-[200] flex flex-col" style={{ backgroundColor: '#0D1B2A' }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 flex-shrink-0" style={{ borderBottom: '1px solid var(--border-card)' }}>
-        <button onClick={onExit} style={{ color: 'var(--text-secondary)' }}><X size={22} /></button>
-        <div className="text-center">
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold-accent)' }}>
-            {cur.blockLabel?.split(' – ')[0] || 'GÜÇ BLOKU'}
-          </p>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-            Hareket {currentExIdx + 1} / {totalEx}
-          </p>
+      <div className="px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button onClick={onExit} className="text-slate-400 hover:text-white">
+            <X size={24} />
+          </button>
+          <h1 className="text-xl font-bold text-white tracking-tight">ARETE</h1>
         </div>
-        <button onClick={() => setShowSyllabus(true)} style={{ color: 'var(--text-secondary)' }}>
-          <Layout size={22} />
-        </button>
+        <span className="text-xs text-slate-400">{currentExerciseIndex + 1} / {totalExercises}</span>
       </div>
 
-      {/* Progress bar */}
-      <div style={{ height: 3, background: 'var(--border-card)', flexShrink: 0 }}>
-        <div style={{ width: `${progress}%`, height: '100%', background: 'var(--gold-gradient)', transition: 'width 0.5s ease' }} />
+      {/* Progress Bar */}
+      <div className="px-6">
+        <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${progress}%`, backgroundColor: '#E09F3E' }}
+          />
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto flex flex-col px-5 py-6">
-
-        {/* ─── REST TIMER ─── */}
-        {phase === 'rest' && (
-          <div className="flex-1 flex flex-col items-center justify-center animate-fade-in-scale">
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 32 }}>DİNLENME</p>
-
-            <div className={`relative mb-8 ${alarmActive ? 'animate-alarm-flash' : ''}`}
-              style={{ width: 200, height: 200, borderRadius: '50%', border: `4px solid ${alarmActive ? 'var(--gold-accent)' : 'var(--border-card)'}`, transition: 'border-color 0.3s' }}>
-              <svg className="absolute inset-0 w-full h-full -rotate-90">
-                <circle cx="100" cy="100" r="92" stroke="var(--border-card)" strokeWidth="8" fill="none" />
-                <circle cx="100" cy="100" r="92"
-                  stroke="var(--gold-accent)" strokeWidth="8" fill="none"
-                  strokeDasharray={578}
-                  strokeDashoffset={578 - (578 * Math.max(0, restTime) / maxRestTime)}
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6">
+        {isResting ? (
+          /* Rest Timer Screen */
+          <div className="text-center">
+            <p className="text-slate-400 text-sm uppercase tracking-widest mb-4">Dinlenme</p>
+            <div className="relative w-48 h-48 mx-auto mb-6">
+              <svg className="w-full h-full transform -rotate-90">
+                <circle cx="96" cy="96" r="88" stroke="#1E3A5F" strokeWidth="8" fill="none" />
+                <circle
+                  cx="96" cy="96" r="88"
+                  stroke="#E09F3E"
+                  strokeWidth="8"
+                  fill="none"
+                  strokeDasharray={553}
+                  strokeDashoffset={553 - (553 * (restTime / 120))}
                   strokeLinecap="round"
-                  style={{ transition: 'stroke-dashoffset 1s linear' }}
+                  className="transition-all duration-1000"
                 />
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: 52, fontWeight: 900, color: alarmActive ? 'var(--gold-accent)' : 'var(--text-primary)', lineHeight: 1, transition: 'color 0.3s' }}>
-                  {restTime <= 0 ? '✓' : formatTime(restTime)}
-                </span>
-                {restTime > 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Sonraki: Set {currentSet} / {targetSets}</span>}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-5xl font-black text-white tabular-nums">{formatTime(restTime)}</span>
               </div>
             </div>
-
-            <div className="flex gap-3 mb-6">
-              <button onClick={() => addTime(30)}
-                style={{ padding: '12px 20px', borderRadius: 'var(--radius)', background: 'var(--bg-card)', border: '1px solid var(--border-card)', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 700 }}>
-                +30 sn
-              </button>
-              <button onClick={skipRest}
-                style={{ padding: '12px 20px', borderRadius: 'var(--radius)', background: 'var(--bg-card)', border: '1px solid var(--border-card)', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 700 }}>
-                Atla →
-              </button>
-            </div>
-
-            {restTime <= 0 && (
-              <PrimaryButton onClick={startNextAfterRest} className="animate-fade-in-scale">
-                <CheckCircle size={20} /> DEVAM ET
-              </PrimaryButton>
-            )}
-          </div>
-        )}
-
-        {/* ─── SUPERSET PROMPT ─── */}
-        {phase === 'superset_prompt' && nextInBlock && (
-          <div className="flex-1 flex flex-col items-center justify-center animate-fade-in-scale">
-            <div style={{ padding: '6px 14px', borderRadius: 99, background: 'var(--gold-dim)', border: '1px solid var(--border-active)', marginBottom: 28 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--gold-accent)' }}>SÜPERSET GEÇİŞİ</span>
-            </div>
-
-            {/* Flow visualizer */}
-            <div className="flex items-center gap-3 mb-10">
-              {cur.blockExCount > 0 && Array.from({ length: cur.blockExCount }).map((_, i) => (
-                <React.Fragment key={i}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: '50%', border: `2px solid ${i <= cur.posInBlock ? 'var(--gold-accent)' : 'var(--border-card)'}`,
-                    background: i < cur.posInBlock ? 'var(--gold-accent)' : i === cur.posInBlock ? 'var(--gold-dim)' : 'transparent',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                  }}>
-                    {i < cur.posInBlock
-                      ? <CheckCircle size={16} color="var(--bg-primary)" />
-                      : <span style={{ fontSize: 13, fontWeight: 700, color: i === cur.posInBlock ? 'var(--gold-accent)' : 'var(--text-muted)' }}>{String.fromCharCode(65 + i)}</span>}
-                  </div>
-                  {i < cur.blockExCount - 1 && <div style={{ width: 24, height: 2, background: i < cur.posInBlock ? 'var(--gold-accent)' : 'var(--border-card)' }} />}
-                </React.Fragment>
-              ))}
-            </div>
-
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 8, textAlign: 'center' }}>Sıradaki hareket:</p>
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 28, fontWeight: 700, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 6, letterSpacing: '0.04em' }}>
-              {nextInBlock.name}
-            </h2>
-            <p style={{ fontSize: 14, color: 'var(--gold-accent)', marginBottom: 36 }}>Set {currentSet} / {nextInBlock.sets}</p>
-
-            <PrimaryButton onClick={startSupersetB}>
-              <Zap size={20} /> {String.fromCharCode(65 + nextInBlock.posInBlock)}'Yİ BAŞLAT
-            </PrimaryButton>
-
-            <button onClick={() => { const rt = 90; setMaxRestTime(rt); setRestTime(rt); setPhase('rest'); }}
-              style={{ marginTop: 14, fontSize: 13, color: 'var(--text-secondary)', textDecoration: 'underline' }}>
-              Önce dinlen (90sn)
+            <p className="text-white font-medium">Sonraki: Set {currentSet} / {targetSets}</p>
+            <button
+              onClick={() => { setIsResting(false); setRestTime(120); }}
+              className="mt-6 px-8 py-3 bg-slate-800 border border-slate-700 text-slate-300 rounded-full font-medium hover:bg-slate-700"
+            >
+              Dinlenmeyi Atla
             </button>
           </div>
-        )}
+        ) : (
+          /* Exercise Card */
+          <div className="w-full max-w-md">
+            {/* Glass Card */}
+            <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl">
+              {/* Block Type */}
+              <p className="text-xs uppercase tracking-widest mb-2" style={{ color: '#E09F3E' }}>
+                {currentExercise.blockType}
+              </p>
 
-        {/* ─── ACTIVE SET ─── */}
-        {phase === 'set' && (
-          <div className="animate-fade-in-scale w-full">
-            {/* Block label */}
-            <div className="mb-2">
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--gold-accent)' }}>
-                {cur.blockLabel}
-              </span>
-            </div>
+              {/* Exercise Name */}
+              <h2 className="text-2xl md:text-3xl font-black text-white mb-2 tracking-tight">
+                {currentExercise.name}
+              </h2>
 
-            {/* Exercise name */}
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 34, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.04em', lineHeight: 1.1, marginBottom: 6 }}>
-              {cur.name}
-            </h1>
-            <p style={{ fontSize: 14, color: 'var(--gold-accent)', marginBottom: 20 }}>
-              Hedef: {targetSets} set × {targetReps} tekrar
-              {cur.weight_rx && <span style={{ color: 'var(--text-muted)', marginLeft: 10 }}>({cur.weight_rx})</span>}
-            </p>
+              {/* Target */}
+              <p className="text-sm mb-8" style={{ color: '#E09F3E' }}>
+                Hedef: {targetSets} Set x {targetReps} Tekrar
+              </p>
 
-            {/* Muscle map + demo */}
-            <div className="flex gap-4 mb-5 p-4 rounded-xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-card)' }}>
-              <MuscleDiagram exercise={cur} />
-              <div className="flex-1 flex flex-col justify-between">
-                <div>
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {getMuscleGroups(cur).primary.filter(m => m !== 'full').map(m => (
-                      <span key={m} style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 99, background: 'var(--gold-dim)', border: '1px solid var(--border-active)', color: 'var(--gold-accent)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                        {({ chest: 'Göğüs', shoulder: 'Omuz', triceps: 'Triseps', back: 'Sırt', biceps: 'Biseps', quads: 'Quads', hamstrings: 'Hamstring', glutes: 'Glut', abs: 'Karın', lowerback: 'Alt Sırt' })[m] || m}
-                      </span>
-                    ))}
-                  </div>
-                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{cur.description}</p>
-                  {cur.note && <p style={{ fontSize: 12, color: 'var(--gold-accent)', marginTop: 6, padding: '6px 10px', borderRadius: 8, background: 'var(--gold-dim)' }}>💡 {cur.note}</p>}
+              {/* Set Counter */}
+              <div className="text-center mb-8">
+                <span className="text-slate-400 text-sm">Mevcut Set</span>
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  {Array.from({ length: targetSets }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${i + 1 < currentSet
+                        ? 'bg-green-500 text-white'
+                        : i + 1 === currentSet
+                          ? 'border-2 text-white'
+                          : 'bg-slate-700 text-slate-500'
+                        }`}
+                      style={i + 1 === currentSet ? { borderColor: '#E09F3E', color: '#E09F3E' } : {}}
+                    >
+                      {i + 1 < currentSet ? '✓' : i + 1}
+                    </div>
+                  ))}
                 </div>
-                <a href={getGifSearchUrl(cur.name)} target="_blank" rel="noopener noreferrer"
-                  style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--gold-accent)', background: 'var(--gold-dim)', padding: '6px 12px', borderRadius: 99, border: '1px solid var(--border-active)', fontWeight: 600 }}>
-                  <PlayCircle size={14} /> Demo İzle
-                </a>
+              </div>
+
+              {/* Steppers */}
+              <div className="flex justify-center gap-6">
+                <Stepper
+                  value={weight}
+                  onChange={setWeight}
+                  step={2.5}
+                  label="Ağırlık"
+                  unit="KG"
+                />
+                <Stepper
+                  value={reps}
+                  onChange={setReps}
+                  step={1}
+                  label="Tekrar"
+                  unit="REPS"
+                />
               </div>
             </div>
 
-            {/* Set circles */}
-            <div className="flex items-center justify-center gap-2 mb-6">
-              {Array.from({ length: targetSets }).map((_, i) => {
-                const done = completedSets.includes(`${currentExIdx}-${i + 1}`);
-                const active = i + 1 === currentSet;
-                return (
-                  <div key={i} style={{
-                    width: 36, height: 36, borderRadius: '50%',
-                    background: done ? 'var(--success)' : active ? 'var(--gold-dim)' : 'var(--bg-card)',
-                    border: `2px solid ${done ? 'var(--success)' : active ? 'var(--gold-accent)' : 'var(--border-card)'}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 13, fontWeight: 700,
-                    color: done ? '#fff' : active ? 'var(--gold-accent)' : 'var(--text-muted)',
-                    transition: 'all 0.2s ease'
-                  }}>
-                    {done ? '✓' : i + 1}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Steppers */}
-            <div className="flex justify-center gap-10 py-6 px-4 rounded-2xl mb-6" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-card)' }}>
-              <StepperInput value={weight} onChange={setWeight} step={2.5} label="Ağırlık" unit="KG" />
-              <div style={{ width: 1, background: 'var(--border-card)' }} />
-              <StepperInput value={reps} onChange={setReps} step={1} label="Tekrar" unit="REPS" />
-            </div>
-
-            {/* Complete button */}
-            <PrimaryButton onClick={handleCompleteSet}>
-              <CheckCircle size={20} /> SETİ TAMAMLA
-            </PrimaryButton>
+            {/* Complete Button */}
+            <button
+              onClick={handleCompleteSet}
+              className="w-full mt-6 py-5 rounded-2xl font-bold text-lg tracking-wide transition-all active:scale-[0.98]"
+              style={{ backgroundColor: '#E09F3E', color: '#0D1B2A' }}
+            >
+              SETİ TAMAMLA
+            </button>
           </div>
         )}
       </div>
@@ -1719,9 +1535,6 @@ export default function App() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [logs, setLogs] = useState(() => loadFromStorage('arete_logs', {}));
   const [focusMode, setFocusMode] = useState(() => loadFromStorage('arete_focusMode', null)); // 'strength' | 'metcon' | null
-  const [showSyllabus, setShowSyllabus] = useState(false);
-  const [activeTab, setActiveTab] = useState('workout');
-  const [drawerEx, setDrawerEx] = useState(null);
 
   // Persist state changes to localStorage
   useEffect(() => { saveToStorage('arete_config', config); }, [config]);
@@ -1729,7 +1542,6 @@ export default function App() {
   useEffect(() => { saveToStorage('arete_logs', logs); }, [logs]);
   useEffect(() => { saveToStorage('arete_focusMode', focusMode); }, [focusMode]);
 
-  // eslint-disable-next-line no-unused-vars
   const handleLogUpdate = (exerciseName, field, value) => {
     setLogs(prev => ({ ...prev, [exerciseName]: { ...prev[exerciseName], [field]: value } }));
   };
@@ -2338,7 +2150,6 @@ export default function App() {
         focus: config.focus
       };
       setWorkout(newWorkout);
-      setShowSyllabus(true);
       setLoading(false);
       window.scrollTo(0, 0);
     }, 800);
@@ -2369,603 +2180,199 @@ export default function App() {
   };
 
   // Focus Mode Handlers
-  const handleStrengthComplete = (completedLogs) => {
+  const handleStrengthComplete = (setLogs) => {
+    console.log("Antrenman tamamlandı:", setLogs);
     setFocusMode(null);
-    setShowSyllabus(false);
-    completedLogs.forEach(l => {
-      setLogs(prev => ({ ...prev, [l.exercise]: { weight: l.weight, reps: l.reps } }));
-    });
-  };
-  const handleMetconComplete = () => { setFocusMode(null); };
-
-  const focusModeActive = focusMode === 'strength' || focusMode === 'metcon';
-
-  // ─── HEDEF CHIPS ───
-  const HEDEF_CHIPS = [
-    { v: 'hanik_push_legs', s: 'HANİK PUSH',  l: 'HANİK – Push & Legs (Göğüs, Omuz, Bacak)' },
-    { v: 'hanik_pull_core', s: 'HANİK PULL',  l: 'HANİK – Pull & Core (Sırt, Biseps, Karın)' },
-    { v: 'hybrid',          s: 'HYBRİD',      l: 'Spartan Hybrid (Kuvvet + Kondisyon)' },
-    { v: 'prime',           s: 'PRİME',        l: 'Arete Prime (Tam Vücut Güç)' },
-    { v: 'gvt',             s: 'GVT ALT',      l: 'GVT 10×10 – Alt Vücut' },
-    { v: 'gvt_push',        s: 'GVT ÜST',      l: 'GVT 10×10 – Üst Vücut' },
-    { v: 'ovt',             s: 'OVT ÜST',      l: 'OVT Superset – Üst Vücut' },
-    { v: 'ovt_pull',        s: 'OVT ALT',      l: 'OVT Superset – Alt Vücut' },
-    { v: 'fbb',             s: 'FBB',          l: 'FBB – Fonksiyonel Vücut Geliştirme' },
-    { v: 'engine',          s: 'ENGİNE',       l: 'Engine – MetCon Ağırlıklı' },
-    { v: 'recovery',        s: 'RECOVERY',     l: 'Recovery – Aktif Toparlanma' },
-  ];
-
-  // ─── KAHIN SWIRL CARD ───
-  const KahinCard = ({ live }) => {
-    const [tIdx, setTIdx] = useState(0);
-    const texts = ["Kahin devrede...", "Algoritmalar çalışıyor...", "Sinerji yaratılıyor...", "Güç blokları diziliyor...", "Kombinasyon hesaplanıyor..."];
-    useEffect(() => {
-      if (!live) return;
-      const t = setInterval(() => setTIdx(p => (p + 1) % texts.length), 1800);
-      return () => clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [live]);
-    return (
-      <div style={{ background: '#0d0d0d', border: '1px solid var(--border-card)', borderRadius: 16, overflow: 'hidden', marginBottom: 20 }}>
-        <div style={{ padding: '32px 20px 28px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-          {/* Concentric rings */}
-          {[160, 120, 84].map((sz, i) => (
-            <div key={i} style={{
-              position: 'absolute', top: '50%', left: '50%',
-              width: sz, height: sz,
-              marginLeft: -sz / 2, marginTop: -sz / 2,
-              borderRadius: '50%',
-              border: `${i === 1 ? 2 : 1}px solid rgba(212,175,55,${0.12 + i * 0.08})`,
-              animation: `spin-slow ${4 + i * 1.5}s linear infinite ${i % 2 === 0 ? '' : 'reverse'}`,
-            }} />
-          ))}
-          {/* Center icon */}
-          <div className="animate-pulse-glow" style={{
-            width: 72, height: 72, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(212,175,55,0.18) 0%, rgba(212,175,55,0.04) 100%)',
-            border: '2px solid var(--gold-accent)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1
-          }}>
-            <Landmark size={30} style={{ color: 'var(--gold-accent)' }} />
-          </div>
-        </div>
-        <div style={{ padding: '14px 20px 18px', borderTop: '1px solid var(--border-card)', minHeight: 80 }}>
-          {live ? (
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ fontFamily: 'var(--font-heading)', fontSize: 18, letterSpacing: '0.08em', color: 'var(--gold-accent)', marginBottom: 4 }}>{texts[tIdx]}</p>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Antrenmanın hazırlanıyor...</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {texts.map((t, i) => (
-                <p key={i} style={{ fontSize: 12, color: `rgba(${i === 0 ? '212,175,55' : '160,160,160'},${1 - i * 0.15})` }}>{t}</p>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    );
+    alert("🏆 Güç Bloku Tamamlandı! Helal olsun!");
   };
 
-  // ─── LOADING SCREEN ───
-  const LoadingScreen = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: '0 24px' }}>
-      <KahinCard live={true} />
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>Senin için optimize ediliyor…</p>
-    </div>
-  );
-
-  // chip style helper
-  const chipBtn = (active) => ({
-    flexShrink: 0, padding: '8px 16px', borderRadius: 99, fontSize: 12, fontWeight: 700,
-    background: active ? 'var(--gold-gradient)' : 'var(--bg-elevated)',
-    border: `1px solid ${active ? 'transparent' : 'var(--border-card)'}`,
-    color: active ? '#111' : 'var(--text-secondary)',
-    whiteSpace: 'nowrap', transition: 'all 0.18s', cursor: 'pointer',
-  });
-
-  // ─── EXERCISE DRAWER ───
-  const MUSCLE_NAMES = {
-    chest: 'Göğüs', shoulder: 'Omuz', triceps: 'Triseps', back: 'Sırt',
-    biceps: 'Biseps', quads: 'Quads', hamstrings: 'Hamstring',
-    glutes: 'Glut', abs: 'Karın', lowerback: 'Alt Sırt', full: 'Tüm Vücut',
-  };
-  const ExerciseDrawer = () => {
-    if (!drawerEx) return null;
-    const muscles = getMuscleGroups(drawerEx);
-    return (
-      <div
-        onClick={() => setDrawerEx(null)}
-        style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}
-      >
-        <div
-          onClick={e => e.stopPropagation()}
-          style={{ background: 'var(--bg-card)', borderRadius: '22px 22px 0 0', padding: '8px 20px 40px', maxHeight: '82vh', overflowY: 'auto', animation: 'slide-up 0.22s ease' }}
-        >
-          {/* Handle bar */}
-          <div style={{ width: 40, height: 4, background: 'var(--border-card)', borderRadius: 2, margin: '12px auto 20px' }} />
-
-          {/* Name + sets/reps */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18, gap: 10 }}>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 26, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.04em', lineHeight: 1.1, flex: 1 }}>
-              {drawerEx.name}
-            </h3>
-            {drawerEx.sets && (
-              <span style={{ padding: '6px 13px', borderRadius: 99, background: 'var(--gold-dim)', border: '1px solid var(--border-active)', fontSize: 13, fontWeight: 700, color: 'var(--gold-accent)', whiteSpace: 'nowrap', flexShrink: 0, marginTop: 4 }}>
-                {drawerEx.sets}×{drawerEx.reps}
-              </span>
-            )}
-          </div>
-
-          {/* Muscle diagram + labels */}
-          <div style={{ display: 'flex', gap: 18, padding: '16px', background: 'var(--bg-elevated)', borderRadius: 14, marginBottom: 16 }}>
-            <div style={{ flexShrink: 0 }}>
-              <MuscleDiagram exercise={drawerEx} />
-            </div>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 12 }}>
-              {muscles.primary.length > 0 && (
-                <div>
-                  <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>ANA KAS GRUBU</p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                    {muscles.primary.map(m => (
-                      <span key={m} style={{ padding: '4px 10px', borderRadius: 99, background: 'var(--gold-dim)', border: '1px solid var(--border-active)', fontSize: 11, fontWeight: 700, color: 'var(--gold-accent)', textTransform: 'uppercase' }}>
-                        {MUSCLE_NAMES[m] || m}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {muscles.secondary.length > 0 && (
-                <div>
-                  <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>YARDIMCI KAS</p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                    {muscles.secondary.map(m => (
-                      <span key={m} style={{ padding: '4px 10px', borderRadius: 99, background: 'rgba(92,64,27,0.35)', border: '1px solid rgba(212,175,55,0.2)', fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                        {MUSCLE_NAMES[m] || m}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Description */}
-          {drawerEx.description && (
-            <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: 18 }}>
-              {drawerEx.description}
-            </p>
-          )}
-          {drawerEx.note && (
-            <div style={{ padding: '10px 14px', background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 10, marginBottom: 18 }}>
-              <p style={{ fontSize: 13, color: 'var(--gold-accent)' }}>💡 {drawerEx.note}</p>
-            </div>
-          )}
-
-          {/* Demo button */}
-          <a
-            href={`https://www.google.com/search?q=${encodeURIComponent(drawerEx.name + ' exercise form teknik gif')}&tbm=isch`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, padding: '15px', borderRadius: 13, background: 'var(--gold-gradient)', color: '#111', fontSize: 14, fontWeight: 800, textDecoration: 'none', letterSpacing: '0.04em' }}
-          >
-            <PlayCircle size={20} /> HAREKET DEMOSUNU İZLE
-          </a>
-        </div>
-      </div>
-    );
+  const handleMetconComplete = (results) => {
+    console.log("MetCon tamamlandı:", results);
+    setFocusMode(null);
+    alert(`🔥 ${results.rounds} tur tamamlandı!`);
   };
 
-  // ─── CONFIG PANEL ───
-  const ConfigPanel = () => (
-    <div style={{ padding: '20px 16px 8px', animation: 'slide-up 0.3s ease' }}>
-      <h3 style={{ fontSize: 19, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 14 }}>Adım 1: Parametreleri Seç</h3>
+  // Focus Mode Screens
+  if (focusMode === 'strength' && workout?.strength) {
+    return <StrengthFocusScreen workout={workout} onComplete={handleStrengthComplete} onExit={() => setFocusMode(null)} />;
+  }
+  if (focusMode === 'metcon' && workout?.metcon) {
+    return <MetconFocusScreen workout={workout} onComplete={handleMetconComplete} onExit={() => setFocusMode(null)} />;
+  }
 
-      {/* HEDEF */}
-      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 14, padding: '14px 16px', marginBottom: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-          <BicepsFlexed size={18} style={{ color: 'var(--gold-accent)' }} />
-          <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.12em', color: 'var(--text-primary)' }}>HEDEF</span>
-        </div>
-        <div style={{ position: 'relative' }}>
-          <select
-            value={config.focus}
-            onChange={e => setConfig({ ...config, focus: e.target.value })}
-            style={{
-              width: '100%',
-              padding: '13px 42px 13px 14px',
-              background: 'var(--bg-elevated)',
-              border: `1px solid ${config.focus ? 'var(--border-active)' : 'var(--border-card)'}`,
-              borderRadius: 10,
-              color: 'var(--text-primary)',
-              fontSize: 14,
-              fontFamily: 'var(--font-body)',
-              fontWeight: 600,
-              appearance: 'none',
-              outline: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            {HEDEF_CHIPS.map(({ v, l }) => (
-              <option key={v} value={v}>{l}</option>
-            ))}
-          </select>
-          <ChevronDown size={18} style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', color: 'var(--gold-accent)', pointerEvents: 'none' }} />
-        </div>
-      </div>
-
-      {/* SÜRE */}
-      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 14, padding: '14px 16px', marginBottom: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-          <Timer size={18} style={{ color: 'var(--gold-accent)' }} />
-          <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.12em', color: 'var(--text-primary)' }}>SÜRE</span>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {['45', '60', '75'].map(d => (
-            <button key={d} onClick={() => setConfig({ ...config, duration: d })}
-              style={{ ...chipBtn(config.duration === d), flex: 1, textAlign: 'center' }}>
-              {d} DK
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* HAVUZ */}
-      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 14, padding: '14px 16px', marginBottom: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-          <Waves size={18} style={{ color: 'var(--gold-accent)' }} />
-          <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.12em', color: 'var(--text-primary)' }}>HAVUZ</span>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {[{ v: true, l: 'EVET' }, { v: false, l: 'HAYIR' }].map(({ v, l }) => (
-            <button key={l} onClick={() => setConfig({ ...config, poolAccess: v })}
-              style={{ ...chipBtn(config.poolAccess === v), flex: 1, textAlign: 'center' }}>
-              {l}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Adım 2 */}
-      <h3 style={{ fontSize: 19, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 14 }}>Adım 2: Kahine Sor</h3>
-      <KahinCard live={false} />
-      <PrimaryButton onClick={generateWorkout} disabled={loading}>
-        <Sparkles size={18} /> ANTRENMAN OLUŞTUR
-      </PrimaryButton>
-    </div>
-  );
-
-  // ─── WORKOUT DASHBOARD ───
-  const WorkoutDashboard = () => {
-    const totalSets = workout.strength?.reduce((s, b) => s + b.exercises.reduce((ss, e) => ss + (e.sets || 0), 0), 0) || 0;
-    const history = JSON.parse(localStorage.getItem('arete_history') || '[]');
-    const recent = history.slice(-7);
-    const maxH = Math.max(...recent.map(h => Object.keys(h.exercises || {}).length), 1);
-    return (
-      <div style={{ animation: 'slide-up 0.3s ease' }}>
-        {/* Title + Değiştir */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 16px 10px' }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 700, letterSpacing: '0.06em', color: 'var(--text-primary)' }}>BUGÜNÜN ANTREMANI</h2>
-          <button onClick={() => { setWorkout(null); setShowSyllabus(false); setLogs({}); }}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 99, background: 'var(--bg-card)', border: '1px solid var(--border-card)', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', cursor: 'pointer' }}>
-            <RefreshCw size={12} /> Değiştir
-          </button>
-        </div>
-
-        {/* Hero card */}
-        <div style={{ padding: '0 16px 14px' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-active)', borderRadius: 16, padding: '20px', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 90% 0%, rgba(212,175,55,0.1) 0%, transparent 55%)', pointerEvents: 'none' }} />
-            <p style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--gold-accent)', marginBottom: 8 }}>"{workout.quote}"</p>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: 26, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.04em', lineHeight: 1.1, marginBottom: 14 }}>{workout.name}</h3>
-            <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 20 }}>
-              {[`${workout.strength?.length || 0} Blok`, `${totalSets} Set`, `~${config.duration} dk`].map(t => (
-                <span key={t} style={{ padding: '4px 10px', borderRadius: 99, background: 'var(--gold-dim)', border: '1px solid var(--border-active)', fontSize: 11, fontWeight: 700, color: 'var(--gold-accent)' }}>{t}</span>
-              ))}
-            </div>
-            <PrimaryButton onClick={() => setShowSyllabus(true)}>
-              <Activity size={18} /> ANTRENMANA BAŞLA
-            </PrimaryButton>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 }}>
-              <button onClick={() => setShowSyllabus(true)}
-                style={{ padding: '11px', borderRadius: 10, background: 'var(--bg-elevated)', border: '1px solid var(--border-card)', color: 'var(--text-secondary)', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer' }}>
-                <Layout size={14} /> Müfredatı Gör
-              </button>
-              <button onClick={() => setShowChat(true)}
-                style={{ padding: '11px', borderRadius: 10, background: 'var(--bg-elevated)', border: '1px solid var(--border-card)', color: 'var(--gold-accent)', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer' }}>
-                <Sparkles size={14} /> Kahine Sor
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* YENİ ANTRENMAN - always visible */}
-        <div style={{ padding: '0 16px 18px' }}>
-          <button onClick={() => { setWorkout(null); setShowSyllabus(false); setLogs({}); }}
-            style={{ width: '100%', padding: '14px', borderRadius: 12, background: 'transparent', border: '1px solid var(--border-card)', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer' }}>
-            <RefreshCw size={16} /> YENİ ANTRENMAN OLUŞTUR
-          </button>
-        </div>
-
-        {/* Block preview */}
-        <div style={{ padding: '0 16px', marginBottom: 18 }}>
-          <h4 style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 10 }}>BLOK ÖZETİ</h4>
-          {workout.strength.map((block, bIdx) => (
-            <div key={bIdx} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 12, padding: '12px 16px', marginBottom: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--gold-dim)', border: '1px solid var(--border-active)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--gold-accent)' }}>{String.fromCharCode(65 + bIdx)}</span>
-                </div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold-accent)', textTransform: 'uppercase', letterSpacing: '0.1em', flex: 1 }}>{block.type}</span>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{block.exercises[0]?.sets} set</span>
-              </div>
-              {block.exercises.map((ex, i) => (
-                <button key={i} onClick={() => setDrawerEx(ex)}
-                  style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderTop: i === 0 ? '1px solid var(--border-card)' : 'none', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-                  <span style={{ fontSize: 13, color: 'var(--text-secondary)', flex: 1 }}>{ex.name}</span>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)', marginRight: 6 }}>{ex.sets}×{ex.reps}</span>
-                  <Eye size={13} style={{ color: 'var(--gold-accent)', flexShrink: 0 }} />
-                </button>
-              ))}
-            </div>
-          ))}
-        </div>
-
-        {/* Performance stats */}
-        {recent.length > 0 && (
-          <div style={{ padding: '0 16px', marginBottom: 20 }}>
-            <h4 style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 10 }}>ÖNCEKİ PERFORMANS İSTATİSTİKLERİ</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 12, padding: '14px 16px' }}>
-                <p style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>ANTRENMAN</p>
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 44, marginBottom: 8 }}>
-                  {recent.map((h, i) => (
-                    <div key={i} style={{ flex: 1, background: i === recent.length - 1 ? 'var(--gold-accent)' : 'var(--bg-elevated)', borderRadius: 3, minHeight: 6, height: `${Math.max(12, (Object.keys(h.exercises || {}).length / maxH) * 100)}%` }} />
-                  ))}
-                </div>
-                <p style={{ fontSize: 24, fontWeight: 900, color: 'var(--gold-accent)', fontFamily: 'var(--font-heading)', lineHeight: 1 }}>{history.length}</p>
-                <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>toplam antrenman</p>
-              </div>
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 12, padding: '14px 16px' }}>
-                <p style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>SON ANTRENMAN</p>
-                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4, lineHeight: 1.3 }}>{history[history.length - 1]?.name?.slice(0, 22) || '—'}</p>
-                <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{history[history.length - 1]?.date ? new Date(history[history.length - 1].date).toLocaleDateString('tr-TR') : '—'}</p>
-                <button onClick={() => setShowHistory(true)} style={{ marginTop: 8, fontSize: 11, color: 'var(--gold-accent)', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Tümünü gör →</button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Kaydet */}
-        <div style={{ padding: '0 16px 8px' }}>
-          <button onClick={handleSaveWorkout}
-            style={{ width: '100%', padding: '13px', borderRadius: 12, background: 'var(--bg-card)', border: '1px solid var(--success)', color: 'var(--success)', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, cursor: 'pointer' }}>
-            <CheckCircle size={16} /> Zaferi Kaydet
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  // ─── SYLLABUS SCREEN ───
-  const SyllabusScreen = () => {
-    const totalSets = workout.strength?.reduce((s, b) => s + b.exercises.reduce((ss, e) => ss + (e.sets || 0), 0), 0) || 0;
-    return (
-      <div style={{ animation: 'slide-up 0.3s ease' }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center', padding: '20px 20px 16px', borderBottom: '1px solid var(--border-card)' }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold-accent)', marginBottom: 6 }}>ANTRENMAN MÜFREDATİ</p>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 26, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.06em' }}>{workout.name}</h2>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: 6 }}>"{workout.quote}"</p>
-        </div>
-        {/* Stats bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-evenly', padding: '14px 16px', background: 'var(--bg-card)', borderBottom: '1px solid var(--border-card)' }}>
-          {[{ e: '🧱', v: `${workout.strength.length} Blok` }, { e: '🔁', v: `${totalSets} Set` }, { e: '⏱', v: `~${config.duration} dk` }, { e: '💥', v: 'Yüksek' }].map(({ e, v }) => (
-            <div key={v} style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 15, marginBottom: 2 }}>{e}</p>
-              <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold-accent)' }}>{v}</p>
-            </div>
-          ))}
-        </div>
-        {/* Blocks */}
-        <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 160 }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px' }}>
-              <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(46,204,113,0.1)', border: '1px solid rgba(46,204,113,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <RefreshCw size={16} style={{ color: 'var(--success)' }} />
-              </div>
-              <div>
-                <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>HAZIRLIK</p>
-                <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{workout.warmup.length} hareket • ~5 dk • Hafif Yoğunluk</p>
-              </div>
-            </div>
-          </div>
-          {workout.strength.map((block, bIdx) => (
-            <div key={bIdx} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 14, overflow: 'hidden' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: 'rgba(212,175,55,0.04)', borderBottom: '1px solid var(--border-card)' }}>
-                <div style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--gold-dim)', border: '1px solid var(--border-active)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--gold-accent)', fontFamily: 'var(--font-heading)' }}>{String.fromCharCode(65 + bIdx)}</span>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>GÜÇ BLOKU {bIdx + 1}/{workout.strength.length}</p>
-                  <p style={{ fontSize: 11, color: 'var(--gold-accent)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{block.type}</p>
-                </div>
-                {block.exercises[0]?.sets && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{block.exercises[0].sets} set each</span>}
-              </div>
-              <div style={{ padding: '8px 16px 12px' }}>
-                {block.exercises.map((ex, eIdx) => (
-                  <button key={eIdx} onClick={() => setDrawerEx(ex)}
-                    style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', background: 'none', borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderBottom: eIdx < block.exercises.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none', cursor: 'pointer', textAlign: 'left' }}>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', flex: 1 }}>{ex.name}</span>
-                    <span style={{ fontSize: 12, color: 'var(--text-muted)', marginRight: 8 }}>{ex.sets}×{ex.reps}</span>
-                    <Eye size={14} style={{ color: 'var(--gold-accent)', flexShrink: 0 }} />
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-          {workout.metcon?.exercises && (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid rgba(249,115,22,0.3)', borderRadius: 14, overflow: 'hidden' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: 'rgba(249,115,22,0.05)', borderBottom: '1px solid rgba(249,115,22,0.2)' }}>
-                <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Timer size={16} style={{ color: '#F97316' }} />
-                </div>
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>KONDİSYON</p>
-                  <p style={{ fontSize: 11, color: '#F97316' }}>{workout.metcon.structure}</p>
-                </div>
-              </div>
-              <div style={{ padding: '8px 16px 12px' }}>
-                {workout.metcon.exercises.map((ex, i) => (
-                  <button key={i} onClick={() => setDrawerEx(ex)}
-                    style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', background: 'none', border: 'none', borderBottom: i < workout.metcon.exercises.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none', cursor: 'pointer', textAlign: 'left' }}>
-                    <span style={{ fontSize: 13, color: 'var(--text-secondary)', flex: 1 }}>{ex.name}</span>
-                    <span style={{ fontSize: 12, color: 'var(--text-muted)', marginRight: 8 }}>{ex.reps}</span>
-                    <Eye size={13} style={{ color: '#F97316', flexShrink: 0 }} />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-        {/* Fixed CTA (above bottom nav) */}
-        <div style={{ position: 'fixed', bottom: 62, left: 0, right: 0, padding: '12px 20px 14px', background: 'linear-gradient(to top, var(--bg-primary) 75%, transparent)', zIndex: 60 }}>
-          <PrimaryButton onClick={() => { setShowSyllabus(false); setFocusMode('strength'); }}>
-            <Activity size={18} /> ANTRENMANA BAŞLA
-          </PrimaryButton>
-          <button onClick={() => setShowSyllabus(false)}
-            style={{ width: '100%', marginTop: 8, padding: '12px', borderRadius: 10, background: 'transparent', border: '1px solid var(--border-card)', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-            ← Geri Dön
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  // ─── MAIN RETURN ───
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }}>
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-amber-500 selection:text-slate-900 pb-20 relative">
       <GuideModal isOpen={showGuide} onClose={() => setShowGuide(false)} />
       <HistoryModal isOpen={showHistory} onClose={() => setShowHistory(false)} />
       <CalendarModal isOpen={showCalendar} onClose={() => setShowCalendar(false)} />
       <ChatModal isOpen={showChat} onClose={() => setShowChat(false)} workoutContext={workout} />
-      <ExerciseDrawer />
 
-      {/* ── HEADER (focus modda gizle) ── */}
-      {!focusModeActive && (
-        <header style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(18,18,18,0.94)', backdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border-card)' }}>
-          <div style={{ maxWidth: 640, margin: '0 auto', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <Landmark size={26} style={{ color: 'var(--gold-accent)' }} />
-              <div>
-                <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 26, fontWeight: 700, letterSpacing: '0.1em', lineHeight: 1, color: 'var(--text-primary)' }}>ARETE</h1>
-                <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--gold-accent)' }}>Philosophy of Strength</p>
-              </div>
+      <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-2xl shadow-black/50">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-amber-500 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
+              <div className="relative w-12 h-12 bg-gradient-to-tr from-amber-700 via-amber-500 to-yellow-400 rounded-full flex items-center justify-center text-slate-900 shadow-lg shadow-amber-900/40 border border-amber-400/30 group-hover:scale-105 transition-transform"><Landmark size={24} strokeWidth={2.5} /></div>
             </div>
-            <div style={{ display: 'flex', gap: 2 }}>
-              <button onClick={() => setShowGuide(true)} style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><BookOpen size={18} /></button>
-              <button onClick={() => setShowHistory(true)} style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><Timer size={18} /></button>
-              <button onClick={() => setShowCalendar(true)} style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gold-accent)' }}><Calendar size={18} /></button>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white font-serif text-glow">ARETE</h1>
+              <p className="text-[10px] gradient-text font-bold tracking-[0.25em] uppercase">Philosophy of Strength</p>
             </div>
           </div>
-        </header>
-      )}
-
-      {/* ── FOCUS SCREENS ── */}
-      {focusMode === 'strength' && workout?.strength && (
-        <StrengthFocusScreen workout={workout} onComplete={handleStrengthComplete} onExit={() => setFocusMode(null)} />
-      )}
-      {focusMode === 'metcon' && workout?.metcon && (
-        <MetconFocusScreen workout={workout} onComplete={handleMetconComplete} onExit={() => setFocusMode(null)} />
-      )}
-
-      {/* ── MAIN CONTENT ── */}
-      {!focusModeActive && (
-        <main style={{ maxWidth: 640, margin: '0 auto', paddingBottom: 90 }}>
-          {activeTab === 'workout' && (
-            <>
-              {loading && <LoadingScreen />}
-              {!loading && !workout && <ConfigPanel />}
-              {!loading && workout && showSyllabus && <SyllabusScreen />}
-              {!loading && workout && !showSyllabus && <WorkoutDashboard />}
-            </>
-          )}
-          {activeTab === 'nutrition' && (
-            <div style={{ padding: '20px 16px' }}>
-              {workout ? <NutritionCard workout={workout} /> : (
-                <div style={{ textAlign: 'center', padding: '64px 0' }}>
-                  <Utensils size={42} style={{ color: 'var(--text-muted)', display: 'block', margin: '0 auto 16px' }} />
-                  <p style={{ color: 'var(--text-secondary)', fontSize: 15, fontWeight: 600, marginBottom: 6 }}>Önce antrenman oluştur</p>
-                  <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 20 }}>Ambrosia beslenme planı antrenmanına göre kişiselleşir.</p>
-                  <button onClick={() => setActiveTab('workout')} style={{ padding: '12px 24px', borderRadius: 99, background: 'var(--gold-dim)', border: '1px solid var(--border-active)', color: 'var(--gold-accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
-                    Antrenman Oluştur
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-          {activeTab === 'log' && (
-            <div style={{ padding: '20px 16px' }}>
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 700, letterSpacing: '0.06em', marginBottom: 16 }}>SAVAŞ GÜNLÜĞÜ</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <button onClick={() => setShowHistory(true)} style={{ padding: '20px 14px', borderRadius: 12, background: 'var(--bg-card)', border: '1px solid var(--border-card)', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 700, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                  <Timer size={24} style={{ color: 'var(--gold-accent)' }} /> Geçmiş
-                </button>
-                <button onClick={() => setShowCalendar(true)} style={{ padding: '20px 14px', borderRadius: 12, background: 'var(--bg-card)', border: '1px solid var(--border-card)', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 700, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                  <Calendar size={24} style={{ color: 'var(--gold-accent)' }} /> Takvim
-                </button>
-              </div>
-            </div>
-          )}
-          {activeTab === 'settings' && (
-            <div style={{ padding: '20px 16px' }}>
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 700, letterSpacing: '0.06em', marginBottom: 16 }}>AYARLAR</h2>
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 12, overflow: 'hidden' }}>
-                {[
-                  { l: 'Antrenman Rehberi', fn: () => setShowGuide(true), ic: <BookOpen size={16} /> },
-                  { l: 'Antrenman Geçmişi', fn: () => setShowHistory(true), ic: <Timer size={16} /> },
-                  { l: 'Takvim', fn: () => setShowCalendar(true), ic: <Calendar size={16} /> },
-                  { l: 'Kahin AI Chat', fn: () => setShowChat(true), ic: <Sparkles size={16} /> },
-                ].map(({ l, fn, ic }, i, arr) => (
-                  <button key={l} onClick={fn}
-                    style={{ width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14, background: 'none', color: 'var(--text-primary)', fontSize: 14, cursor: 'pointer', borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderBottom: i < arr.length - 1 ? '1px solid var(--border-card)' : 'none' }}>
-                    <span style={{ color: 'var(--gold-accent)' }}>{ic}</span>
-                    <span style={{ flex: 1, textAlign: 'left' }}>{l}</span>
-                    <ChevronDown size={16} style={{ transform: 'rotate(-90deg)', color: 'var(--text-muted)' }} />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </main>
-      )}
-
-      {/* ── BOTTOM NAV — her zaman görünür ── */}
-      <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(18,18,18,0.97)', backdropFilter: 'blur(20px)', borderTop: '1px solid var(--border-card)', zIndex: 90 }}>
-        <div style={{ maxWidth: 640, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
-          {[
-            { id: 'workout',   label: 'Antrenman', icon: Activity  },
-            { id: 'nutrition', label: 'Beslenme',  icon: Utensils  },
-            { id: 'log',       label: 'Günlük',    icon: BookOpen  },
-            { id: 'settings',  label: 'Ayarlar',   icon: Crown     },
-          ].map(({ id, label, icon: Icon }) => {
-            const isExit = focusModeActive && id === 'workout';
-            const active = activeTab === id && !focusModeActive;
-            return (
-              <button key={id}
-                onClick={() => { if (focusModeActive) setFocusMode(null); setActiveTab(id); }}
-                style={{ padding: '10px 0 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, background: 'none', border: 'none', cursor: 'pointer' }}>
-                <div style={{ padding: '3px 14px', borderRadius: 99, background: active ? 'var(--gold-dim)' : 'transparent', transition: 'background 0.2s' }}>
-                  <Icon size={20} style={{ color: isExit ? '#F97316' : active ? 'var(--gold-accent)' : 'var(--text-muted)', transition: 'color 0.2s' }} />
-                </div>
-                <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: isExit ? '#F97316' : active ? 'var(--gold-accent)' : 'var(--text-muted)' }}>
-                  {isExit ? 'ÇIKIŞ' : label}
-                </span>
-              </button>
-            );
-          })}
+          <div className="flex items-center gap-2">
+            <button onClick={() => setShowGuide(true)} className="p-2 rounded-full hover:bg-slate-800 text-slate-400"><BookOpen size={20} /></button>
+            <button onClick={() => setShowHistory(true)} className="p-2 rounded-full hover:bg-slate-800 text-slate-400" title="Geçmiş"><Timer size={20} /></button>
+            <button onClick={() => setShowCalendar(true)} className="p-2 rounded-full hover:bg-slate-800 text-amber-500" title="Takvim"><Calendar size={20} /></button>
+          </div>
         </div>
-      </nav>
+      </header>
+
+      <main className="max-w-3xl mx-auto px-4 py-6">
+        <div className="mb-6 bg-slate-900/50 p-4 rounded-xl border border-slate-800/50">
+          <h2 className="text-sm font-bold text-white mb-4 flex items-center gap-2"><Activity className="text-amber-500" size={16} /> Antrenman Ayarları</h2>
+          <div className="grid grid-cols-3 gap-2 mb-1">
+            <div>
+              <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Hedef</label>
+              <div className="relative">
+                <select value={config.focus} onChange={(e) => setConfig({ ...config, focus: e.target.value })} className="w-full bg-slate-950 border border-slate-700/50 rounded-lg p-2 text-xs text-slate-200 appearance-none focus:border-amber-500 outline-none">
+                  <optgroup label="⚡ Patlayıcı &amp; Kuvvet">
+                    <option value="hanik_push_legs">Hanik – Push &amp; Legs</option>
+                    <option value="hanik_pull_core">Hanik – Pull &amp; Core</option>
+                  </optgroup>
+                  <option value="hybrid">Spartan Hybrid</option>
+                  <option value="prime">Arete Prime</option>
+                  <optgroup label="GVT – 10×10">
+                    <option value="gvt">GVT – Alt Vücut (Bacak &amp; Karın)</option>
+                    <option value="gvt_push">GVT – Üst Vücut (Göğüs &amp; Sırt)</option>
+                  </optgroup>
+                  <optgroup label="OVT – Superset">
+                    <option value="ovt">OVT – Üst Vücut (İtiş &amp; Çekiş)</option>
+                    <option value="ovt_pull">OVT – Alt Vücut (Bacak &amp; Alt Sırt)</option>
+                  </optgroup>
+                  <option value="fbb">FBB - Fonksiyonel</option>
+                  <option value="engine">Engine - MetCon</option>
+                  <option value="recovery">Recovery</option>
+                  <optgroup label="Klasik">
+                    <option value="aesthetics">Aesthetics</option>
+                    <option value="strength">Strength</option>
+                    <option value="metcon">Endurance</option>
+                  </optgroup>
+                </select>
+                <ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={12} />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Süre</label>
+              <div className="relative">
+                <select value={config.duration} onChange={(e) => setConfig({ ...config, duration: e.target.value })} className="w-full bg-slate-950 border border-slate-700/50 rounded-lg p-2 text-xs text-slate-200 appearance-none focus:border-amber-500 outline-none">
+                  <option value="45">45dk</option><option value="60">60dk</option><option value="90">90dk</option>
+                </select>
+                <ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={12} />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Havuz</label>
+              <button onClick={() => setConfig({ ...config, poolAccess: !config.poolAccess })} className={`w-full p-2 rounded-lg border flex items-center justify-center gap-1.5 transition-all text-xs ${config.poolAccess ? 'bg-blue-950/40 border-blue-500/30 text-blue-300' : 'bg-slate-950 border-slate-700/50 text-slate-500'}`}><Waves size={12} />{config.poolAccess ? <CheckCircle size={12} /> : '—'}</button>
+            </div>
+          </div>
+          <button onClick={generateWorkout} disabled={loading} className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-2.5 rounded-lg shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm">{loading ? <RefreshCw className="animate-spin" size={16} /> : <Flame size={16} />} OLUŞTUR</button>
+        </div>
+
+        {workout && (
+          <div className="space-y-1">
+            <div className="text-center mb-4">
+              <h2 className="text-lg font-bold text-white uppercase tracking-tight">{workout.name}</h2>
+              <p className="text-[11px] text-amber-500/80 italic mt-1">"{workout.quote}"</p>
+              <button onClick={() => setShowChat(true)} className="mt-2 inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full text-[10px] text-amber-400 hover:bg-amber-500/20 transition-all">
+                <Sparkles size={10} /> Kahine
+              </button>
+            </div>
+
+            <SectionCard title="Hazırlık" subTitle="Warm-Up" icon={RefreshCw}>
+
+              {workout.warmup.map((item, idx) => (<ExerciseItem key={idx} exercise={item} onLogUpdate={handleLogUpdate} currentLog={logs[item.name]} />))}
+            </SectionCard>
+
+            <SectionCard
+              title="Güç Bloku"
+              subTitle={config.focus === 'prime' ? 'Prime' : (config.focus === 'gvt' ? 'GVT' : 'Strength')}
+              icon={config.focus === 'prime' ? Zap : Dumbbell}
+            >
+              {workout.strength.map((block, bIdx) => (
+                <div key={bIdx} className="mb-2 last:mb-0">
+                  <div className="flex items-center gap-2 py-1 px-2 bg-slate-800/50 rounded-t border-b border-slate-700/30">
+                    <span className="text-amber-500 font-bold text-[10px]">{String.fromCharCode(65 + bIdx)}</span>
+                    <h4 className="text-slate-400 text-[10px] uppercase flex-1">{block.type}</h4>
+                    {block.type.includes("10x10") && <Badge text="10x10" color="bg-red-900/40 text-red-200 " />}
+                    {block.type.includes("CLUSTER") && <Badge text="CLUSTER" color="bg-purple-900/40 text-purple-200 " />}
+                  </div>
+                  {block.exercises.map((ex, eIdx) => (<ExerciseItem key={eIdx} exercise={ex} onLogUpdate={handleLogUpdate} currentLog={logs[ex.name]} />))}
+                </div>
+              ))}
+            </SectionCard>
+
+            {workout.accessories && (
+              <SectionCard title="FBB & Aksesuar" subTitle="Functional Bodybuilding" icon={BicepsFlexed}>
+                {workout.accessories.map((move, idx) => (<ExerciseItem key={idx} exercise={move} isMetcon={false} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />))}
+              </SectionCard>
+            )}
+
+            {workout.metcon && workout.metcon.exercises && (
+              <SectionCard title="3. Kondisyon" subTitle={workout.metcon.structure || 'MetCon'} icon={Timer}>
+                <div className="mb-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-amber-400 font-bold">{workout.metcon.structure}</span>
+                    <span className="text-slate-400">{workout.metcon.rounds ? `${workout.metcon.rounds} Tur` : ''} {workout.metcon.time ? `• ${workout.metcon.time} dk` : ''}</span>
+                  </div>
+                </div>
+                {workout.metcon.exercises.map((move, idx) => (<ExerciseItem key={idx} exercise={move} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />))}
+              </SectionCard>
+            )}
+
+            <SectionCard title="4. Merkez Bölge" subTitle="Iron Core" icon={Activity}>
+              <div className="grid grid-cols-1 gap-2">
+                {workout.core.map((move, idx) => (<ExerciseItem key={idx} exercise={move} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />))}
+              </div>
+            </SectionCard>
+
+            {workout.swim && (
+              <SectionCard title="5. Havuz" subTitle="Hydro Recovery" icon={Waves} className="border-blue-500">
+                <ExerciseItem exercise={workout.swim} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[workout.swim.name]} />
+              </SectionCard>
+            )}
+
+            <div className="fixed bottom-6 right-6 z-[90] flex flex-col gap-3">
+              {/* Focus Mode Buttons */}
+              {workout?.strength && workout.strength.length > 0 && (
+                <button
+                  onClick={() => setFocusMode('strength')}
+                  className="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500 text-white p-4 rounded-full shadow-2xl flex items-center gap-2 font-bold transition-all"
+                  title="Güç Bloku Odak Modu"
+                >
+                  <Target size={24} className="text-amber-500" />
+                  <span className="hidden md:inline text-sm">Güç Modu</span>
+                </button>
+              )}
+              {workout?.metcon && workout.metcon.exercises && (
+                <button
+                  onClick={() => setFocusMode('metcon')}
+                  className="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500 text-white p-4 rounded-full shadow-2xl flex items-center gap-2 font-bold transition-all"
+                  title="Kondisyon Odak Modu"
+                >
+                  <Timer size={24} className="text-amber-500" />
+                  <span className="hidden md:inline text-sm">Kondisyon Modu</span>
+                </button>
+              )}
+              <button onClick={handleSaveWorkout} className="bg-green-600 hover:bg-green-500 text-white p-4 rounded-full shadow-2xl shadow-green-900/50 flex items-center gap-2 font-bold transition-all transform hover:scale-105">
+                <Save size={24} /> <span className="hidden md:inline">Zaferi Kaydet</span>
+              </button>
+            </div>
+
+            <NutritionCard workout={workout} />
+            <div className="mt-12 text-center opacity-60"><div className="flex justify-center mb-4"><div className="w-16 h-1 bg-amber-600 rounded-full"></div></div><p className="text-xs text-slate-500 uppercase tracking-[0.3em]">Excellence is a habit</p></div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
