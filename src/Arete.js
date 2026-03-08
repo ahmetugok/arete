@@ -7,7 +7,7 @@ import { BESLENME_DB } from './beslenmeData';
 const ThemeContext = React.createContext(true); // default: dark
 
 // --- GEMINI API CONFIGURATION ---
-const apiKey = "AIzaSyCt139xdI8NSwHkQSt88KFHDVwroP4awXE"; // API Key
+const apiKey = "AIzaSyBfpeBH8832PVD1wSo99Tm6RqDbbENb0ZQ"; // API Key
 
 const callGemini = async (userQuery, systemInstruction) => {
   // systemInstruction'ı her zaman user mesajına gömüyoruz — eski modeller de destekler
