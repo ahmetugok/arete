@@ -902,46 +902,151 @@ const MuscleDiagram = ({ exercise }) => {
   );
 };
 
-const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog }) => {
+// ─── ARKA GÖRÜNÜM ───
+const MuscleDiagramBack = ({ exercise }) => {
+  const muscles = getMuscleGroups(exercise);
+  const all = [...muscles.primary, ...muscles.secondary];
+  const isPrimary = (m) => muscles.primary.includes(m);
+  const isActive = (m) => all.includes(m) || all.includes('full');
+  const fill = (m) => {
+    if (!isActive(m)) return '#1e293b';
+    return isPrimary(m) ? '#f59e0b' : '#92400e';
+  };
+  const stroke = '#334155';
+  return (
+    <svg viewBox="0 0 120 200" className="w-16 h-28 shrink-0" fill="none">
+      {/* HEAD */}
+      <ellipse cx="60" cy="16" rx="11" ry="13" fill="#334155" stroke={stroke} strokeWidth="1" />
+      <rect x="55" y="27" width="10" height="8" rx="2" fill="#334155" />
+      {/* TRAPEZIUS */}
+      <path d="M42 36 Q50 30 60 30 Q70 30 78 36 L80 46 Q70 40 60 40 Q50 40 40 46 Z"
+        fill={fill('back')} stroke={stroke} strokeWidth="0.8" />
+      {/* REAR DELTOIDS */}
+      <ellipse cx="34" cy="43" rx="10" ry="11" fill={fill('shoulder')} stroke={stroke} strokeWidth="0.8" />
+      <ellipse cx="86" cy="43" rx="10" ry="11" fill={fill('shoulder')} stroke={stroke} strokeWidth="0.8" />
+      {/* TRICEPS */}
+      <path d="M25 50 Q21 60 23 70 L30 70 Q29 60 32 52 Z"
+        fill={fill('triceps')} stroke={stroke} strokeWidth="0.8" />
+      <path d="M95 50 Q99 60 97 70 L90 70 Q91 60 88 52 Z"
+        fill={fill('triceps')} stroke={stroke} strokeWidth="0.8" />
+      {/* FOREARMS */}
+      <path d="M22 71 Q20 81 22 90 L29 90 Q28 81 29 71 Z"
+        fill="#334155" stroke={stroke} strokeWidth="0.8" />
+      <path d="M98 71 Q100 81 98 90 L91 90 Q92 81 91 71 Z"
+        fill="#334155" stroke={stroke} strokeWidth="0.8" />
+      {/* LATS */}
+      <path d="M40 46 Q35 60 37 80 L52 80 Q54 64 56 50 Z"
+        fill={fill('back')} stroke={stroke} strokeWidth="0.8" />
+      <path d="M80 46 Q85 60 83 80 L68 80 Q66 64 64 50 Z"
+        fill={fill('back')} stroke={stroke} strokeWidth="0.8" />
+      {/* LOWER BACK */}
+      <path d="M44 80 Q52 84 60 84 Q68 84 76 80 L74 96 Q66 100 60 100 Q54 100 46 96 Z"
+        fill={fill('lowerback')} stroke={stroke} strokeWidth="0.8" />
+      {/* GLUTES */}
+      <path d="M46 96 Q38 98 35 108 Q46 114 60 114 Q74 114 85 108 Q82 98 74 96 Z"
+        fill={fill('glutes')} stroke={stroke} strokeWidth="0.8" />
+      {/* HAMSTRINGS */}
+      <path d="M37 107 Q33 123 35 142 L51 142 Q50 124 50 107 Z"
+        fill={fill('hamstrings')} stroke={stroke} strokeWidth="0.8" />
+      <path d="M83 107 Q87 123 85 142 L69 142 Q70 124 70 107 Z"
+        fill={fill('hamstrings')} stroke={stroke} strokeWidth="0.8" />
+      {/* CALVES BACK */}
+      <path d="M35 142 Q33 157 36 172 L50 172 Q52 157 51 142 Z"
+        fill="#2d3748" stroke={stroke} strokeWidth="0.8" />
+      <path d="M85 142 Q87 157 84 172 L70 172 Q69 157 69 142 Z"
+        fill="#2d3748" stroke={stroke} strokeWidth="0.8" />
+      {/* FEET */}
+      <ellipse cx="43" cy="176" rx="9" ry="5" fill="#1e293b" stroke={stroke} strokeWidth="0.8" />
+      <ellipse cx="77" cy="176" rx="9" ry="5" fill="#1e293b" stroke={stroke} strokeWidth="0.8" />
+    </svg>
+  );
+};
 
+const MUSCLE_LABELS = { chest: 'Göğüs', shoulder: 'Omuz', triceps: 'Triseps', back: 'Sırt', biceps: 'Biseps', quads: 'Quads', hamstrings: 'Hamstring', glutes: 'Glut', abs: 'Karın', lowerback: 'Alt Sırt' };
+
+const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog }) => {
   const [isOpen, setIsOpen] = useState(false);
   const setsReps = exercise.sets ? `${exercise.sets}×${exercise.reps}` : "";
   const tempo = exercise.tempo || "";
-  const weight = exercise.weight_rx ? exercise.weight_rx : "";
+  const weightRx = exercise.weight_rx || "";
 
   return (
-    <div className="bg-slate-800/30 rounded border border-slate-700/30 overflow-hidden mb-1 hover:border-amber-500/30">
-      <div className="px-3 py-2 flex items-center gap-2 cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
-        <span className="text-white text-sm font-medium flex-1 truncate">{exercise.name}</span>
-        {!isMetcon && setsReps && <span className="text-[11px] font-mono text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">{setsReps}</span>}
-        {weight && <span className="text-[10px] text-amber-400">{weight}</span>}
-        <Eye size={14} className={`text-slate-500 shrink-0 ${isOpen ? 'hidden' : ''}`} />
-        <ChevronUp size={14} className={`text-amber-400 shrink-0 ${isOpen ? '' : 'hidden'}`} />
+    <div className="bg-slate-800/30 rounded-lg border border-slate-700/30 overflow-hidden mb-1.5 hover:border-amber-500/20 transition-colors">
+      {/* Header row */}
+      <div className="px-3 py-2.5 flex items-center gap-2 cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
+        <span className="text-white text-sm font-semibold flex-1 truncate">{exercise.name}</span>
+        {!isMetcon && setsReps && (
+          <span className="text-[10px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full shrink-0">{setsReps}</span>
+        )}
+        {weightRx && <span className="text-[9px] text-slate-400 shrink-0 hidden sm:inline">{weightRx}</span>}
+        {isOpen
+          ? <ChevronUp size={14} className="text-amber-400 shrink-0" />
+          : <ChevronDown size={14} className="text-slate-500 shrink-0" />}
       </div>
+
+      {/* Expanded body */}
       {isOpen && (
-        <div className="bg-slate-900/50 border-t border-slate-700/30 p-3">
-          <div className="flex gap-3 mb-2">
-            <MuscleDiagram exercise={exercise} />
-            <div className="flex-1">
-              <div className="flex flex-wrap gap-1 mb-2">
+        <div className="bg-slate-900/60 border-t border-slate-700/30 p-3">
+          {/* ÖN / ARKA kas diyagramları */}
+          <div className="flex gap-2 mb-3">
+            <div className="flex flex-col items-center gap-0.5">
+              <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">ÖN</span>
+              <MuscleDiagram exercise={exercise} />
+            </div>
+            <div className="flex flex-col items-center gap-0.5">
+              <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">ARKA</span>
+              <MuscleDiagramBack exercise={exercise} />
+            </div>
+            <div className="flex-1 flex flex-col gap-1.5 pl-1">
+              {/* Demo + kas etiketleri */}
+              <div className="flex flex-wrap gap-1">
                 <a href={getGifSearchUrl(exercise.name)} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded hover:bg-amber-500/20 transition-colors">
-                  <PlayCircle size={12} /> Demo
+                  className="flex items-center gap-1 text-[9px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-full hover:bg-amber-500/20 transition-colors">
+                  <PlayCircle size={10} /> Demo
                 </a>
                 {getMuscleGroups(exercise).primary.filter(m => m !== 'full').map(m => (
-                  <span key={m} className="text-[9px] font-bold px-2 py-1 rounded bg-amber-500/20 text-amber-400 uppercase border border-amber-500/30">{({ chest: 'Göğüs', shoulder: 'Omuz', triceps: 'Triseps', back: 'Sırt', biceps: 'Biseps', quads: 'Quads', hamstrings: 'Hamstring', glutes: 'Glut', abs: 'Karın', lowerback: 'Alt Sırt' })[m] || m}</span>
+                  <span key={m} className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-slate-700/60 text-slate-300 uppercase border border-slate-600/40">
+                    {MUSCLE_LABELS[m] || m}
+                  </span>
                 ))}
               </div>
-              <p className="text-slate-300 text-xs leading-relaxed">{exercise.description}</p>
-              {exercise.note && <p className="text-xs text-amber-400 mt-2 bg-amber-500/10 px-2 py-1 rounded">💡 {exercise.note}</p>}
-              {tempo && <p className="text-[11px] text-slate-500 mt-1">Tempo: {tempo}</p>}
-              {exercise.rest && <p className="text-[11px] text-slate-500">Dinlenme: {exercise.rest}</p>}
+              {/* Açıklama */}
+              <p className="text-slate-400 text-[11px] leading-relaxed line-clamp-3">{exercise.description}</p>
+              {/* Not */}
+              {exercise.note && (
+                <p className="text-[10px] text-amber-400 bg-amber-500/8 border border-amber-500/15 px-2 py-1 rounded">
+                  💡 {exercise.note}
+                </p>
+              )}
+              {/* Tempo / Dinlenme */}
+              <div className="flex gap-3">
+                {tempo && <span className="text-[9px] text-slate-500">Tempo: <span className="text-slate-300 font-mono">{tempo}</span></span>}
+                {exercise.rest && <span className="text-[9px] text-slate-500">Dinlenme: <span className="text-slate-300">{exercise.rest}</span></span>}
+              </div>
             </div>
           </div>
+
+          {/* AĞIRLIK / TEKRAR giriş alanları */}
           {onLogUpdate && (
-            <div className="mt-2 pt-2 border-t border-slate-700/30 flex gap-2 justify-end">
-              <input type="number" placeholder="KG" className="w-20 bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-white text-sm text-center focus:border-amber-500 outline-none" onChange={(e) => onLogUpdate(exercise.name, 'weight', e.target.value)} defaultValue={currentLog?.weight || ''} />
-              <input type="text" placeholder="Rep" className="w-20 bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-white text-sm text-center focus:border-amber-500 outline-none" onChange={(e) => onLogUpdate(exercise.name, 'reps', e.target.value)} defaultValue={currentLog?.reps || ''} />
+            <div className="mt-1 pt-2.5 border-t border-slate-700/30 grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Ağırlık</label>
+                <input
+                  type="text" inputMode="decimal" placeholder="kg"
+                  className="w-full bg-slate-800/80 border border-slate-600/50 rounded-lg px-3 py-2 text-white text-sm focus:border-amber-500 outline-none placeholder-slate-600"
+                  onChange={(e) => onLogUpdate(exercise.name, 'weight', e.target.value)}
+                  defaultValue={currentLog?.weight || ''}
+                />
+              </div>
+              <div>
+                <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Tekrar</label>
+                <input
+                  type="text" inputMode="numeric" placeholder="reps"
+                  className="w-full bg-slate-800/80 border border-slate-600/50 rounded-lg px-3 py-2 text-white text-sm focus:border-amber-500 outline-none placeholder-slate-600"
+                  onChange={(e) => onLogUpdate(exercise.name, 'reps', e.target.value)}
+                  defaultValue={currentLog?.reps || ''}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -950,11 +1055,17 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog }) =
   );
 };
 
-const SectionCard = ({ title, subTitle, icon: Icon, children, className = "" }) => (
+const SectionCard = ({ title, subTitle, icon: Icon, children, className = "", number }) => (
   <div className={`bg-slate-900/40 border-l-2 border-amber-500 rounded-r mb-3 overflow-hidden ${className}`}>
     <div className="bg-slate-900/80 px-3 py-2 flex items-center gap-2 border-b border-slate-800/50">
-      <div className="p-1.5 bg-slate-950 rounded text-amber-500"><Icon size={16} /></div>
-      <div><h3 className="text-sm font-bold text-white uppercase">{title}</h3>{subTitle && <p className="text-[9px] text-amber-500/70 uppercase">{subTitle}</p>}</div>
+      {number !== undefined && (
+        <span className="text-[10px] font-black text-amber-500/60 font-mono w-5 shrink-0">{String(number).padStart(2, '0')}</span>
+      )}
+      <div className="p-1.5 bg-slate-950 rounded text-amber-500 shrink-0"><Icon size={14} /></div>
+      <div className="min-w-0">
+        <h3 className="text-xs font-bold text-white uppercase tracking-wide">{title}</h3>
+        {subTitle && <p className="text-[9px] text-amber-500/70 uppercase truncate">{subTitle}</p>}
+      </div>
     </div>
     <div className="p-2 text-slate-300">{children}</div>
   </div>
@@ -1065,24 +1176,56 @@ const StrengthFocusScreen = ({ workout, onComplete, onExit }) => {
     setSetLogs(prev => [...prev, log]);
     setCompletedSets(prev => [...prev, `${currentExIdx}-${currentSet}`]);
 
-    if (currentSet < targetSets) {
-      setCurrentSet(prev => prev + 1);
-      if (nextInBlock) {
-        setPhase('superset_prompt');
+    if (isSupersetBlock && !isLastInBlock) {
+      // A (veya orta egzersiz) tamamlandı → B'ye geç (set numarası değişmez)
+      setPhase('superset_prompt');
+    } else if (isSupersetBlock && isLastInBlock) {
+      // B (son egzersiz) tamamlandı → bir sonraki tura dön veya bloğu bitir
+      const nextSetNum = currentSet + 1;
+      if (nextSetNum <= targetSets) {
+        // A'ya geri dön
+        const aExIdx = allExercises.findIndex(e => e.blockId === cur.blockId && e.posInBlock === 0);
+        setCurrentSet(nextSetNum);
+        setCurrentExIdx(aExIdx);
+        const rt = parseInt(cur.rest) || 90;
+        setMaxRestTime(rt); setRestTime(rt);
+        setPhase('rest');
       } else {
+        // Tüm turlar bitti → sonraki bloğa geç
+        const nextBlockFirstIdx = allExercises.findIndex(e => e.blockId === cur.blockId + 1);
+        if (nextBlockFirstIdx !== -1) {
+          setCurrentExIdx(nextBlockFirstIdx);
+          setCurrentSet(1);
+          const rt = 120;
+          setMaxRestTime(rt); setRestTime(rt);
+          setPhase('rest');
+        } else if (currentExIdx < totalEx - 1) {
+          setCurrentExIdx(prev => prev + 1);
+          setCurrentSet(1);
+          const rt = 120;
+          setMaxRestTime(rt); setRestTime(rt);
+          setPhase('rest');
+        } else {
+          onComplete(setLogs);
+        }
+      }
+    } else {
+      // Normal (superset değil)
+      if (currentSet < targetSets) {
+        setCurrentSet(prev => prev + 1);
         const rt = parseInt(cur.rest) || 120;
         setMaxRestTime(rt); setRestTime(rt);
         setPhase('rest');
-      }
-    } else {
-      if (currentExIdx < totalEx - 1) {
-        setCurrentExIdx(prev => prev + 1);
-        setCurrentSet(1);
-        const rt = 120;
-        setMaxRestTime(rt); setRestTime(rt);
-        setPhase('rest');
       } else {
-        onComplete(setLogs);
+        if (currentExIdx < totalEx - 1) {
+          setCurrentExIdx(prev => prev + 1);
+          setCurrentSet(1);
+          const rt = 120;
+          setMaxRestTime(rt); setRestTime(rt);
+          setPhase('rest');
+        } else {
+          onComplete(setLogs);
+        }
       }
     }
   };
@@ -1092,9 +1235,10 @@ const StrengthFocusScreen = ({ workout, onComplete, onExit }) => {
   const addTime = (secs) => { setRestTime(p => p + secs); setMaxRestTime(p => p + secs); };
 
   const startSupersetB = () => {
-    if (nextInBlock) {
-      setCurrentExIdx(allExercises.indexOf(nextInBlock));
-      setCurrentSet(currentSet);
+    const bExIdx = allExercises.findIndex(e => e.blockId === cur.blockId && e.posInBlock === cur.posInBlock + 1);
+    if (bExIdx !== -1) {
+      setCurrentExIdx(bExIdx);
+      // currentSet değişmez – aynı tur
       setPhase('set');
     }
   };
@@ -1213,21 +1357,25 @@ const StrengthFocusScreen = ({ workout, onComplete, onExit }) => {
               <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#E09F3E' }}>SÜPERSET GEÇİŞİ</span>
             </div>
 
-            {/* Akış görselleştirici */}
+            {/* Akış görselleştirici: cur = tamamlanan (A), sonraki = B */}
             <div className="flex items-center gap-3 mb-10">
               {Array.from({ length: cur.blockExCount }).map((_, i) => (
                 <React.Fragment key={i}>
                   <div style={{
                     width: 36, height: 36, borderRadius: '50%',
                     border: `2px solid ${i <= cur.posInBlock ? '#E09F3E' : '#1E3A5F'}`,
-                    background: i < cur.posInBlock ? '#E09F3E' : i === cur.posInBlock ? 'rgba(224,159,62,0.12)' : 'transparent',
+                    background: i < cur.posInBlock ? '#22c55e' : i === cur.posInBlock ? 'rgba(224,159,62,0.25)' : 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center'
                   }}>
                     {i < cur.posInBlock
-                      ? <CheckCircle size={16} color="#0D1B2A" />
-                      : <span style={{ fontSize: 13, fontWeight: 700, color: i === cur.posInBlock ? '#E09F3E' : '#64748b' }}>{String.fromCharCode(65 + i)}</span>}
+                      ? <CheckCircle size={16} color="#fff" />
+                      : i === cur.posInBlock
+                        ? <CheckCircle size={16} color="#E09F3E" />
+                        : <span style={{ fontSize: 13, fontWeight: 700, color: '#64748b' }}>{String.fromCharCode(65 + i)}</span>}
                   </div>
-                  {i < cur.blockExCount - 1 && <div style={{ width: 24, height: 2, background: i < cur.posInBlock ? '#E09F3E' : '#1E3A5F' }} />}
+                  {i < cur.blockExCount - 1 && (
+                    <div style={{ width: 24, height: 2, background: i < cur.posInBlock ? '#22c55e' : '#1E3A5F' }} />
+                  )}
                 </React.Fragment>
               ))}
             </div>
@@ -1678,12 +1826,16 @@ export default function App() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [logs, setLogs] = useState(() => loadFromStorage('arete_logs', {}));
   const [focusMode, setFocusMode] = useState(() => loadFromStorage('arete_focusMode', null)); // 'strength' | 'metcon' | null
+  const [activeTab, setActiveTab] = useState('workout');
+  const [configOpen, setConfigOpen] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => loadFromStorage('arete_darkMode', true));
 
   // Persist state changes to localStorage
   useEffect(() => { saveToStorage('arete_config', config); }, [config]);
   useEffect(() => { saveToStorage('arete_workout', workout); }, [workout]);
   useEffect(() => { saveToStorage('arete_logs', logs); }, [logs]);
   useEffect(() => { saveToStorage('arete_focusMode', focusMode); }, [focusMode]);
+  useEffect(() => { saveToStorage('arete_darkMode', darkMode); }, [darkMode]);
 
   const handleLogUpdate = (exerciseName, field, value) => {
     setLogs(prev => ({ ...prev, [exerciseName]: { ...prev[exerciseName], [field]: value } }));
@@ -2344,178 +2496,336 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-amber-500 selection:text-slate-900 pb-20 relative">
+    <div
+      className={`min-h-screen font-sans selection:bg-amber-500 selection:text-slate-900 pb-20 relative ${darkMode ? 'bg-slate-950 text-slate-200' : 'bg-gray-100 text-gray-800'}`}
+      data-theme={darkMode ? 'dark' : 'light'}
+    >
       <GuideModal isOpen={showGuide} onClose={() => setShowGuide(false)} />
       <HistoryModal isOpen={showHistory} onClose={() => setShowHistory(false)} />
       <CalendarModal isOpen={showCalendar} onClose={() => setShowCalendar(false)} />
       <ChatModal isOpen={showChat} onClose={() => setShowChat(false)} workoutContext={workout} />
 
-      <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-2xl shadow-black/50">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-amber-500 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
-              <div className="relative w-12 h-12 bg-gradient-to-tr from-amber-700 via-amber-500 to-yellow-400 rounded-full flex items-center justify-center text-slate-900 shadow-lg shadow-amber-900/40 border border-amber-400/30 group-hover:scale-105 transition-transform"><Landmark size={24} strokeWidth={2.5} /></div>
+      <header className={`border-b sticky top-0 z-50 shadow-xl ${darkMode ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-gray-200 shadow-gray-200/80'}`}>
+        <div className="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+          <div className="flex items-center gap-2.5">
+            <div className="relative">
+              <div className="absolute inset-0 bg-amber-500 rounded-full blur-md opacity-25"></div>
+              <div className="relative w-9 h-9 bg-gradient-to-tr from-amber-700 via-amber-500 to-yellow-400 rounded-full flex items-center justify-center text-slate-900 shadow border border-amber-400/30">
+                <Landmark size={18} strokeWidth={2.5} />
+              </div>
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white font-serif text-glow">ARETE</h1>
-              <p className="text-[10px] gradient-text font-bold tracking-[0.25em] uppercase">Philosophy of Strength</p>
+              <h1 className="text-xl font-black tracking-tighter text-white font-serif text-glow leading-none">ARETE</h1>
+              <p className="text-[8px] gradient-text font-bold tracking-[0.2em] uppercase">Philosophy of Strength</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setShowGuide(true)} className="p-2 rounded-full hover:bg-slate-800 text-slate-400"><BookOpen size={20} /></button>
-            <button onClick={() => setShowHistory(true)} className="p-2 rounded-full hover:bg-slate-800 text-slate-400" title="Geçmiş"><Timer size={20} /></button>
-            <button onClick={() => setShowCalendar(true)} className="p-2 rounded-full hover:bg-slate-800 text-amber-500" title="Takvim"><Calendar size={20} /></button>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setShowHistory(true)} className={`p-2 rounded-full ${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`} title="Geçmiş"><Timer size={18} /></button>
+            <button onClick={() => setShowGuide(true)} className={`p-2 rounded-full ${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`}><BookOpen size={18} /></button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-6">
-        <div className="mb-6 bg-slate-900/50 p-4 rounded-xl border border-slate-800/50">
-          <h2 className="text-sm font-bold text-white mb-4 flex items-center gap-2"><Activity className="text-amber-500" size={16} /> Antrenman Ayarları</h2>
-          <div className="grid grid-cols-3 gap-2 mb-1">
-            <div>
-              <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Hedef</label>
-              <div className="relative">
-                <select value={config.focus} onChange={(e) => setConfig({ ...config, focus: e.target.value })} className="w-full bg-slate-950 border border-slate-700/50 rounded-lg p-2 text-xs text-slate-200 appearance-none focus:border-amber-500 outline-none">
-                  <optgroup label="⚡ Patlayıcı &amp; Kuvvet">
-                    <option value="hanik_push_legs">Hanik – Push &amp; Legs</option>
-                    <option value="hanik_pull_core">Hanik – Pull &amp; Core</option>
-                  </optgroup>
-                  <option value="hybrid">Spartan Hybrid</option>
-                  <option value="prime">Arete Prime</option>
-                  <optgroup label="GVT – 10×10">
-                    <option value="gvt">GVT – Alt Vücut (Bacak &amp; Karın)</option>
-                    <option value="gvt_push">GVT – Üst Vücut (Göğüs &amp; Sırt)</option>
-                  </optgroup>
-                  <optgroup label="OVT – Superset">
-                    <option value="ovt">OVT – Üst Vücut (İtiş &amp; Çekiş)</option>
-                    <option value="ovt_pull">OVT – Alt Vücut (Bacak &amp; Alt Sırt)</option>
-                  </optgroup>
-                  <option value="fbb">FBB - Fonksiyonel</option>
-                  <option value="engine">Engine - MetCon</option>
-                  <option value="recovery">Recovery</option>
-                  <optgroup label="Klasik">
-                    <option value="aesthetics">Aesthetics</option>
-                    <option value="strength">Strength</option>
-                    <option value="metcon">Endurance</option>
-                  </optgroup>
-                </select>
-                <ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={12} />
-              </div>
-            </div>
-            <div>
-              <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Süre</label>
-              <div className="relative">
-                <select value={config.duration} onChange={(e) => setConfig({ ...config, duration: e.target.value })} className="w-full bg-slate-950 border border-slate-700/50 rounded-lg p-2 text-xs text-slate-200 appearance-none focus:border-amber-500 outline-none">
-                  <option value="45">45dk</option><option value="60">60dk</option><option value="90">90dk</option>
-                </select>
-                <ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={12} />
-              </div>
-            </div>
-            <div>
-              <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Havuz</label>
-              <button onClick={() => setConfig({ ...config, poolAccess: !config.poolAccess })} className={`w-full p-2 rounded-lg border flex items-center justify-center gap-1.5 transition-all text-xs ${config.poolAccess ? 'bg-blue-950/40 border-blue-500/30 text-blue-300' : 'bg-slate-950 border-slate-700/50 text-slate-500'}`}><Waves size={12} />{config.poolAccess ? <CheckCircle size={12} /> : '—'}</button>
-            </div>
-          </div>
-          <button onClick={generateWorkout} disabled={loading} className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-2.5 rounded-lg shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm">{loading ? <RefreshCw className="animate-spin" size={16} /> : <Flame size={16} />} OLUŞTUR</button>
-        </div>
+      <main className="max-w-3xl mx-auto px-4 py-4">
 
-        {workout && (
-          <div className="space-y-1">
-            <div className="text-center mb-4">
-              <h2 className="text-lg font-bold text-white uppercase tracking-tight">{workout.name}</h2>
-              <p className="text-[11px] text-amber-500/80 italic mt-1">"{workout.quote}"</p>
-              <button onClick={() => setShowChat(true)} className="mt-2 inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full text-[10px] text-amber-400 hover:bg-amber-500/20 transition-all">
-                <Sparkles size={10} /> Kahine
+        {/* ─── ANTRENMAN TAB ─── */}
+        {activeTab === 'workout' && (
+          <>
+            {/* Collapsible Config Panel */}
+            <div className={`mb-4 rounded-xl border overflow-hidden ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
+              <button
+                onClick={() => setConfigOpen(p => !p)}
+                className={`w-full px-4 py-2.5 flex items-center justify-between transition-colors ${darkMode ? 'hover:bg-slate-800/30' : 'hover:bg-gray-50'}`}
+              >
+                <span className={`text-xs font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  <Activity className="text-amber-500" size={14} /> Antrenman Ayarları
+                </span>
+                {configOpen
+                  ? <ChevronUp size={14} className="text-slate-400" />
+                  : <ChevronDown size={14} className="text-slate-400" />}
               </button>
+              {configOpen && (
+                <div className="px-4 pb-4 border-t border-slate-800/30">
+                  <div className="grid grid-cols-3 gap-2 mt-3 mb-3">
+                    <div>
+                      <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Hedef</label>
+                      <div className="relative">
+                        <select value={config.focus} onChange={(e) => setConfig({ ...config, focus: e.target.value })}
+                          className={`w-full border rounded-lg p-2 text-xs appearance-none focus:border-amber-500 outline-none ${darkMode ? 'bg-slate-950 border-slate-700/50 text-slate-200' : 'bg-gray-50 border-gray-300 text-gray-800'}`}>
+                          <optgroup label="⚡ Patlayıcı &amp; Kuvvet">
+                            <option value="hanik_push_legs">Hanik – Push &amp; Legs</option>
+                            <option value="hanik_pull_core">Hanik – Pull &amp; Core</option>
+                          </optgroup>
+                          <option value="hybrid">Spartan Hybrid</option>
+                          <option value="prime">Arete Prime</option>
+                          <optgroup label="GVT – 10×10">
+                            <option value="gvt">GVT – Alt Vücut (Bacak &amp; Karın)</option>
+                            <option value="gvt_push">GVT – Üst Vücut (Göğüs &amp; Sırt)</option>
+                          </optgroup>
+                          <optgroup label="OVT – Superset">
+                            <option value="ovt">OVT – Üst Vücut (İtiş &amp; Çekiş)</option>
+                            <option value="ovt_pull">OVT – Alt Vücut (Bacak &amp; Alt Sırt)</option>
+                          </optgroup>
+                          <option value="fbb">FBB - Fonksiyonel</option>
+                          <option value="engine">Engine - MetCon</option>
+                          <option value="recovery">Recovery</option>
+                          <optgroup label="Klasik">
+                            <option value="aesthetics">Aesthetics</option>
+                            <option value="strength">Strength</option>
+                            <option value="metcon">Endurance</option>
+                          </optgroup>
+                        </select>
+                        <ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={11} />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Süre</label>
+                      <div className="relative">
+                        <select value={config.duration} onChange={(e) => setConfig({ ...config, duration: e.target.value })}
+                          className={`w-full border rounded-lg p-2 text-xs appearance-none focus:border-amber-500 outline-none ${darkMode ? 'bg-slate-950 border-slate-700/50 text-slate-200' : 'bg-gray-50 border-gray-300 text-gray-800'}`}>
+                          <option value="45">45 dk</option>
+                          <option value="60">60 dk</option>
+                          <option value="90">90 dk</option>
+                        </select>
+                        <ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={11} />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Havuz</label>
+                      <button
+                        onClick={() => setConfig({ ...config, poolAccess: !config.poolAccess })}
+                        className={`w-full p-2 rounded-lg border flex items-center justify-center gap-1.5 transition-all text-xs ${config.poolAccess ? 'bg-blue-950/40 border-blue-500/30 text-blue-300' : darkMode ? 'bg-slate-950 border-slate-700/50 text-slate-500' : 'bg-gray-50 border-gray-300 text-gray-400'}`}>
+                        <Waves size={12} />{config.poolAccess ? <CheckCircle size={12} /> : '—'}
+                      </button>
+                    </div>
+                  </div>
+                  <button onClick={generateWorkout} disabled={loading}
+                    className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-2.5 rounded-lg shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm">
+                    {loading ? <RefreshCw className="animate-spin" size={15} /> : <Flame size={15} />} ANTRENMAN OLUŞTUR
+                  </button>
+                </div>
+              )}
             </div>
 
-            <SectionCard title="Hazırlık" subTitle="Warm-Up" icon={RefreshCw}>
-
-              {workout.warmup.map((item, idx) => (<ExerciseItem key={idx} exercise={item} onLogUpdate={handleLogUpdate} currentLog={logs[item.name]} />))}
-            </SectionCard>
-
-            <SectionCard
-              title="Güç Bloku"
-              subTitle={config.focus === 'prime' ? 'Prime' : (config.focus === 'gvt' ? 'GVT' : 'Strength')}
-              icon={config.focus === 'prime' ? Zap : Dumbbell}
-            >
-              {workout.strength.map((block, bIdx) => (
-                <div key={bIdx} className="mb-2 last:mb-0">
-                  <div className="flex items-center gap-2 py-1 px-2 bg-slate-800/50 rounded-t border-b border-slate-700/30">
-                    <span className="text-amber-500 font-bold text-[10px]">{String.fromCharCode(65 + bIdx)}</span>
-                    <h4 className="text-slate-400 text-[10px] uppercase flex-1">{block.type}</h4>
-                    {block.type.includes("10x10") && <Badge text="10x10" color="bg-red-900/40 text-red-200 " />}
-                    {block.type.includes("CLUSTER") && <Badge text="CLUSTER" color="bg-purple-900/40 text-purple-200 " />}
-                  </div>
-                  {block.exercises.map((ex, eIdx) => (<ExerciseItem key={eIdx} exercise={ex} onLogUpdate={handleLogUpdate} currentLog={logs[ex.name]} />))}
+            {workout && (
+              <div className="space-y-1">
+                <div className="text-center mb-4 pt-1">
+                  <h2 className={`text-base font-black uppercase tracking-tight ${darkMode ? 'text-white' : 'text-gray-800'}`}>{workout.name}</h2>
+                  <p className="text-[11px] text-amber-500/80 italic mt-1">"{workout.quote}"</p>
+                  <button onClick={() => setShowChat(true)} className="mt-2 inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full text-[10px] text-amber-400 hover:bg-amber-500/20 transition-all">
+                    <Sparkles size={9} /> Kahine Sor
+                  </button>
                 </div>
-              ))}
-            </SectionCard>
 
-            {workout.accessories && (
-              <SectionCard title="FBB & Aksesuar" subTitle="Functional Bodybuilding" icon={BicepsFlexed}>
-                {workout.accessories.map((move, idx) => (<ExerciseItem key={idx} exercise={move} isMetcon={false} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />))}
-              </SectionCard>
-            )}
+                <SectionCard title="Hazırlık" subTitle="Warm-Up" icon={RefreshCw} number={1}>
+                  {workout.warmup.map((item, idx) => (
+                    <ExerciseItem key={idx} exercise={item} onLogUpdate={handleLogUpdate} currentLog={logs[item.name]} />
+                  ))}
+                </SectionCard>
 
-            {workout.metcon && workout.metcon.exercises && (
-              <SectionCard title="3. Kondisyon" subTitle={workout.metcon.structure || 'MetCon'} icon={Timer}>
-                <div className="mb-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-amber-400 font-bold">{workout.metcon.structure}</span>
-                    <span className="text-slate-400">{workout.metcon.rounds ? `${workout.metcon.rounds} Tur` : ''} {workout.metcon.time ? `• ${workout.metcon.time} dk` : ''}</span>
-                  </div>
+                <SectionCard
+                  title="Güç Bloku"
+                  subTitle={config.focus === 'prime' ? 'Prime' : config.focus.includes('gvt') ? 'GVT 10×10' : config.focus.includes('ovt') ? 'OVT Superset' : 'Strength'}
+                  icon={config.focus === 'prime' ? Zap : Dumbbell}
+                  number={2}
+                >
+                  {workout.strength.map((block, bIdx) => (
+                    <div key={bIdx} className="mb-2 last:mb-0">
+                      <div className={`flex items-center gap-2 py-1 px-2 rounded-t border-b ${darkMode ? 'bg-slate-800/50 border-slate-700/30' : 'bg-gray-100 border-gray-200'}`}>
+                        <span className="text-amber-500 font-bold text-[10px] font-mono">{String.fromCharCode(65 + bIdx)}</span>
+                        <h4 className="text-slate-400 text-[10px] uppercase flex-1">{block.type}</h4>
+                        {block.exercises.length > 1 && <Badge text="SUPERSET" color="bg-amber-900/40 text-amber-300" />}
+                        {block.type.includes("10x10") && <Badge text="10×10" color="bg-red-900/40 text-red-200" />}
+                        {block.type.includes("CLUSTER") && <Badge text="CLUSTER" color="bg-purple-900/40 text-purple-200" />}
+                      </div>
+                      {block.exercises.map((ex, eIdx) => (
+                        <ExerciseItem key={eIdx} exercise={ex} onLogUpdate={handleLogUpdate} currentLog={logs[ex.name]} />
+                      ))}
+                    </div>
+                  ))}
+                </SectionCard>
+
+                {workout.accessories && (
+                  <SectionCard title="FBB & Aksesuar" subTitle="Functional Bodybuilding" icon={BicepsFlexed} number={3}>
+                    {workout.accessories.map((move, idx) => (
+                      <ExerciseItem key={idx} exercise={move} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />
+                    ))}
+                  </SectionCard>
+                )}
+
+                {workout.metcon && workout.metcon.exercises && (
+                  <SectionCard title="Kondisyon" subTitle={workout.metcon.structure || 'MetCon'} icon={Timer} number={workout.accessories ? 4 : 3}>
+                    <div className="mb-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg flex justify-between items-center">
+                      <span className="text-amber-400 font-bold text-xs">{workout.metcon.structure}</span>
+                      <span className="text-slate-400 text-xs">{workout.metcon.rounds ? `${workout.metcon.rounds} Tur` : ''}{workout.metcon.time ? ` • ${workout.metcon.time} dk` : ''}</span>
+                    </div>
+                    {workout.metcon.exercises.map((move, idx) => (
+                      <ExerciseItem key={idx} exercise={move} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />
+                    ))}
+                  </SectionCard>
+                )}
+
+                <SectionCard title="Merkez Bölge" subTitle="Iron Core" icon={Activity} number={workout.accessories ? (workout.metcon ? 5 : 4) : (workout.metcon ? 4 : 3)}>
+                  {workout.core.map((move, idx) => (
+                    <ExerciseItem key={idx} exercise={move} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />
+                  ))}
+                </SectionCard>
+
+                {workout.swim && (
+                  <SectionCard title="Havuz" subTitle="Hydro Recovery" icon={Waves}>
+                    <ExerciseItem exercise={workout.swim} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[workout.swim.name]} />
+                  </SectionCard>
+                )}
+
+                {/* FAB buttons – above bottom nav */}
+                <div className="fixed bottom-16 right-4 z-[90] flex flex-col gap-2">
+                  {workout?.strength && workout.strength.length > 0 && (
+                    <button onClick={() => setFocusMode('strength')}
+                      className="bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500 text-white p-3 rounded-full shadow-xl transition-all"
+                      title="Güç Modu">
+                      <Target size={20} className="text-amber-500" />
+                    </button>
+                  )}
+                  {workout?.metcon && workout.metcon.exercises && (
+                    <button onClick={() => setFocusMode('metcon')}
+                      className="bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500 text-white p-3 rounded-full shadow-xl transition-all"
+                      title="Kondisyon Modu">
+                      <Timer size={20} className="text-amber-500" />
+                    </button>
+                  )}
+                  <button onClick={handleSaveWorkout}
+                    className="bg-green-600 hover:bg-green-500 text-white p-3 rounded-full shadow-xl shadow-green-900/40 transition-all">
+                    <Save size={20} />
+                  </button>
                 </div>
-                {workout.metcon.exercises.map((move, idx) => (<ExerciseItem key={idx} exercise={move} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />))}
-              </SectionCard>
-            )}
 
-            <SectionCard title="4. Merkez Bölge" subTitle="Iron Core" icon={Activity}>
-              <div className="grid grid-cols-1 gap-2">
-                {workout.core.map((move, idx) => (<ExerciseItem key={idx} exercise={move} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />))}
+                <div className="mt-10 text-center opacity-40">
+                  <div className="w-12 h-px bg-amber-600 mx-auto mb-3"></div>
+                  <p className="text-[9px] text-slate-500 uppercase tracking-[0.3em]">Excellence is a habit</p>
+                </div>
               </div>
-            </SectionCard>
-
-            {workout.swim && (
-              <SectionCard title="5. Havuz" subTitle="Hydro Recovery" icon={Waves} className="border-blue-500">
-                <ExerciseItem exercise={workout.swim} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[workout.swim.name]} />
-              </SectionCard>
             )}
+          </>
+        )}
 
-            <div className="fixed bottom-6 right-6 z-[90] flex flex-col gap-3">
-              {/* Focus Mode Buttons */}
-              {workout?.strength && workout.strength.length > 0 && (
-                <button
-                  onClick={() => setFocusMode('strength')}
-                  className="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500 text-white p-4 rounded-full shadow-2xl flex items-center gap-2 font-bold transition-all"
-                  title="Güç Bloku Odak Modu"
-                >
-                  <Target size={24} className="text-amber-500" />
-                  <span className="hidden md:inline text-sm">Güç Modu</span>
-                </button>
+        {/* ─── BESLENME TAB ─── */}
+        {activeTab === 'nutrition' && (
+          <div>
+            <h2 className={`text-xs font-bold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+              <Utensils className="text-amber-500" size={14} /> Beslenme
+            </h2>
+            {workout
+              ? <NutritionCard workout={workout} />
+              : (
+                <div className="text-center py-16 text-slate-500">
+                  <Utensils size={36} className="mx-auto mb-3 opacity-20" />
+                  <p className="text-xs">Önce antrenman oluştur</p>
+                </div>
               )}
-              {workout?.metcon && workout.metcon.exercises && (
-                <button
-                  onClick={() => setFocusMode('metcon')}
-                  className="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500 text-white p-4 rounded-full shadow-2xl flex items-center gap-2 font-bold transition-all"
-                  title="Kondisyon Odak Modu"
-                >
-                  <Timer size={24} className="text-amber-500" />
-                  <span className="hidden md:inline text-sm">Kondisyon Modu</span>
-                </button>
-              )}
-              <button onClick={handleSaveWorkout} className="bg-green-600 hover:bg-green-500 text-white p-4 rounded-full shadow-2xl shadow-green-900/50 flex items-center gap-2 font-bold transition-all transform hover:scale-105">
-                <Save size={24} /> <span className="hidden md:inline">Zaferi Kaydet</span>
-              </button>
-            </div>
-
-            <NutritionCard workout={workout} />
-            <div className="mt-12 text-center opacity-60"><div className="flex justify-center mb-4"><div className="w-16 h-1 bg-amber-600 rounded-full"></div></div><p className="text-xs text-slate-500 uppercase tracking-[0.3em]">Excellence is a habit</p></div>
           </div>
         )}
+
+        {/* ─── AYARLAR TAB ─── */}
+        {activeTab === 'settings' && (
+          <div className="space-y-3">
+            <h2 className={`text-xs font-bold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+              <Target className="text-amber-500" size={14} /> Ayarlar
+            </h2>
+
+            {/* Görünüm toggle */}
+            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Görünüm</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">{darkMode ? '🌙 Karanlık Tema' : '☀️ Aydınlık Tema'}</p>
+                </div>
+                <button
+                  onClick={() => setDarkMode(p => !p)}
+                  className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${darkMode ? 'bg-amber-500' : 'bg-slate-300'}`}>
+                  <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 ${darkMode ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+            </div>
+
+            {/* Geçmiş */}
+            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Antrenman Geçmişi</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Kaydedilen antrenmanlar</p>
+                </div>
+                <button onClick={() => setShowHistory(true)}
+                  className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition-colors">
+                  Görüntüle
+                </button>
+              </div>
+            </div>
+
+            {/* Rehber */}
+            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Antrenman Rehberi</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Metodoloji & açıklamalar</p>
+                </div>
+                <button onClick={() => setShowGuide(true)}
+                  className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition-colors">
+                  Aç
+                </button>
+              </div>
+            </div>
+
+            {/* Sohbet / Kahin */}
+            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Kahin – AI Koç</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Antrenman sorularını sor</p>
+                </div>
+                <button onClick={() => setShowChat(true)}
+                  className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition-colors">
+                  Aç
+                </button>
+              </div>
+            </div>
+
+            <div className={`p-3 rounded-xl border text-center ${darkMode ? 'bg-slate-900/30 border-slate-800/30' : 'bg-gray-50 border-gray-200'}`}>
+              <p className="text-[10px] font-black text-amber-500">ARETE v2.5</p>
+              <p className="text-[9px] text-slate-500 mt-0.5">Philosophy of Strength · Excellence is a Habit</p>
+            </div>
+          </div>
+        )}
+
       </main>
+
+      {/* ─── COMPACT BOTTOM NAV ─── */}
+      <nav className={`fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-md ${darkMode ? 'bg-slate-900/96 border-slate-800/60' : 'bg-white/96 border-gray-200'}`}>
+        <div className="max-w-3xl mx-auto flex">
+          {[
+            { id: 'workout',   label: 'Antrenman', icon: Activity },
+            { id: 'nutrition', label: 'Beslenme',  icon: Utensils },
+            { id: 'calendar',  label: 'Takvim',    icon: Calendar },
+            { id: 'settings',  label: 'Ayarlar',   icon: Target   },
+          ].map(({ id, label, icon: TabIcon }) => {
+            const isActive = id !== 'calendar' && activeTab === id;
+            return (
+              <button
+                key={id}
+                onClick={() => id === 'calendar' ? setShowCalendar(true) : setActiveTab(id)}
+                className={`flex-1 flex flex-col items-center py-1.5 gap-0.5 transition-colors ${
+                  isActive
+                    ? 'text-amber-400'
+                    : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                <TabIcon size={18} />
+                <span className="text-[9px] font-medium">{label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }
+

@@ -243,3 +243,64 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+/* ─── Light Mode Overrides ─────────────────────── */
+[data-theme="light"] {
+  color-scheme: light;
+}
+[data-theme="light"] .bg-slate-950 {
+  background-color: #f1f5f9 !important;
+}
+[data-theme="light"] .bg-slate-900\/40,
+[data-theme="light"] .bg-slate-900\/50,
+[data-theme="light"] .bg-slate-900\/60,
+[data-theme="light"] .bg-slate-900\/80,
+[data-theme="light"] .bg-slate-900\/30 {
+  background-color: #ffffff !important;
+}
+[data-theme="light"] header,
+[data-theme="light"] nav {
+  background-color: rgba(255,255,255,0.97) !important;
+}
+[data-theme="light"] .bg-slate-800\/30,
+[data-theme="light"] .bg-slate-800\/50,
+[data-theme="light"] .bg-slate-800\/80 {
+  background-color: #f8fafc !important;
+}
+[data-theme="light"] .bg-slate-900 {
+  background-color: #f8fafc !important;
+}
+[data-theme="light"] .border-slate-800\/50,
+[data-theme="light"] .border-slate-700\/30,
+[data-theme="light"] .border-slate-700\/50,
+[data-theme="light"] .border-slate-800,
+[data-theme="light"] .border-slate-700 {
+  border-color: #e2e8f0 !important;
+}
+[data-theme="light"] .text-white {
+  color: #111827 !important;
+}
+[data-theme="light"] .text-slate-200 {
+  color: #1f2937 !important;
+}
+[data-theme="light"] .text-slate-300 {
+  color: #374151 !important;
+}
+[data-theme="light"] .text-slate-400 {
+  color: #6b7280 !important;
+}
+[data-theme="light"] .text-slate-500 {
+  color: #9ca3af !important;
+}
+[data-theme="light"] .bg-slate-950 select,
+[data-theme="light"] select {
+  background-color: #f9fafb !important;
+  color: #1f2937 !important;
+  border-color: #d1d5db !important;
+}
+[data-theme="light"] select option,
+[data-theme="light"] select optgroup {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+[data-theme="light"] ::-webkit-scrollbar-track { background: #f1f5f9; }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: #cbd5e1; }
