@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Dumbbell, Timer, Flame, Waves, Activity, AlertCircle, RefreshCw, CheckCircle, ChevronDown, ChevronUp, Info, Eye, PlayCircle, BookOpen, X, BicepsFlexed, Landmark, Crown, MessageSquare, Utensils, Send, Sparkles, Save, Calendar, Trash2, Zap, BrainCircuit, Layout, Target } from 'lucide-react';
 import HANIK_DB from './hanikData';
+import { BESLENME_DB } from './beslenmeData';
 
 // --- GEMINI API CONFIGURATION --- 
 const apiKey = "AIzaSyCt139xdI8NSwHkQSt88KFHDVwroP4awXE"; // API Key 
@@ -750,6 +751,73 @@ const NutritionCard = ({ workout }) => {
   if (plan) return <div className="mt-10 glass p-6 rounded-2xl border border-green-500/30 shadow-lg shadow-green-900/10"><h3 className="text-green-400 font-bold mb-4 flex gap-3 items-center text-lg"><div className="p-2 bg-green-500/20 rounded-lg"><Utensils size={20} /></div> Ambrosia - Beslenme Önerisi</h3><div className="text-slate-300 text-sm whitespace-pre-line leading-relaxed">{plan}</div></div>;
   return <div className="mt-10 flex justify-center"><button onClick={generateMeal} disabled={loading} className="flex items-center gap-3 glass px-8 py-4 rounded-full border border-green-500/30 font-bold hover:bg-green-500/10 transition-all hover:scale-105 active:scale-95 group">{loading ? <RefreshCw className="animate-spin text-green-400" /> : <Sparkles className="text-green-400 group-hover:animate-pulse" />} <span className="text-green-400">Ambrosia: Öğün Oluştur</span></button></div>;
 };
+
+// ======================== BESLENME BİLEŞENLERİ ========================
+
+const MacroRow = ({ label, m }) => (
+  <div className="flex items-center gap-2 text-[10px]">
+    <span className="text-slate-500 w-14 shrink-0">{label}</span>
+    <span className="text-amber-400 font-bold w-10 text-right">{m.kcal}</span>
+    <span className="text-blue-300 w-8 text-right">{m.p}g</span>
+    <span className="text-green-300 w-8 text-right">{m.c}g</span>
+    <span className="text-yellow-300 w-8 text-right">{m.y}g</span>
+  </div>
+);
+
+const RecipeCard = ({ recipe }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="bg-slate-800/30 rounded-lg border border-slate-700/30 mb-1.5 overflow-hidden hover:border-amber-500/20 transition-colors">
+      <div className="px-3 py-2.5 flex items-center gap-2 cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
+        <span className="flex-1 text-white text-sm font-semibold truncate">{recipe.name}</span>
+        <span className="text-[9px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full shrink-0">{recipe.erkek.kcal} kcal</span>
+        {isOpen
+          ? <ChevronUp size={13} className="text-amber-400 shrink-0" />
+          : <ChevronDown size={13} className="text-slate-500 shrink-0" />}
+      </div>
+      {isOpen && (
+        <div className="bg-slate-900/60 border-t border-slate-700/30 p-3 space-y-2.5">
+          {/* İçerik */}
+          <div>
+            <p className="text-[8px] text-slate-500 uppercase tracking-widest mb-1">İçerik</p>
+            <p className="text-xs text-slate-300 leading-relaxed">{recipe.icerik}</p>
+          </div>
+          {/* YouTube */}
+          {recipe.youtube && (
+            <a href={recipe.youtube} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-full hover:bg-red-500/20 transition-colors">
+              <PlayCircle size={11} /> YouTube'da İzle
+            </a>
+          )}
+          {/* Makrolar */}
+          <div className="pt-1">
+            <div className="flex items-center gap-2 text-[8px] text-slate-500 uppercase tracking-widest mb-1.5">
+              <span className="w-14"></span>
+              <span className="w-10 text-right text-amber-500">KCAL</span>
+              <span className="w-8 text-right text-blue-400">P</span>
+              <span className="w-8 text-right text-green-400">K</span>
+              <span className="w-8 text-right text-yellow-400">Y</span>
+            </div>
+            <MacroRow label="♂ Erkek" m={recipe.erkek} />
+            <MacroRow label="♀ Kadın" m={recipe.kadin} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const MealSection = ({ emoji, title, time, recipes, darkMode }) => (
+  <div className="mb-5">
+    <div className={`flex items-center justify-between px-1 mb-2 pb-1.5 border-b ${darkMode ? 'border-slate-800/60' : 'border-gray-200'}`}>
+      <h3 className={`text-xs font-bold flex items-center gap-1.5 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+        <span>{emoji}</span> {title}
+      </h3>
+      <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full shrink-0">{time}</span>
+    </div>
+    {recipes.map((r, i) => <RecipeCard key={i} recipe={r} />)}
+  </div>
+);
 
 // ======================== KAS DİYAGRAMI ========================
 
@@ -1829,6 +1897,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('workout');
   const [configOpen, setConfigOpen] = useState(true);
   const [darkMode, setDarkMode] = useState(() => loadFromStorage('arete_darkMode', true));
+  const [workedOutToday, setWorkedOutToday] = useState(() => loadFromStorage('arete_workedOut', false));
+  const [dietMode, setDietMode] = useState(() => loadFromStorage('arete_dietMode', 'normal'));
 
   // Persist state changes to localStorage
   useEffect(() => { saveToStorage('arete_config', config); }, [config]);
@@ -1836,6 +1906,8 @@ export default function App() {
   useEffect(() => { saveToStorage('arete_logs', logs); }, [logs]);
   useEffect(() => { saveToStorage('arete_focusMode', focusMode); }, [focusMode]);
   useEffect(() => { saveToStorage('arete_darkMode', darkMode); }, [darkMode]);
+  useEffect(() => { saveToStorage('arete_workedOut', workedOutToday); }, [workedOutToday]);
+  useEffect(() => { saveToStorage('arete_dietMode', dietMode); }, [dietMode]);
 
   const handleLogUpdate = (exerciseName, field, value) => {
     setLogs(prev => ({ ...prev, [exerciseName]: { ...prev[exerciseName], [field]: value } }));
@@ -2711,17 +2783,82 @@ export default function App() {
         {/* ─── BESLENME TAB ─── */}
         {activeTab === 'nutrition' && (
           <div>
-            <h2 className={`text-xs font-bold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-              <Utensils className="text-amber-500" size={14} /> Beslenme
-            </h2>
-            {workout
-              ? <NutritionCard workout={workout} />
-              : (
-                <div className="text-center py-16 text-slate-500">
-                  <Utensils size={36} className="mx-auto mb-3 opacity-20" />
-                  <p className="text-xs">Önce antrenman oluştur</p>
-                </div>
-              )}
+            {/* Diyet Modu Butonları */}
+            <div className="flex gap-2 mb-3">
+              <button
+                onClick={() => setDietMode('normal')}
+                className={`flex-1 py-2 rounded-xl font-bold text-xs transition-all ${
+                  dietMode === 'normal'
+                    ? 'bg-amber-500 text-slate-900 shadow-md shadow-amber-900/30'
+                    : darkMode ? 'bg-slate-800/60 text-slate-400 border border-slate-700/50' : 'bg-gray-100 text-gray-500 border border-gray-200'
+                }`}>
+                🍳 Normal
+              </button>
+              <button
+                onClick={() => setDietMode('vegan')}
+                className={`flex-1 py-2 rounded-xl font-bold text-xs transition-all ${
+                  dietMode === 'vegan'
+                    ? 'bg-green-500 text-white shadow-md shadow-green-900/30'
+                    : darkMode ? 'bg-slate-800/60 text-slate-400 border border-slate-700/50' : 'bg-gray-100 text-gray-500 border border-gray-200'
+                }`}>
+                🌱 Vegan
+              </button>
+            </div>
+
+            {/* Antrenman Durumu */}
+            <div className={`flex items-center justify-between p-3 rounded-xl mb-4 border ${
+              darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'
+            }`}>
+              <div>
+                <p className={`text-xs font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Bugün antrenman yaptım</p>
+                <p className="text-[9px] text-slate-500 mt-0.5">
+                  {workedOutToday
+                    ? '💪 Aktif gün — yüksek protein öğünleri'
+                    : '😴 Dinlenme günü — hafif öğünler'}
+                </p>
+              </div>
+              <button
+                onClick={() => setWorkedOutToday(p => !p)}
+                className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 ${
+                  workedOutToday ? 'bg-amber-500' : darkMode ? 'bg-slate-700' : 'bg-gray-300'
+                }`}>
+                <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                  workedOutToday ? 'translate-x-5' : 'translate-x-0.5'
+                }`} />
+              </button>
+            </div>
+
+            {/* Normal Mod */}
+            {dietMode === 'normal' && (
+              <>
+                <MealSection
+                  emoji="🍳" title="Kahvaltılıklar ve Hamur İşleri" time="12:00 - 13:00 Arası"
+                  recipes={BESLENME_DB.kahvaltilik} darkMode={darkMode}
+                />
+                <MealSection
+                  emoji="🍪" title="Tatlılar ve Atıştırmalıklar" time="15:00 - 16:00 Arası"
+                  recipes={BESLENME_DB.tatli} darkMode={darkMode}
+                />
+                {workedOutToday
+                  ? <MealSection
+                      emoji="🍲" title="Ana Yemekler ve Tavalar" time="19:00 - 20:00 Arası"
+                      recipes={BESLENME_DB.anaYemek} darkMode={darkMode}
+                    />
+                  : <MealSection
+                      emoji="🥗" title="Bowllar ve Salatalar" time="19:00 - 20:00 Arası"
+                      recipes={BESLENME_DB.bowl} darkMode={darkMode}
+                    />
+                }
+              </>
+            )}
+
+            {/* Vegan Mod */}
+            {dietMode === 'vegan' && (
+              <MealSection
+                emoji="🌱" title="Vegan Özel Tarifleri" time="Tüm öğünler için"
+                recipes={BESLENME_DB.vegan} darkMode={darkMode}
+              />
+            )}
           </div>
         )}
 
