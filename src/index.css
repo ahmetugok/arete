@@ -211,6 +211,14 @@
 .animation-delay-400 { animation-delay: 400ms; }
 .animation-delay-500 { animation-delay: 500ms; }
 
+@keyframes alarm-flash {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(224,159,62,0); }
+  50% { box-shadow: 0 0 0 16px rgba(224,159,62,0.25); }
+}
+.animate-alarm-flash {
+  animation: alarm-flash 0.7s ease-in-out infinite;
+}
+
 /* Custom select styling */
 select option {
   @apply bg-slate-900 text-slate-200;
