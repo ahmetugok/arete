@@ -3,7 +3,7 @@ import { Dumbbell, Timer, Flame, Waves, Activity, AlertCircle, RefreshCw, CheckC
 import HANIK_DB from './hanikData';
 
 // --- GEMINI API CONFIGURATION --- 
-const apiKey = "AIzaSyCt139xdI8NSwHkQSt88KFHDVwroP4awXE"; // API Key 
+const apiKey = process.env.REACT_APP_GEMINI_API_KEY; // API Key 
 
 const callGemini = async (userQuery, systemInstruction) => {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
