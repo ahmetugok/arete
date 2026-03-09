@@ -1650,7 +1650,7 @@ const Badge = ({ text, color = "bg-slate-700" }) => (
 );
 
 // localStorage helper functions
-const loadFromStorage = (key, defaultValue) => {
+export const loadFromStorage = (key, defaultValue) => {
   try {
     const saved = localStorage.getItem(key);
     return saved ? JSON.parse(saved) : defaultValue;
@@ -1659,7 +1659,7 @@ const loadFromStorage = (key, defaultValue) => {
   }
 };
 
-const saveToStorage = (key, value) => {
+export const saveToStorage = (key, value) => {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (e) {
