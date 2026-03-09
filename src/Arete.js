@@ -1057,7 +1057,7 @@ const StrengthFocusScreen = ({ workout, onComplete, onExit }) => {
   const isSupersetBlock = cur?.blockExCount > 1;
   const isLastInBlock = cur?.posInBlock === cur?.blockExCount - 1;
   const nextInBlock = isSupersetBlock && !isLastInBlock
-    ? allExercises.find(e => e.blockId === cur.blockId && e.posInBlock === cur.posInBlock + 1)
+    ? allExercises[currentExIdx + 1]
     : null;
 
   const handleCompleteSet = () => {
@@ -1093,27 +1093,29 @@ const StrengthFocusScreen = ({ workout, onComplete, onExit }) => {
 
   const startSupersetB = () => {
     if (nextInBlock) {
-      setCurrentExIdx(allExercises.indexOf(nextInBlock));
+      setCurrentExIdx(currentExIdx + 1);
       setCurrentSet(currentSet);
       setPhase('set');
     }
   };
 
   // Müfredat overlay
-  const SyllabusOverlay = () => (
-    <div className="fixed inset-0 z-[300] flex flex-col" style={{ background: 'rgba(13,27,42,0.97)' }}>
-      <div className="flex items-center justify-between px-5 py-5" style={{ borderBottom: '1px solid #1E3A5F' }}>
-        <h2 className="text-white font-black text-xl tracking-widest uppercase">MÜFREDAT</h2>
-        <button onClick={() => setShowSyllabus(false)} className="text-slate-400"><X size={24} /></button>
-      </div>
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-        {workout.strength.map((block, bIdx) => (
-          <div key={bIdx}>
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#E09F3E' }}>{block.type}</p>
-            {block.exercises.map((ex, eIdx) => {
-              const globalIdx = allExercises.findIndex(a => a.blockId === bIdx && a.posInBlock === eIdx);
-              const isDone = completedSets.filter(k => k.startsWith(`${globalIdx}-`)).length >= (parseInt(ex.sets) || 5);
-              const isActive = globalIdx === currentExIdx;
+  const SyllabusOverlay = () => {
+    let runningIdx = 0;
+    return (
+      <div className="fixed inset-0 z-[300] flex flex-col" style={{ background: 'rgba(13,27,42,0.97)' }}>
+        <div className="flex items-center justify-between px-5 py-5" style={{ borderBottom: '1px solid #1E3A5F' }}>
+          <h2 className="text-white font-black text-xl tracking-widest uppercase">MÜFREDAT</h2>
+          <button onClick={() => setShowSyllabus(false)} className="text-slate-400"><X size={24} /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+          {workout.strength.map((block, bIdx) => (
+            <div key={bIdx}>
+              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#E09F3E' }}>{block.type}</p>
+              {block.exercises.map((ex, eIdx) => {
+                const globalIdx = runningIdx++;
+                const isDone = completedSets.filter(k => k.startsWith(`${globalIdx}-`)).length >= (parseInt(ex.sets) || 5);
+                const isActive = globalIdx === currentExIdx;
               return (
                 <div key={eIdx} className="flex items-center gap-3 px-4 py-3 rounded-xl mb-2"
                   style={{ background: isActive ? 'rgba(224,159,62,0.12)' : 'rgba(30,58,92,0.5)', border: `1px solid ${isActive ? '#E09F3E' : '#1E3A5F'}`, opacity: isDone && !isActive ? 0.45 : 1 }}>
