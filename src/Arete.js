@@ -796,6 +796,117 @@ const NutritionCard = ({ workout }) => {
 
 // ======================== BESLENME BİLEŞENLERİ ========================
 
+const MacroSummaryCard = ({ dailyMeal, workedOutToday, darkMode }) => {
+  const BASE = { cal: 2100, p: 160, k: 230, y: 60 };
+  const BONUS = workedOutToday ? { cal: 250, p: 20, k: 30, y: 5 } : { cal: 0, p: 0, k: 0, y: 0 };
+  const target = { cal: BASE.cal + BONUS.cal, p: BASE.p + BONUS.p, k: BASE.k + BONUS.k, y: BASE.y + BONUS.y };
+
+  const plan = dailyMeal ? {
+    cal: dailyMeal.kahvaltilik.erkek.kcal + dailyMeal.tatli.erkek.kcal + dailyMeal.aksam.erkek.kcal,
+    p: dailyMeal.kahvaltilik.erkek.p + dailyMeal.tatli.erkek.p + dailyMeal.aksam.erkek.p,
+    k: dailyMeal.kahvaltilik.erkek.c + dailyMeal.tatli.erkek.c + dailyMeal.aksam.erkek.c,
+    y: dailyMeal.kahvaltilik.erkek.y + dailyMeal.tatli.erkek.y + dailyMeal.aksam.erkek.y,
+  } : { cal: 0, p: 0, k: 0, y: 0 };
+
+  const pct = (v, t) => Math.min(100, Math.round(v / t * 100));
+
+  // Donut arcs — protein/carb/fat cals as % of target calories
+  const R = 52;
+  const CIRC = 2 * Math.PI * R; // ≈ 326.7
+  const startOffset = CIRC * 0.25; // start at top
+
+  const protCals = plan.p * 4;
+  const carbCals = plan.k * 4;
+  const fatCals  = plan.y * 9;
+  const totalArcCals = protCals + carbCals + fatCals || 1;
+
+  const GAP = CIRC * 0.015;
+  const protLen = (protCals / totalArcCals) * CIRC * 0.97;
+  const carbLen = (carbCals / totalArcCals) * CIRC * 0.97;
+  const fatLen  = (fatCals  / totalArcCals) * CIRC * 0.97;
+
+  const carbOffset  = startOffset - protLen - GAP;
+  const fatOffset   = carbOffset  - carbLen - GAP;
+
+  const calPct = pct(plan.cal, target.cal);
+  const calColor = !dailyMeal ? '#4B5563' : calPct >= 90 ? '#22C55E' : calPct >= 60 ? '#F5A623' : '#EF4444';
+
+  return (
+    <div className={`rounded-2xl border mb-4 overflow-hidden ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
+      {/* Donut + legend */}
+      <div className="flex items-center justify-between px-5 pt-5 pb-3 gap-4">
+        {/* SVG Donut */}
+        <div className="relative shrink-0">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            {/* Track */}
+            <circle cx="60" cy="60" r={R} fill="none" stroke={darkMode ? '#1E293B' : '#F1F5F9'} strokeWidth="14" />
+            {/* Protein arc */}
+            {dailyMeal && protLen > 0 && (
+              <circle cx="60" cy="60" r={R} fill="none" stroke="#3B82F6" strokeWidth="14"
+                strokeDasharray={`${protLen} ${CIRC}`}
+                strokeDashoffset={startOffset}
+                strokeLinecap="round" style={{ transition: 'stroke-dasharray 0.6s ease' }} />
+            )}
+            {/* Carb arc */}
+            {dailyMeal && carbLen > 0 && (
+              <circle cx="60" cy="60" r={R} fill="none" stroke="#F5A623" strokeWidth="14"
+                strokeDasharray={`${carbLen} ${CIRC}`}
+                strokeDashoffset={carbOffset}
+                strokeLinecap="round" style={{ transition: 'stroke-dasharray 0.6s ease' }} />
+            )}
+            {/* Fat arc */}
+            {dailyMeal && fatLen > 0 && (
+              <circle cx="60" cy="60" r={R} fill="none" stroke="#EF4444" strokeWidth="14"
+                strokeDasharray={`${fatLen} ${CIRC}`}
+                strokeDashoffset={fatOffset}
+                strokeLinecap="round" style={{ transition: 'stroke-dasharray 0.6s ease' }} />
+            )}
+            {/* Center text */}
+            <text x="60" y="55" textAnchor="middle" fill={calColor} fontSize="18" fontWeight="800">
+              {dailyMeal ? plan.cal : '—'}
+            </text>
+            <text x="60" y="70" textAnchor="middle" fill={darkMode ? '#64748B' : '#94A3B8'} fontSize="9">
+              {dailyMeal ? `/ ${target.cal} kcal` : `hedef ${target.cal}`}
+            </text>
+          </svg>
+        </div>
+
+        {/* Right side: legend + calorie pct */}
+        <div className="flex-1 space-y-2">
+          {[
+            { label: 'P', color: '#3B82F6', v: plan.p, t: target.p },
+            { label: 'K', color: '#F5A623', v: plan.k, t: target.k },
+            { label: 'Y', color: '#EF4444', v: plan.y, t: target.y },
+          ].map(m => (
+            <div key={m.label}>
+              <div className="flex justify-between mb-0.5">
+                <span className="text-[10px] font-bold" style={{ color: m.color }}>{m.label}</span>
+                <span className={`text-[10px] ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+                  {dailyMeal ? `${m.v}g` : '—'} <span className="text-slate-600">/ {m.t}g</span>
+                </span>
+              </div>
+              <div className={`h-2 rounded-full ${darkMode ? 'bg-slate-800' : 'bg-gray-100'}`}>
+                <div className="h-full rounded-full transition-all duration-700"
+                  style={{ width: dailyMeal ? `${pct(m.v, m.t)}%` : '0%', background: m.color + (darkMode ? 'CC' : '') }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Training day bonus banner */}
+      {workedOutToday && (
+        <div className="mx-4 mb-4 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-2">
+          <span className="text-amber-400 text-sm">💪</span>
+          <span className="text-[11px] text-amber-400 font-semibold">
+            Antrenman günü: +{BONUS.cal} kcal · +{BONUS.p}g protein · +{BONUS.k}g karb hedeflendi
+          </span>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const MacroRow = ({ label, m }) => (
   <div className="flex items-center gap-2 text-[10px]">
     <span className="text-slate-500 w-14 shrink-0">{label}</span>
@@ -3431,6 +3542,9 @@ export default function App() {
                 }`} />
               </button>
             </div>
+
+            {/* Makro Özet Kartı */}
+            <MacroSummaryCard dailyMeal={dailyMeal} workedOutToday={workedOutToday} darkMode={darkMode} />
 
             {/* Öğün Oluşturulmadıysa */}
             {!dailyMeal && (
