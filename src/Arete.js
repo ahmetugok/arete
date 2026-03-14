@@ -1,83 +1,43 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Dumbbell, Timer, Flame, Waves, Activity, AlertCircle, RefreshCw, CheckCircle, ChevronDown, ChevronUp, Info, Eye, PlayCircle, BookOpen, X, BicepsFlexed, Landmark, Crown, MessageSquare, Utensils, Send, Sparkles, Save, Calendar, Trash2, Zap, BrainCircuit, Layout, Target } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Dumbbell, Timer, Flame, Waves, Activity, AlertCircle, RefreshCw, CheckCircle, ChevronDown, ChevronUp, Info, Eye, PlayCircle, BookOpen, X, BicepsFlexed, Landmark, Crown, MessageSquare, Utensils, Send, Sparkles, Save, Calendar, Trash2, Zap, BrainCircuit, Layout, Target, Heart } from 'lucide-react';
 import HANIK_DB from './hanikData';
 import { BESLENME_DB } from './beslenmeData';
+import { getExerciseImageUrl, getYouTubeSearchUrl } from './data/exerciseImages';
+import { useToast } from './hooks/useToast';
+import { ToastContainer } from './components/ui/Toast';
+import ConfirmModal from './components/ui/ConfirmModal';
 
 // Theme context — propagates darkMode to all sub-components without prop drilling
 const ThemeContext = React.createContext(true); // default: dark
 
 // --- GEMINI API CONFIGURATION ---
-const apiKey = "AIzaSyBfpeBH8832PVD1wSo99Tm6RqDbbENb0ZQ"; // API Key
-
 const callGemini = async (userQuery, systemInstruction) => {
-  // systemInstruction'ı her zaman user mesajına gömüyoruz — eski modeller de destekler
-  const fullPrompt = systemInstruction
-    ? `[Sistem Talimatı]: ${systemInstruction}\n\n[Kullanıcı]: ${userQuery}`
-    : userQuery;
-
-  // Mart 2026 itibarıyla v1beta'da aktif modeller (1.5-x serisi kaldırıldı)
-  const MODELS = [
-    'gemini-2.0-flash',
-    'gemini-2.0-flash-lite',
-  ];
-
-  const makePayload = (text) => ({
-    contents: [{ parts: [{ text }] }]
-  });
-
-  for (const model of MODELS) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      console.log(`[Kahin] Deneniyor: ${model} (deneme ${attempt})`);
-      try {
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(makePayload(fullPrompt))
-        });
-
-        console.log(`[Kahin] ${model} → HTTP ${res.status}`);
-
-        if (res.status === 404 || res.status === 400) {
-          const e = await res.json().catch(() => ({}));
-          console.warn(`[Kahin] ${model} skip:`, e?.error?.message);
-          break; // Bu model yok, sonraki modele geç
-        }
-
-        if (res.status === 429) {
-          const waitSec = attempt * 15; // 15s → 30s → 45s
-          console.warn(`[Kahin] ${model} rate limited, ${waitSec}s bekliyor... (deneme ${attempt}/3)`);
-          await new Promise(r => setTimeout(r, waitSec * 1000));
-          continue; // Aynı modeli tekrar dene
-        }
-
-        if (!res.ok) {
-          const e = await res.json().catch(() => ({}));
-          console.warn(`[Kahin] ${model} error:`, e?.error?.message);
-          break;
-        }
-
-        const data = await res.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) return text;
-        break;
-
-      } catch (err) {
-        console.warn(`[Kahin] ${model} catch:`, err.message);
-        break;
-      }
+  try {
+    const res = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: userQuery,
+        systemInstruction: systemInstruction || '',
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return err.error || '⚠️ Kahin şu an yanıt veremiyor.';
     }
+    const data = await res.json();
+    return data.text || '⚠️ Kahin şu an yanıt veremiyor.';
+  } catch (err) {
+    console.error('[Kahin] fetch error:', err);
+    return '⚠️ Bağlantı hatası. İnternet bağlantını kontrol et.';
   }
-
-  return '⚠️ Kahin şu an yanıt veremiyor — günlük limit dolmuş olabilir, birkaç dakika sonra tekrar dene.';
 };
 
 
 // --- DATA & LOGIC ---
 
-const getImgUrl = (text) => `https://placehold.co/600x400/1e293b/d97706?text=${encodeURIComponent(text)}&font=montserrat`;
-const getGifSearchUrl = (exerciseName) => `https://www.google.com/search?q=${encodeURIComponent(exerciseName + " exercise technique gif")}&tbm=isch`;
+const getImgUrl = (text) => `https://placehold.co/600x400/0f172a/f59e0b?text=${encodeURIComponent(text)}&font=montserrat`;
+const getGifSearchUrl = (exerciseName) => getYouTubeSearchUrl(exerciseName);
 
 // EXPANDED EXERCISE DATABASE v5.0 - MASSIVE COMPENDIUM 
 const EXERCISE_DB = {
@@ -407,23 +367,24 @@ const GuideModal = ({ isOpen, onClose }) => {
 
 // Focus → kas bölgesi etiketi eşlemesi
 const focusMuscleLabel = {
-  gvt: ['Bacak', 'Karın'],
-  gvt_legs: ['Bacak', 'Karın'],
-  gvt_push: ['Göğüs', 'Sırt', 'Omuz'],
-  gvt_pull: ['Göğüs', 'Sırt', 'Omuz'],
-  ovt: ['Göğüs', 'Sırt', 'İtiş', 'Çekiş'],
-  ovt_push: ['Göğüs', 'Omuz', 'Triseps'],
-  ovt_pull: ['Bacak', 'Alt Sırt', 'Hamstring'],
+  gvt:             ['Bacak', 'Karın'],
+  gvt_legs:        ['Bacak', 'Karın'],
+  gvt_push:        ['Göğüs', 'Sırt', 'Omuz'],
+  gvt_pull:        ['Göğüs', 'Sırt', 'Omuz'],
+  ovt:             ['Göğüs', 'Sırt', 'İtiş', 'Çekiş'],
+  ovt_push:        ['Göğüs', 'Omuz', 'Triseps'],
+  ovt_pull:        ['Bacak', 'Alt Sırt', 'Hamstring'],
   hanik_push_legs: ['Göğüs', 'Omuz', 'Bacak'],
   hanik_pull_core: ['Sırt', 'Biseps', 'Karın'],
-  fbb: ['Full Body', 'Core'],
-  engine: ['Kondisyon', 'Full Body'],
-  aesthetics: ['Göğüs', 'Sırt', 'Kol'],
-  hybrid: ['Full Body'],
-  prime: ['Full Body'],
-  recovery: ['Mobilite', 'Esneme'],
-  strength: ['Full Body'],
-  metcon: ['Kondisyon'],
+  fbb:             ['Full Body', 'Core'],
+  engine:          ['Kondisyon', 'Full Body'],
+  aesthetics:      ['Göğüs', 'Sırt', 'Kol'],
+  hybrid:          ['Full Body'],
+  prime:           ['Güç', 'Atletizm', 'Full Body'],
+  spartan_hybrid:  ['Full Body'],
+  recovery:        ['Mobilite', 'Esneme'],
+  strength:        ['Full Body'],
+  metcon:          ['Kondisyon'],
 };
 
 const CalendarModal = ({ isOpen, onClose }) => {
@@ -562,7 +523,7 @@ const CalendarModal = ({ isOpen, onClose }) => {
   );
 };
 
-const HistoryModal = ({ isOpen, onClose }) => {
+const HistoryModal = ({ isOpen, onClose, toast, setConfirmState }) => {
 
   const [history, setHistory] = useState([]);
   const [selectedEntry, setSelectedEntry] = useState(null);
@@ -574,11 +535,17 @@ const HistoryModal = ({ isOpen, onClose }) => {
 
   const deleteEntry = (entryId, e) => {
     e.stopPropagation();
-    if (window.confirm('Bu kayıt silinsin mi?')) {
-      const newHistory = history.filter(h => h.id !== entryId);
-      localStorage.setItem('arete_history', JSON.stringify(newHistory));
-      setHistory(newHistory);
-    }
+    setConfirmState({
+      message: 'Bu kayıt silinsin mi?',
+      variant: 'danger',
+      confirmLabel: 'Sil',
+      onConfirm: () => {
+        const newHistory = history.filter(h => h.id !== entryId);
+        localStorage.setItem('arete_history', JSON.stringify(newHistory));
+        setHistory(newHistory);
+        toast.success('Kayıt silindi.');
+      },
+    });
   };
 
   // Detay görünümü
@@ -717,7 +684,13 @@ const HistoryModal = ({ isOpen, onClose }) => {
         </div>
         <div className="p-4 border-t border-slate-800 bg-slate-950 rounded-b-2xl flex justify-between items-center">
           <span className="text-xs text-slate-600">Detay için tıkla</span>
-          {history.length > 0 && <button onClick={() => { if (window.confirm('Tüm kayıtlar silinsin mi?')) { clearHistory(); setHistory([]); } }} className="text-red-500/70 text-xs flex items-center gap-1 hover:text-red-400 transition-colors"><Trash2 size={14} /> Temizle</button>}
+          {history.length > 0 && <button onClick={() => setConfirmState({
+            message: 'Tüm kayıtlar silinsin mi?',
+            detail: 'Bu işlem geri alınamaz.',
+            variant: 'danger',
+            confirmLabel: 'Tümünü Sil',
+            onConfirm: () => { clearHistory(); setHistory([]); toast.success('Tüm kayıtlar silindi.'); },
+          })} className="text-red-500/70 text-xs flex items-center gap-1 hover:text-red-400 transition-colors"><Trash2 size={14} /> Temizle</button>}
         </div>
       </div>
     </div>
@@ -1162,13 +1135,123 @@ const MuscleDiagramBack = ({ exercise }) => {
 
 const MUSCLE_LABELS = { chest: 'Göğüs', shoulder: 'Omuz', triceps: 'Triseps', back: 'Sırt', biceps: 'Biseps', quads: 'Quads', hamstrings: 'Hamstring', glutes: 'Glut', abs: 'Karın', lowerback: 'Alt Sırt' };
 
+const RPE_CONFIG = {
+  6:  { label: 'Çok Kolay',  color: '#60a5fa', bg: 'rgba(96,165,250,0.12)',  border: 'rgba(96,165,250,0.3)'  },
+  7:  { label: 'Optimal',    color: '#22c55e', bg: 'rgba(34,197,94,0.12)',   border: 'rgba(34,197,94,0.3)'   },
+  8:  { label: 'Zor',        color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  border: 'rgba(245,158,11,0.3)'  },
+  9:  { label: 'Çok Zor',    color: '#f97316', bg: 'rgba(249,115,22,0.12)',  border: 'rgba(249,115,22,0.3)'  },
+  10: { label: 'Maksimal',   color: '#ef4444', bg: 'rgba(239,68,68,0.12)',   border: 'rgba(239,68,68,0.3)'   },
+};
+const TEMPO_PHASES = [
+  { key: 'ecc',  label: 'İniş',       labelEn: 'Eccentric',  pos: 0 },
+  { key: 'bot',  label: 'Alt Bekleme', labelEn: 'Bottom',    pos: 1 },
+  { key: 'con',  label: 'Kalkış',     labelEn: 'Concentric', pos: 2 },
+  { key: 'top',  label: 'Tepe Sıkış', labelEn: 'Top',        pos: 3 },
+];
+const parseTempo = (tempoStr) => {
+  if (!tempoStr || tempoStr === 'Kontrollü' || tempoStr === 'Yavaş & Kontrollü') return null;
+  const clean = tempoStr.replace(/[^0-9X]/gi, '');
+  if (clean.length < 4) return null;
+  return [clean[0], clean[1], clean[2], clean[3]];
+};
+const TempoVisualizer = ({ tempoStr }) => {
+  const [activePhase, setActivePhase] = useState(null);
+  const parsed = parseTempo(tempoStr);
+  if (!parsed) return (
+    <span className="text-[9px] text-slate-500">
+      Tempo: <span className="text-slate-300 font-mono">{tempoStr}</span>
+    </span>
+  );
+  const phaseColors = ['#60a5fa', '#a78bfa', '#f59e0b', '#34d399'];
+  return (
+    <div className="mt-1">
+      <p className="text-[9px] text-slate-500 mb-1.5">
+        Tempo: <span className="font-mono text-slate-300">{tempoStr}</span>
+      </p>
+      <div className="flex gap-1.5">
+        {TEMPO_PHASES.map((phase, i) => {
+          const val = parsed[i];
+          const isX = val?.toUpperCase() === 'X';
+          const isActive = activePhase === i;
+          const color = phaseColors[i];
+          return (
+            <button
+              key={phase.key}
+              onClick={() => setActivePhase(isActive ? null : i)}
+              style={{
+                flex: 1,
+                padding: '6px 4px',
+                borderRadius: 8,
+                border: `1px solid ${isActive ? color : 'rgba(255,255,255,0.06)'}`,
+                background: isActive ? `${color}22` : 'rgba(255,255,255,0.03)',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{
+                fontSize: 15,
+                fontWeight: 900,
+                color: isActive ? color : '#94a3b8',
+                fontFamily: 'monospace',
+                lineHeight: 1,
+              }}>
+                {isX ? '⚡' : val}
+              </div>
+              <div style={{
+                fontSize: 8,
+                color: isActive ? color : '#475569',
+                marginTop: 3,
+                fontWeight: 600,
+                letterSpacing: '0.04em',
+              }}>
+                {phase.label}
+              </div>
+              {isActive && (
+                <div style={{
+                  fontSize: 8,
+                  color: '#94a3b8',
+                  marginTop: 2,
+                }}>
+                  {isX ? 'Patlayıcı' : val === '0' ? 'Bekleme yok' : `${val} sn`}
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
+      {activePhase !== null && (
+        <div style={{
+          marginTop: 6,
+          padding: '6px 10px',
+          borderRadius: 6,
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(255,255,255,0.06)',
+          fontSize: 10,
+          color: '#94a3b8',
+          lineHeight: 1.5,
+        }}>
+          {activePhase === 0 && 'Hareketi kontrollü olarak indiriyorsun. Kas gerilim altında kalır.'}
+          {activePhase === 1 && (parsed[1] === '0' ? 'Alt noktada bekleme yok — hemen kalk.' : `Alt noktada ${parsed[1]} sn bekle. Elastik gerilimi kontrol et.`)}
+          {activePhase === 2 && (parsed[2]?.toUpperCase() === 'X' ? 'Maksimum hızda patlayıcı kaldır!' : `${parsed[2]} sn sürede kaldır. Kasılmayı hissederek çalış.`)}
+          {activePhase === 3 && (parsed[3] === '0' ? 'Tepe noktada bekleme yok — devam et.' : `Tepe noktada ${parsed[3]} sn sıkıştır. Maksimum kas aktivasyonu.`)}
+        </div>
+      )}
+    </div>
+  );
+};
 const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog }) => {
   const darkMode = React.useContext(ThemeContext);
   const [isOpen, setIsOpen] = useState(false);
+  const [rpe, setRpe] = useState(currentLog?.rpe ? parseInt(currentLog.rpe) : 7);
   const setsReps = exercise.sets ? `${exercise.sets}×${exercise.reps}` : "";
   const tempo = exercise.tempo || "";
   const weightRx = exercise.weight_rx || "";
-
+  const rpeInfo = RPE_CONFIG[rpe] || RPE_CONFIG[7];
+  const handleRpeChange = (val) => {
+    setRpe(val);
+    if (onLogUpdate) onLogUpdate(exercise.name, 'rpe', val);
+  };
   return (
     <div className={`${darkMode ? 'bg-slate-800/30 border-slate-700/30' : 'bg-white border-gray-200'} rounded-lg border overflow-hidden mb-1.5 hover:border-amber-500/30 transition-colors`}>
       {/* Header row */}
@@ -1182,7 +1265,6 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog }) =
           ? <ChevronUp size={14} className="text-amber-400 shrink-0" />
           : <ChevronDown size={14} className="text-slate-500 shrink-0" />}
       </div>
-
       {/* Expanded body */}
       {isOpen && (
         <div className={`${darkMode ? 'bg-slate-900/60 border-slate-700/30' : 'bg-gray-50 border-gray-200'} border-t p-3`}>
@@ -1217,17 +1299,100 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog }) =
                   💡 {exercise.note}
                 </p>
               )}
-              {/* Tempo / Dinlenme */}
-              <div className="flex gap-3">
-                {tempo && <span className="text-[9px] text-slate-500">Tempo: <span className={`${darkMode ? 'text-slate-300' : 'text-gray-700'} font-mono`}>{tempo}</span></span>}
-                {exercise.rest && <span className="text-[9px] text-slate-500">Dinlenme: <span className={darkMode ? 'text-slate-300' : 'text-gray-700'}>{exercise.rest}</span></span>}
-              </div>
+              {/* Dinlenme */}
+              {exercise.rest && (
+                <span className="text-[9px] text-slate-500">
+                  Dinlenme: <span className={darkMode ? 'text-slate-300' : 'text-gray-700'}>{exercise.rest}</span>
+                </span>
+              )}
             </div>
           </div>
-
+          {/* KAS AKTİVASYON BARLARI */}
+          {(() => {
+            const muscleGroups = getMuscleGroups(exercise);
+            const primaryMuscles = muscleGroups.primary.filter(m => m !== 'full');
+            const secondaryMuscles = muscleGroups.secondary.filter(m => m !== 'full');
+            const allDisplayMuscles = [
+              ...primaryMuscles.map(m => ({ key: m, isPrimary: true })),
+              ...secondaryMuscles.map(m => ({ key: m, isPrimary: false })),
+            ];
+            if (allDisplayMuscles.length === 0) return null;
+            // Activation percentages — primary gets higher values, secondary lower
+            const primaryPcts  = [85, 75, 65, 55, 48];
+            const secondaryPcts = [35, 28, 22];
+            return (
+              <div style={{ marginBottom: 10 }}>
+                <p style={{ fontSize: 8, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>
+                  Kas Aktivasyonu
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {allDisplayMuscles.map(({ key, isPrimary }, idx) => {
+                    const pct = isPrimary
+                      ? (primaryPcts[primaryMuscles.indexOf(key)] ?? 40)
+                      : (secondaryPcts[secondaryMuscles.indexOf(key)] ?? 20);
+                    const barColor = isPrimary ? '#f59e0b' : '#78350f';
+                    const textColor = isPrimary ? '#fbbf24' : '#92400e';
+                    const label = MUSCLE_LABELS[key] || key;
+                    return (
+                      <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {/* Label */}
+                        <span style={{
+                          fontSize: 9,
+                          color: textColor,
+                          fontWeight: isPrimary ? 700 : 400,
+                          width: 60,
+                          flexShrink: 0,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.04em',
+                        }}>
+                          {label}
+                        </span>
+                        {/* Bar track */}
+                        <div style={{
+                          flex: 1,
+                          height: isPrimary ? 6 : 4,
+                          background: 'rgba(255,255,255,0.05)',
+                          borderRadius: 3,
+                          overflow: 'hidden',
+                        }}>
+                          <div style={{
+                            width: `${pct}%`,
+                            height: '100%',
+                            background: isPrimary
+                              ? `linear-gradient(90deg, #92400e, ${barColor})`
+                              : barColor,
+                            borderRadius: 3,
+                            transition: 'width 0.6s cubic-bezier(0.34,1.56,0.64,1)',
+                          }} />
+                        </div>
+                        {/* Percentage */}
+                        <span style={{
+                          fontSize: 9,
+                          color: textColor,
+                          fontWeight: isPrimary ? 700 : 400,
+                          width: 24,
+                          textAlign: 'right',
+                          flexShrink: 0,
+                          fontFamily: 'monospace',
+                        }}>
+                          {pct}%
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+          {/* TEMPO VİZÜALİZER — tempo varsa göster */}
+          {tempo && (
+            <div className={`mb-3 p-2.5 rounded-lg ${darkMode ? 'bg-slate-800/50 border border-slate-700/30' : 'bg-gray-100 border border-gray-200'}`}>
+              <TempoVisualizer tempoStr={tempo} />
+            </div>
+          )}
           {/* AĞIRLIK / TEKRAR giriş alanları */}
           {onLogUpdate && (
-            <div className={`mt-1 pt-2.5 border-t ${darkMode ? 'border-slate-700/30' : 'border-gray-200'} grid grid-cols-2 gap-2`}>
+            <div className={`pt-2.5 border-t ${darkMode ? 'border-slate-700/30' : 'border-gray-200'} grid grid-cols-2 gap-2 mb-3`}>
               <div>
                 <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Ağırlık</label>
                 <input
@@ -1246,6 +1411,76 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog }) =
                   defaultValue={currentLog?.reps || ''}
                 />
               </div>
+            </div>
+          )}
+          {/* RPE SLIDER */}
+          {onLogUpdate && (
+            <div
+              style={{
+                padding: '10px 12px',
+                borderRadius: 10,
+                background: rpeInfo.bg,
+                border: `1px solid ${rpeInfo.border}`,
+                transition: 'all 0.25s ease',
+              }}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                  ⚡ RPE Skoru
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <span style={{
+                    fontSize: 18,
+                    fontWeight: 900,
+                    color: rpeInfo.color,
+                    fontFamily: 'monospace',
+                    lineHeight: 1,
+                    textShadow: `0 0 12px ${rpeInfo.color}66`,
+                  }}>
+                    {rpe}
+                  </span>
+                  <span style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: rpeInfo.color,
+                    opacity: 0.85,
+                  }}>
+                    {rpeInfo.label}
+                  </span>
+                </div>
+              </div>
+              {/* Slider */}
+              <input
+                type="range"
+                min={6}
+                max={10}
+                step={1}
+                value={rpe}
+                onChange={(e) => handleRpeChange(parseInt(e.target.value))}
+                style={{ width: '100%', accentColor: rpeInfo.color, cursor: 'pointer' }}
+              />
+              {/* Scale labels */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+                {[6, 7, 8, 9, 10].map(v => (
+                  <span key={v} style={{
+                    fontSize: 8,
+                    color: v === rpe ? rpeInfo.color : '#475569',
+                    fontWeight: v === rpe ? 700 : 400,
+                    transition: 'color 0.2s',
+                  }}>
+                    {v}
+                  </span>
+                ))}
+              </div>
+              {/* Context hint */}
+              <p style={{ fontSize: 9, color: '#64748b', marginTop: 6, lineHeight: 1.5 }}>
+                {rpe === 6 && 'Çok hafif. Isınma veya toparlanma seti için uygun.'}
+                {rpe === 7 && 'Optimal bölge. 3 tekrar rezervin var — sürdürülebilir yoğunluk.'}
+                {rpe === 8 && '2 tekrar rezervin var. Güç ve hacim için ideal.'}
+                {rpe === 9 && '1 tekrar rezervin var. Yoğun gün — formu koru.'}
+                {rpe === 10 && 'Maksimal efor. Yarışma veya test günü için sakla.'}
+              </p>
             </div>
           )}
         </div>
@@ -1446,39 +1681,49 @@ const StrengthFocusScreen = ({ workout, onComplete, onExit }) => {
   };
 
   // Müfredat overlay
-  const SyllabusOverlay = () => (
-    <div className="fixed inset-0 z-[300] flex flex-col" style={{ background: 'rgba(13,27,42,0.97)' }}>
-      <div className="flex items-center justify-between px-5 py-5" style={{ borderBottom: '1px solid #1E3A5F' }}>
-        <h2 className="text-white font-black text-xl tracking-widest uppercase">MÜFREDAT</h2>
-        <button onClick={() => setShowSyllabus(false)} className="text-slate-400"><X size={24} /></button>
-      </div>
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-        {workout.strength.map((block, bIdx) => (
-          <div key={bIdx}>
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#E09F3E' }}>{block.type}</p>
-            {block.exercises.map((ex, eIdx) => {
-              const globalIdx = allExercises.findIndex(a => a.blockId === bIdx && a.posInBlock === eIdx);
-              const isDone = completedSets.filter(k => k.startsWith(`${globalIdx}-`)).length >= (parseInt(ex.sets) || 5);
-              const isActive = globalIdx === currentExIdx;
-              return (
-                <div key={eIdx} className="flex items-center gap-3 px-4 py-3 rounded-xl mb-2"
-                  style={{ background: isActive ? 'rgba(224,159,62,0.12)' : 'rgba(30,58,92,0.5)', border: `1px solid ${isActive ? '#E09F3E' : '#1E3A5F'}`, opacity: isDone && !isActive ? 0.45 : 1 }}>
-                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: isDone ? '#22c55e' : isActive ? '#E09F3E' : '#1E3A5F', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {isDone && <CheckCircle size={12} color="white" />}
-                    {isActive && !isDone && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#0D1B2A' }} />}
+  const SyllabusOverlay = () => {
+    return (
+      <div className="fixed inset-0 z-[300] flex flex-col" style={{ background: 'rgba(13,27,42,0.97)' }}>
+        <div className="flex items-center justify-between px-5 py-5" style={{ borderBottom: '1px solid #1E3A5F' }}>
+          <h2 className="text-white font-black text-xl tracking-widest uppercase">MÜFREDAT</h2>
+          <button onClick={() => setShowSyllabus(false)} className="text-slate-400"><X size={24} /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+          {workout.strength.map((block, bIdx) => (
+            <div key={bIdx}>
+              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#E09F3E' }}>{block.type}</p>
+              {block.exercises.map((ex, eIdx) => {
+                const globalIdx = workout.strength
+                  .slice(0, bIdx)
+                  .reduce((acc, b) => acc + b.exercises.length, 0) + eIdx;
+                const isDone   = completedSets.filter(k => k.startsWith(`${globalIdx}-`)).length >= (parseInt(ex.sets) || 5);
+                const isActive = globalIdx === currentExIdx;
+                return (
+                  <div key={eIdx}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl mb-2"
+                    style={{
+                      background: isActive ? 'rgba(224,159,62,0.12)' : 'rgba(30,58,92,0.5)',
+                      border: `1px solid ${isActive ? '#E09F3E' : '#1E3A5F'}`,
+                      opacity: isDone && !isActive ? 0.45 : 1,
+                    }}
+                  >
+                    <div style={{ width: 20, height: 20, borderRadius: '50%', background: isDone ? '#22c55e' : isActive ? '#E09F3E' : '#1E3A5F', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {isDone   && <CheckCircle size={12} color="white" />}
+                      {isActive && !isDone && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#0D1B2A' }} />}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm" style={{ color: isActive ? '#E09F3E' : isDone ? '#64748b' : '#f1f5f9' }}>{ex.name}</p>
+                      <p className="text-xs text-slate-500">{ex.sets} set × {ex.reps} tekrar</p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-sm" style={{ color: isActive ? '#E09F3E' : isDone ? '#64748b' : '#f1f5f9' }}>{ex.name}</p>
-                    <p className="text-xs text-slate-500">{ex.sets} set × {ex.reps} tekrar</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ))}
+                );
+              })}
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   if (!cur) return null;
 
@@ -1995,6 +2240,187 @@ const MetconFocusScreen = ({ workout, onComplete, onExit }) => {
 
 
 
+const RECOVERY_QUESTIONS = [
+  { key: 'sleep',    emoji: '😴', label: 'Uyku Kalitesi',   lo: 'Kötü',    hi: 'Mükemmel' },
+  { key: 'energy',   emoji: '⚡', label: 'Enerji Seviyesi', lo: 'Bitik',   hi: 'Enerjik'  },
+  { key: 'soreness', emoji: '💢', label: 'Kas Ağrısı',      lo: 'Hiç yok', hi: 'Çok fazla' },
+];
+const RecoveryCheckIn = ({ darkMode, toast }) => {
+  const [scores, setScores] = useState(() => {
+    try {
+      const saved = localStorage.getItem('arete_recovery');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Only use today's data
+        const today = new Date().toDateString();
+        if (parsed.date === today) return parsed.scores;
+      }
+    } catch (e) {}
+    return { sleep: 3, energy: 3, soreness: 2 };
+  });
+  const [saved, setSaved] = useState(() => {
+    try {
+      const s = localStorage.getItem('arete_recovery');
+      if (s) {
+        const p = JSON.parse(s);
+        return p.date === new Date().toDateString();
+      }
+    } catch (e) {}
+    return false;
+  });
+  // Readiness: higher sleep + energy = good, higher soreness = bad
+  const readiness = Math.round(
+    ((scores.sleep + scores.energy + (6 - scores.soreness)) / 3) * 20
+  );
+  const readinessColor =
+    readiness >= 70 ? '#22c55e' :
+    readiness >= 45 ? '#f59e0b' :
+    '#ef4444';
+  const readinessLabel =
+    readiness >= 70 ? 'Hazırsın' :
+    readiness >= 45 ? 'Dikkatli Ol' :
+    'Dinlen';
+  const readinessAdvice =
+    readiness >= 70
+      ? 'Bugün tam güç antrenman yapabilirsin. RPE 8-9 hedefle.'
+      : readiness >= 45
+      ? 'Orta yoğunlukta çalış. Ağırlıkları %10 düşür, RPE 7\'de kal.'
+      : 'Bugün BFR veya Recovery antrenmanı öneriyorum. Yarın için enerji biriktir.';
+  const handleSave = () => {
+    localStorage.setItem('arete_recovery', JSON.stringify({
+      date: new Date().toDateString(),
+      scores,
+      readiness,
+    }));
+    setSaved(true);
+    toast.success('✅ Toparlanma skoru kaydedildi!');
+  };
+  const handleReset = () => {
+    localStorage.removeItem('arete_recovery');
+    setSaved(false);
+    setScores({ sleep: 3, energy: 3, soreness: 2 });
+  };
+  return (
+    <div>
+      {/* Readiness Score Circle */}
+      <div style={{
+        margin: '0 auto 20px',
+        width: 140,
+        height: 140,
+        borderRadius: '50%',
+        border: `4px solid ${readinessColor}`,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: `${readinessColor}11`,
+        boxShadow: `0 0 32px ${readinessColor}33`,
+        transition: 'all 0.4s ease',
+      }}>
+        <span style={{
+          fontSize: 48,
+          fontWeight: 900,
+          color: readinessColor,
+          lineHeight: 1,
+          fontFamily: 'monospace',
+          textShadow: `0 0 20px ${readinessColor}`,
+        }}>
+          {readiness}
+        </span>
+        <span style={{ fontSize: 11, color: readinessColor, fontWeight: 700, marginTop: 2 }}>
+          {readinessLabel}
+        </span>
+      </div>
+      {/* Advice banner */}
+      <div style={{
+        padding: '10px 14px',
+        borderRadius: 10,
+        background: `${readinessColor}11`,
+        border: `1px solid ${readinessColor}33`,
+        marginBottom: 20,
+      }}>
+        <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.6 }}>
+          ✨ <strong style={{ color: readinessColor }}>Kahin:</strong> {readinessAdvice}
+        </p>
+      </div>
+      {/* Questions */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 20 }}>
+        {RECOVERY_QUESTIONS.map(q => (
+          <div key={q.key}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: darkMode ? '#f1f5f9' : '#1e293b' }}>
+                {q.emoji} {q.label}
+              </span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#f59e0b', fontFamily: 'monospace' }}>
+                {scores[q.key]}/5
+              </span>
+            </div>
+            <input
+              type="range" min={1} max={5} step={1}
+              value={scores[q.key]}
+              onChange={e => setScores(p => ({ ...p, [q.key]: parseInt(e.target.value) }))}
+              style={{ width: '100%', accentColor: '#f59e0b', cursor: 'pointer' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+              <span style={{ fontSize: 9, color: '#475569' }}>{q.lo}</span>
+              <span style={{ fontSize: 9, color: '#475569' }}>{q.hi}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Save / Reset buttons */}
+      <div style={{ display: 'flex', gap: 8 }}>
+        {!saved ? (
+          <button
+            onClick={handleSave}
+            style={{
+              flex: 1,
+              padding: '11px 0',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, #92400e, #f59e0b)',
+              color: '#0f172a',
+              fontWeight: 700,
+              fontSize: 13,
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            Kaydet
+          </button>
+        ) : (
+          <div style={{
+            flex: 1,
+            padding: '11px 0',
+            borderRadius: 12,
+            background: 'rgba(34,197,94,0.12)',
+            border: '1px solid rgba(34,197,94,0.3)',
+            color: '#22c55e',
+            fontWeight: 700,
+            fontSize: 13,
+            textAlign: 'center',
+          }}>
+            ✓ Bugün kaydedildi
+          </div>
+        )}
+        <button
+          onClick={handleReset}
+          style={{
+            padding: '11px 16px',
+            borderRadius: 12,
+            background: darkMode ? 'rgba(255,255,255,0.05)' : '#f1f5f9',
+            border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
+            color: '#64748b',
+            fontWeight: 600,
+            fontSize: 12,
+            cursor: 'pointer',
+          }}
+        >
+          Sıfırla
+        </button>
+      </div>
+    </div>
+  );
+};
 const Badge = ({ text, color = "bg-slate-700" }) => (
   <span className={`text-[10px] font-bold px-2 py-1 rounded border border-white/5 uppercase tracking-wider ${color} text-white ml-2 shadow-sm`}>{text}</span>
 );
@@ -2034,6 +2460,8 @@ export default function App() {
   const [workedOutToday, setWorkedOutToday] = useState(() => loadFromStorage('arete_workedOut', false));
   const [dietMode, setDietMode] = useState(() => loadFromStorage('arete_dietMode', 'normal'));
   const [dailyMeal, setDailyMeal] = useState(() => loadFromStorage('arete_dailyMeal', null));
+  const { toasts, toast, removeToast } = useToast();
+  const [confirmState, setConfirmState] = useState(null);
 
   // Persist state changes to localStorage
   useEffect(() => { saveToStorage('arete_config', config); }, [config]);
@@ -2061,13 +2489,26 @@ export default function App() {
     setLogs(prev => ({ ...prev, [exerciseName]: { ...prev[exerciseName], [field]: value } }));
   };
 
-  const handleSaveWorkout = () => {
+  const handleSaveWorkout = useCallback(() => {
     if (!workout) return;
-    if (Object.keys(logs).length === 0 && !confirm("Veri girmedin. Kaydedilsin mi?")) return;
-    saveToHistory({ ...workout, focus: config.focus }, logs);
-    alert("Zafer kaydedildi!");
-    setShowHistory(true);
-  };
+    const doSave = () => {
+      saveToHistory({ ...workout, focus: config.focus }, logs);
+      toast.success('🏆 Zafer kaydedildi! Helal olsun!');
+      setShowHistory(true);
+    };
+    if (Object.keys(logs).length === 0) {
+      setConfirmState({
+        message: 'Veri girmedin, yine de kaydedilsin mi?',
+        detail: 'Ağırlık veya tekrar girmeden antrenmanı kaydedeceksin.',
+        variant: 'warning',
+        confirmLabel: 'Kaydet',
+        cancelLabel: 'Vazgeç',
+        onConfirm: doSave,
+      });
+    } else {
+      doSave();
+    }
+  }, [workout, config.focus, logs, toast]);
 
   const getRandomItems = (arr, count) => {
     const shuffled = [...arr].sort(() => 0.5 - Math.random());
@@ -2637,38 +3078,31 @@ export default function App() {
     return { type: selectedType, structure: structure, exercises: moves };
   };
 
-  const generateWorkout = () => {
+  const generateWorkout = useCallback(() => {
     setLoading(true);
     setLogs({});
-    setTimeout(() => {
-      let accessories = [];
-      if (config.focus === 'aesthetics') {
-        // Aesthetics gets extra isolation or FBB for weak points 
-        accessories = [...getRandomItems(EXERCISE_DB.strength.push.accessory, 1), ...getRandomItems(EXERCISE_DB.fbb, 2)];
-      }
-
-      const isHanik = config.focus.startsWith('hanik_');
-      const isGVT = config.focus.startsWith('gvt');
-      const isOVT = config.focus.startsWith('ovt');
-      const noMetcon = isHanik || isGVT || isOVT || config.focus === 'aesthetics' || config.focus === 'recovery';
-      const newWorkout = {
-        name: generateName(config.focus),
-        quote: QUOTES[Math.floor(Math.random() * QUOTES.length)],
-        warmup: isHanik
-          ? getRandomItems(HANIK_DB.warmup, 7)
-          : getRandomItems(EXERCISE_DB.warmup, 4),
-        strength: generateStrengthBlock(config.focus),
-        metcon: noMetcon ? null : generateMetconBlock(config.focus),
-        accessories: config.focus === 'aesthetics' ? accessories : null,
-        core: isHanik ? [] : getRandomItems(EXERCISE_DB.core, 3),
-        swim: (config.poolAccess && !isHanik) ? getRandomItems(EXERCISE_DB.swim, 1)[0] : null,
-        focus: config.focus
-      };
-      setWorkout(newWorkout);
-      setLoading(false);
-      window.scrollTo(0, 0);
-    }, 800);
-  };
+    const accessories = config.focus === 'aesthetics'
+      ? [...getRandomItems(EXERCISE_DB.strength.push.accessory, 1), ...getRandomItems(EXERCISE_DB.fbb, 2)]
+      : [];
+    const isHanik  = config.focus.startsWith('hanik_');
+    const isGVT    = config.focus.startsWith('gvt');
+    const isOVT    = config.focus.startsWith('ovt');
+    const noMetcon = isHanik || isGVT || isOVT || config.focus === 'aesthetics' || config.focus === 'recovery';
+    const newWorkout = {
+      name:        generateName(config.focus),
+      quote:       QUOTES[Math.floor(Math.random() * QUOTES.length)],
+      warmup:      isHanik ? getRandomItems(HANIK_DB.warmup, 7) : getRandomItems(EXERCISE_DB.warmup, 4),
+      strength:    generateStrengthBlock(config.focus),
+      metcon:      noMetcon ? null : generateMetconBlock(config.focus),
+      accessories: config.focus === 'aesthetics' ? accessories : null,
+      core:        isHanik ? [] : getRandomItems(EXERCISE_DB.core, 3),
+      swim:        (config.poolAccess && !isHanik) ? getRandomItems(EXERCISE_DB.swim, 1)[0] : null,
+      focus:       config.focus,
+    };
+    setWorkout(newWorkout);
+    setLoading(false);
+    window.scrollTo(0, 0);
+  }, [config]);
 
   const generateName = (focus) => {
     const prefixes = ["ARETE", "OLYMPUS", "TITAN", "KRONOS", "ATLAS"];
@@ -2695,17 +3129,17 @@ export default function App() {
   };
 
   // Focus Mode Handlers
-  const handleStrengthComplete = (setLogs) => {
-    console.log("Antrenman tamamlandı:", setLogs);
+  const handleStrengthComplete = useCallback((setLogs) => {
+    console.log('Antrenman tamamlandı:', setLogs);
     setFocusMode(null);
-    alert("🏆 Güç Bloku Tamamlandı! Helal olsun!");
-  };
+    toast.success('🏆 Güç Bloku Tamamlandı! Helal olsun!');
+  }, [toast]);
 
-  const handleMetconComplete = (results) => {
-    console.log("MetCon tamamlandı:", results);
+  const handleMetconComplete = useCallback((results) => {
+    console.log('MetCon tamamlandı:', results);
     setFocusMode(null);
-    alert(`🔥 ${results.rounds} tur tamamlandı!`);
-  };
+    toast.success(`🔥 ${results.rounds} tur tamamlandı! Motor gibisin.`);
+  }, [toast]);
 
   // Focus Mode Screens
   if (focusMode === 'strength' && workout?.strength) {
@@ -2722,9 +3156,16 @@ export default function App() {
       data-theme={darkMode ? 'dark' : 'light'}
     >
       <GuideModal isOpen={showGuide} onClose={() => setShowGuide(false)} />
-      <HistoryModal isOpen={showHistory} onClose={() => setShowHistory(false)} />
+      <HistoryModal
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+        toast={toast}
+        setConfirmState={setConfirmState}
+      />
       <CalendarModal isOpen={showCalendar} onClose={() => setShowCalendar(false)} />
       <ChatModal isOpen={showChat} onClose={() => setShowChat(false)} workoutContext={workout} />
+      <ConfirmModal state={confirmState} onClose={() => setConfirmState(null)} />
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
 
       <header className={`border-b sticky top-0 z-50 shadow-xl ${darkMode ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-gray-200 shadow-gray-200/80'}`}>
         <div className="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
@@ -2831,9 +3272,25 @@ export default function App() {
                 <div className="text-center mb-4 pt-1">
                   <h2 className={`text-base font-black uppercase tracking-tight ${darkMode ? 'text-white' : 'text-gray-800'}`}>{workout.name}</h2>
                   <p className="text-[11px] text-amber-500/80 italic mt-1">"{workout.quote}"</p>
-                  <button onClick={() => setShowChat(true)} className="mt-2 inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full text-[10px] text-amber-400 hover:bg-amber-500/20 transition-all">
-                    <Sparkles size={9} /> Kahine Sor
-                  </button>
+                  {(() => {
+                    const todayKey = new Date().toISOString().split('T')[0];
+                    const saved = JSON.parse(localStorage.getItem('recoveryScores') || '{}');
+                    const scores = saved[todayKey];
+                    if (!scores) return null;
+                    const readiness = Math.round(((scores.sleep + scores.energy + (6 - scores.soreness)) / 3) * 20);
+                    const color = readiness >= 70 ? '#22c55e' : readiness >= 40 ? '#f59e0b' : '#ef4444';
+                    const label = readiness >= 70 ? 'Hazır' : readiness >= 40 ? 'Orta' : 'Düşük';
+                    return (
+                      <div className="inline-flex items-center gap-1.5 mt-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold" style={{ color, borderColor: color + '40', background: color + '18' }}>
+                        <span style={{ color }}>●</span> Toparlanma: {readiness}% · {label}
+                      </div>
+                    );
+                  })()}
+                  <div className="mt-2">
+                    <button onClick={() => setShowChat(true)} className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full text-[10px] text-amber-400 hover:bg-amber-500/20 transition-all">
+                      <Sparkles size={9} /> Kahine Sor
+                    </button>
+                  </div>
                 </div>
 
                 <SectionCard title="Hazırlık" subTitle="Warm-Up" icon={RefreshCw} number={1}>
@@ -3037,6 +3494,11 @@ export default function App() {
           </div>
         )}
 
+        {/* ─── TOPARLANMA TAB ─── */}
+        {activeTab === 'recovery' && (
+          <RecoveryCheckIn toast={toast} darkMode={darkMode} />
+        )}
+
         {/* ─── AYARLAR TAB ─── */}
         {activeTab === 'settings' && (
           <div className="space-y-3">
@@ -3163,6 +3625,17 @@ export default function App() {
           >
             <Calendar size={22} />
             <span className="text-[10px] font-semibold tracking-wide">Takvim</span>
+          </button>
+
+          {/* Toparlanma */}
+          <button
+            onClick={() => setActiveTab('recovery')}
+            className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${
+              activeTab === 'recovery' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            <Heart size={22} />
+            <span className="text-[10px] font-semibold tracking-wide">Toparlanma</span>
           </button>
 
           {/* Ayarlar */}
