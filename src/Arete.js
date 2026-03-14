@@ -3,6 +3,7 @@ import { Dumbbell, Timer, Flame, Waves, Activity, AlertCircle, RefreshCw, CheckC
 import HANIK_DB from './hanikData';
 import { BESLENME_DB } from './beslenmeData';
 import { getExerciseImageUrl, getYouTubeSearchUrl } from './data/exerciseImages';
+import { CALISTHENICS_DB, LEVEL_CONFIG, GOAL_CATEGORY_MAP } from './data/calisthenicsData';
 import { useToast } from './hooks/useToast';
 import { ToastContainer } from './components/ui/Toast';
 import ConfirmModal from './components/ui/ConfirmModal';
@@ -367,24 +368,24 @@ const GuideModal = ({ isOpen, onClose }) => {
 
 // Focus → kas bölgesi etiketi eşlemesi
 const focusMuscleLabel = {
-  gvt:             ['Bacak', 'Karın'],
-  gvt_legs:        ['Bacak', 'Karın'],
-  gvt_push:        ['Göğüs', 'Sırt', 'Omuz'],
-  gvt_pull:        ['Göğüs', 'Sırt', 'Omuz'],
-  ovt:             ['Göğüs', 'Sırt', 'İtiş', 'Çekiş'],
-  ovt_push:        ['Göğüs', 'Omuz', 'Triseps'],
-  ovt_pull:        ['Bacak', 'Alt Sırt', 'Hamstring'],
+  gvt: ['Bacak', 'Karın'],
+  gvt_legs: ['Bacak', 'Karın'],
+  gvt_push: ['Göğüs', 'Sırt', 'Omuz'],
+  gvt_pull: ['Göğüs', 'Sırt', 'Omuz'],
+  ovt: ['Göğüs', 'Sırt', 'İtiş', 'Çekiş'],
+  ovt_push: ['Göğüs', 'Omuz', 'Triseps'],
+  ovt_pull: ['Bacak', 'Alt Sırt', 'Hamstring'],
   hanik_push_legs: ['Göğüs', 'Omuz', 'Bacak'],
   hanik_pull_core: ['Sırt', 'Biseps', 'Karın'],
-  fbb:             ['Full Body', 'Core'],
-  engine:          ['Kondisyon', 'Full Body'],
-  aesthetics:      ['Göğüs', 'Sırt', 'Kol'],
-  hybrid:          ['Full Body'],
-  prime:           ['Güç', 'Atletizm', 'Full Body'],
-  spartan_hybrid:  ['Full Body'],
-  recovery:        ['Mobilite', 'Esneme'],
-  strength:        ['Full Body'],
-  metcon:          ['Kondisyon'],
+  fbb: ['Full Body', 'Core'],
+  engine: ['Kondisyon', 'Full Body'],
+  aesthetics: ['Göğüs', 'Sırt', 'Kol'],
+  hybrid: ['Full Body'],
+  prime: ['Güç', 'Atletizm', 'Full Body'],
+  spartan_hybrid: ['Full Body'],
+  recovery: ['Mobilite', 'Esneme'],
+  strength: ['Full Body'],
+  metcon: ['Kondisyon'],
 };
 
 const CalendarModal = ({ isOpen, onClose }) => {
@@ -817,16 +818,16 @@ const MacroSummaryCard = ({ dailyMeal, workedOutToday, darkMode }) => {
 
   const protCals = plan.p * 4;
   const carbCals = plan.k * 4;
-  const fatCals  = plan.y * 9;
+  const fatCals = plan.y * 9;
   const totalArcCals = protCals + carbCals + fatCals || 1;
 
   const GAP = CIRC * 0.015;
   const protLen = (protCals / totalArcCals) * CIRC * 0.97;
   const carbLen = (carbCals / totalArcCals) * CIRC * 0.97;
-  const fatLen  = (fatCals  / totalArcCals) * CIRC * 0.97;
+  const fatLen = (fatCals / totalArcCals) * CIRC * 0.97;
 
-  const carbOffset  = startOffset - protLen - GAP;
-  const fatOffset   = carbOffset  - carbLen - GAP;
+  const carbOffset = startOffset - protLen - GAP;
+  const fatOffset = carbOffset - carbLen - GAP;
 
   const calPct = pct(plan.cal, target.cal);
   const calColor = !dailyMeal ? '#4B5563' : calPct >= 90 ? '#22C55E' : calPct >= 60 ? '#F5A623' : '#EF4444';
@@ -966,58 +967,58 @@ const AreteLogo = ({ size = 38 }) => (
   <svg viewBox="0 0 100 100" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="ag" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stopColor="#fde68a"/>
-        <stop offset="45%" stopColor="#f59e0b"/>
-        <stop offset="100%" stopColor="#92400e"/>
+        <stop offset="0%" stopColor="#fde68a" />
+        <stop offset="45%" stopColor="#f59e0b" />
+        <stop offset="100%" stopColor="#92400e" />
       </linearGradient>
     </defs>
 
     {/* ── COLUMN SHAFT (behind barbell) ── */}
-    <rect x="42" y="34" width="16" height="52" rx="1" fill="url(#ag)"/>
+    <rect x="42" y="34" width="16" height="52" rx="1" fill="url(#ag)" />
     {/* Fluting */}
-    {[44,47,50,53,56].map(x => (
-      <line key={x} x1={x} y1="35" x2={x} y2="84" stroke="#78350f" strokeWidth="1.2" opacity="0.45"/>
+    {[44, 47, 50, 53, 56].map(x => (
+      <line key={x} x1={x} y1="35" x2={x} y2="84" stroke="#78350f" strokeWidth="1.2" opacity="0.45" />
     ))}
 
     {/* Column base */}
-    <rect x="36" y="83" width="28" height="5" rx="2" fill="url(#ag)"/>
-    <rect x="32" y="88" width="36" height="4" rx="2" fill="url(#ag)"/>
+    <rect x="36" y="83" width="28" height="5" rx="2" fill="url(#ag)" />
+    <rect x="32" y="88" width="36" height="4" rx="2" fill="url(#ag)" />
 
     {/* ── IONIC CAPITAL ── */}
     {/* Top abacus plate */}
-    <rect x="26" y="11" width="48" height="5" rx="2.5" fill="url(#ag)"/>
+    <rect x="26" y="11" width="48" height="5" rx="2.5" fill="url(#ag)" />
 
     {/* Left volute */}
     <path d="M 28 16 C 18 16 14 22 14 27 C 14 35 20 40 30 37 C 36 35 37 29 32 26 C 29 24 26 27 28 30"
-      stroke="url(#ag)" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+      stroke="url(#ag)" strokeWidth="3.5" fill="none" strokeLinecap="round" />
     {/* Left volute eye */}
-    <circle cx="28" cy="30" r="2" fill="url(#ag)"/>
+    <circle cx="28" cy="30" r="2" fill="url(#ag)" />
 
     {/* Right volute */}
     <path d="M 72 16 C 82 16 86 22 86 27 C 86 35 80 40 70 37 C 64 35 63 29 68 26 C 71 24 74 27 72 30"
-      stroke="url(#ag)" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+      stroke="url(#ag)" strokeWidth="3.5" fill="none" strokeLinecap="round" />
     {/* Right volute eye */}
-    <circle cx="72" cy="30" r="2" fill="url(#ag)"/>
+    <circle cx="72" cy="30" r="2" fill="url(#ag)" />
 
     {/* Echinus (ovolo) */}
-    <rect x="28" y="16" width="44" height="8" rx="4" fill="url(#ag)"/>
+    <rect x="28" y="16" width="44" height="8" rx="4" fill="url(#ag)" />
     {/* Neck ring */}
-    <rect x="40" y="24" width="20" height="5" rx="1.5" fill="url(#ag)"/>
-    <rect x="42" y="29" width="16" height="4" rx="1" fill="url(#ag)"/>
+    <rect x="40" y="24" width="20" height="5" rx="1.5" fill="url(#ag)" />
+    <rect x="42" y="29" width="16" height="4" rx="1" fill="url(#ag)" />
 
     {/* ── BARBELL (on top) ── */}
     {/* Bar */}
-    <rect x="16" y="44" width="68" height="12" rx="4" fill="url(#ag)"/>
+    <rect x="16" y="44" width="68" height="12" rx="4" fill="url(#ag)" />
 
     {/* Left inner disc */}
-    <rect x="5" y="35" width="12" height="30" rx="4" fill="url(#ag)"/>
+    <rect x="5" y="35" width="12" height="30" rx="4" fill="url(#ag)" />
     {/* Left outer disc */}
-    <rect x="-1" y="39" width="7" height="22" rx="3" fill="url(#ag)"/>
+    <rect x="-1" y="39" width="7" height="22" rx="3" fill="url(#ag)" />
 
     {/* Right inner disc */}
-    <rect x="83" y="35" width="12" height="30" rx="4" fill="url(#ag)"/>
+    <rect x="83" y="35" width="12" height="30" rx="4" fill="url(#ag)" />
     {/* Right outer disc */}
-    <rect x="94" y="39" width="7" height="22" rx="3" fill="url(#ag)"/>
+    <rect x="94" y="39" width="7" height="22" rx="3" fill="url(#ag)" />
   </svg>
 );
 
@@ -1247,17 +1248,17 @@ const MuscleDiagramBack = ({ exercise }) => {
 const MUSCLE_LABELS = { chest: 'Göğüs', shoulder: 'Omuz', triceps: 'Triseps', back: 'Sırt', biceps: 'Biseps', quads: 'Quads', hamstrings: 'Hamstring', glutes: 'Glut', abs: 'Karın', lowerback: 'Alt Sırt' };
 
 const RPE_CONFIG = {
-  6:  { label: 'Çok Kolay',  color: '#60a5fa', bg: 'rgba(96,165,250,0.12)',  border: 'rgba(96,165,250,0.3)'  },
-  7:  { label: 'Optimal',    color: '#22c55e', bg: 'rgba(34,197,94,0.12)',   border: 'rgba(34,197,94,0.3)'   },
-  8:  { label: 'Zor',        color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  border: 'rgba(245,158,11,0.3)'  },
-  9:  { label: 'Çok Zor',    color: '#f97316', bg: 'rgba(249,115,22,0.12)',  border: 'rgba(249,115,22,0.3)'  },
-  10: { label: 'Maksimal',   color: '#ef4444', bg: 'rgba(239,68,68,0.12)',   border: 'rgba(239,68,68,0.3)'   },
+  6: { label: 'Çok Kolay', color: '#60a5fa', bg: 'rgba(96,165,250,0.12)', border: 'rgba(96,165,250,0.3)' },
+  7: { label: 'Optimal', color: '#22c55e', bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.3)' },
+  8: { label: 'Zor', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)' },
+  9: { label: 'Çok Zor', color: '#f97316', bg: 'rgba(249,115,22,0.12)', border: 'rgba(249,115,22,0.3)' },
+  10: { label: 'Maksimal', color: '#ef4444', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.3)' },
 };
 const TEMPO_PHASES = [
-  { key: 'ecc',  label: 'İniş',       labelEn: 'Eccentric',  pos: 0 },
-  { key: 'bot',  label: 'Alt Bekleme', labelEn: 'Bottom',    pos: 1 },
-  { key: 'con',  label: 'Kalkış',     labelEn: 'Concentric', pos: 2 },
-  { key: 'top',  label: 'Tepe Sıkış', labelEn: 'Top',        pos: 3 },
+  { key: 'ecc', label: 'İniş', labelEn: 'Eccentric', pos: 0 },
+  { key: 'bot', label: 'Alt Bekleme', labelEn: 'Bottom', pos: 1 },
+  { key: 'con', label: 'Kalkış', labelEn: 'Concentric', pos: 2 },
+  { key: 'top', label: 'Tepe Sıkış', labelEn: 'Top', pos: 3 },
 ];
 const parseTempo = (tempoStr) => {
   if (!tempoStr || tempoStr === 'Kontrollü' || tempoStr === 'Yavaş & Kontrollü') return null;
@@ -1429,7 +1430,7 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog }) =
             ];
             if (allDisplayMuscles.length === 0) return null;
             // Activation percentages — primary gets higher values, secondary lower
-            const primaryPcts  = [85, 75, 65, 55, 48];
+            const primaryPcts = [85, 75, 65, 55, 48];
             const secondaryPcts = [35, 28, 22];
             return (
               <div style={{ marginBottom: 10 }}>
@@ -1689,7 +1690,7 @@ const StrengthFocusScreen = ({ workout, onComplete, onExit }) => {
     } else {
       setReps(parseInt(targetReps) || 5);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentExIdx]);
 
   // Dinlenme zamanlayıcısı
@@ -1807,7 +1808,7 @@ const StrengthFocusScreen = ({ workout, onComplete, onExit }) => {
                 const globalIdx = workout.strength
                   .slice(0, bIdx)
                   .reduce((acc, b) => acc + b.exercises.length, 0) + eIdx;
-                const isDone   = completedSets.filter(k => k.startsWith(`${globalIdx}-`)).length >= (parseInt(ex.sets) || 5);
+                const isDone = completedSets.filter(k => k.startsWith(`${globalIdx}-`)).length >= (parseInt(ex.sets) || 5);
                 const isActive = globalIdx === currentExIdx;
                 return (
                   <div key={eIdx}
@@ -1819,7 +1820,7 @@ const StrengthFocusScreen = ({ workout, onComplete, onExit }) => {
                     }}
                   >
                     <div style={{ width: 20, height: 20, borderRadius: '50%', background: isDone ? '#22c55e' : isActive ? '#E09F3E' : '#1E3A5F', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      {isDone   && <CheckCircle size={12} color="white" />}
+                      {isDone && <CheckCircle size={12} color="white" />}
                       {isActive && !isDone && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#0D1B2A' }} />}
                     </div>
                     <div className="flex-1">
@@ -2352,9 +2353,9 @@ const MetconFocusScreen = ({ workout, onComplete, onExit }) => {
 
 
 const RECOVERY_QUESTIONS = [
-  { key: 'sleep',    emoji: '😴', label: 'Uyku Kalitesi',   lo: 'Kötü',    hi: 'Mükemmel' },
-  { key: 'energy',   emoji: '⚡', label: 'Enerji Seviyesi', lo: 'Bitik',   hi: 'Enerjik'  },
-  { key: 'soreness', emoji: '💢', label: 'Kas Ağrısı',      lo: 'Hiç yok', hi: 'Çok fazla' },
+  { key: 'sleep', emoji: '😴', label: 'Uyku Kalitesi', lo: 'Kötü', hi: 'Mükemmel' },
+  { key: 'energy', emoji: '⚡', label: 'Enerji Seviyesi', lo: 'Bitik', hi: 'Enerjik' },
+  { key: 'soreness', emoji: '💢', label: 'Kas Ağrısı', lo: 'Hiç yok', hi: 'Çok fazla' },
 ];
 const RecoveryCheckIn = ({ darkMode, toast }) => {
   const [scores, setScores] = useState(() => {
@@ -2366,7 +2367,7 @@ const RecoveryCheckIn = ({ darkMode, toast }) => {
         const today = new Date().toDateString();
         if (parsed.date === today) return parsed.scores;
       }
-    } catch (e) {}
+    } catch (e) { }
     return { sleep: 3, energy: 3, soreness: 2 };
   });
   const [saved, setSaved] = useState(() => {
@@ -2376,7 +2377,7 @@ const RecoveryCheckIn = ({ darkMode, toast }) => {
         const p = JSON.parse(s);
         return p.date === new Date().toDateString();
       }
-    } catch (e) {}
+    } catch (e) { }
     return false;
   });
   // Readiness: higher sleep + energy = good, higher soreness = bad
@@ -2385,18 +2386,18 @@ const RecoveryCheckIn = ({ darkMode, toast }) => {
   );
   const readinessColor =
     readiness >= 70 ? '#22c55e' :
-    readiness >= 45 ? '#f59e0b' :
-    '#ef4444';
+      readiness >= 45 ? '#f59e0b' :
+        '#ef4444';
   const readinessLabel =
     readiness >= 70 ? 'Hazırsın' :
-    readiness >= 45 ? 'Dikkatli Ol' :
-    'Dinlen';
+      readiness >= 45 ? 'Dikkatli Ol' :
+        'Dinlen';
   const readinessAdvice =
     readiness >= 70
       ? 'Bugün tam güç antrenman yapabilirsin. RPE 8-9 hedefle.'
       : readiness >= 45
-      ? 'Orta yoğunlukta çalış. Ağırlıkları %10 düşür, RPE 7\'de kal.'
-      : 'Bugün BFR veya Recovery antrenmanı öneriyorum. Yarın için enerji biriktir.';
+        ? 'Orta yoğunlukta çalış. Ağırlıkları %10 düşür, RPE 7\'de kal.'
+        : 'Bugün BFR veya Recovery antrenmanı öneriyorum. Yarın için enerji biriktir.';
   const handleSave = () => {
     localStorage.setItem('arete_recovery', JSON.stringify({
       date: new Date().toDateString(),
@@ -2532,9 +2533,468 @@ const RecoveryCheckIn = ({ darkMode, toast }) => {
     </div>
   );
 };
+// ─── CALISTHENICS TAB ────────────────────────────────────────
+const CalisthenicsTab = ({ darkMode, toast }) => {
+  const [search, setSearch] = useState('');
+  const [levelFilter, setLevelFilter] = useState('all');
+  const [learned, setLearned] = useState(() => getCalisthenicsLearned());
+  const [activeView, setActiveView] = useState('guide'); // 'guide' | 'workout'
+  const [expandedMove, setExpandedMove] = useState(null);
+  // Workout generator state
+  const [wLevel, setWLevel] = useState('beginner');
+  const [wGoal, setWGoal] = useState('fullbody');
+  const [generatedWorkout, setGeneratedWorkout] = useState(null);
+  const totalMoves = CALISTHENICS_DB.reduce((acc, cat) => acc + cat.moves.length, 0);
+  const learnedCount = learned.length;
+  const handleToggleLearned = (moveName) => {
+    const updated = toggleCalisthenicsLearned(moveName);
+    setLearned(updated);
+    if (updated.includes(moveName)) {
+      toast.success(`✅ "${moveName}" öğrenildi olarak işaretlendi!`);
+    }
+  };
+  // Filter moves
+  const filteredDB = CALISTHENICS_DB.map(cat => ({
+    ...cat,
+    moves: cat.moves.filter(m => {
+      const matchLevel = levelFilter === 'all' || m.level === levelFilter ||
+        (levelFilter === 'learned' && learned.includes(m.name));
+      const q = search.toLowerCase().trim();
+      const matchSearch = !q ||
+        m.name.toLowerCase().includes(q) ||
+        m.muscles.some(mu => mu.toLowerCase().includes(q)) ||
+        m.desc.toLowerCase().includes(q);
+      return matchLevel && matchSearch;
+    })
+  })).filter(cat => cat.moves.length > 0);
+  // Workout generator
+  const generateCalisthenicsWorkout = () => {
+    const allMoves = CALISTHENICS_DB.flatMap(cat => {
+      const goalCats = GOAL_CATEGORY_MAP[wGoal];
+      if (goalCats && !goalCats.includes(cat.category)) return [];
+      return cat.moves.filter(m => {
+        if (wLevel === 'beginner') return m.level === 'beginner';
+        if (wLevel === 'intermediate') return ['beginner', 'intermediate'].includes(m.level);
+        if (wLevel === 'advanced') return ['intermediate', 'advanced'].includes(m.level);
+        if (wLevel === 'elite') return ['advanced', 'elite'].includes(m.level);
+        return true;
+      });
+    });
+    const shuffle = arr => [...arr].sort(() => 0.5 - Math.random());
+    const picked = shuffle(allMoves).slice(0, 6);
+    if (picked.length === 0) {
+      toast.warning('Bu kombinasyon için yeterli hareket bulunamadı. Seviye veya hedefi değiştir.');
+      return;
+    }
+    // Group into warmup (2) + main (3) + finisher (1)
+    setGeneratedWorkout({
+      warmup: picked.slice(0, 2).map(m => ({ ...m, sets: 2, reps: '8-10', note: 'Isınma — kontrollü tempo' })),
+      main: picked.slice(2, 5).map(m => ({ ...m, sets: 3, reps: '6-8', note: 'Ana blok — form önce' })),
+      finisher: picked.slice(5, 6).map(m => ({ ...m, sets: 2, reps: 'Max', note: 'Bitirici set' })),
+    });
+  };
+  const lc = LEVEL_CONFIG;
+  return (
+    <div>
+      {/* View toggle */}
+      <div className={`flex gap-1 p-1 rounded-xl mb-4 ${darkMode ? 'bg-slate-900/60' : 'bg-gray-100'}`}>
+        {[
+          { id: 'guide', label: '📖 Rehber' },
+          { id: 'workout', label: '⚡ Antrenman Oluştur' },
+        ].map(v => (
+          <button key={v.id} onClick={() => setActiveView(v.id)}
+            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${activeView === v.id
+                ? 'bg-amber-500 text-slate-900 shadow-md'
+                : darkMode ? 'text-slate-400 hover:text-white' : 'text-gray-500 hover:text-gray-800'
+              }`}>
+            {v.label}
+          </button>
+        ))}
+      </div>
+      {/* ── GUIDE VIEW ── */}
+      {activeView === 'guide' && (
+        <>
+          {/* Progress banner */}
+          <div className={`flex items-center gap-3 p-3 rounded-xl mb-3 border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
+            <div className="flex-1">
+              <div className="flex justify-between text-[10px] mb-1">
+                <span className={darkMode ? 'text-slate-400' : 'text-gray-500'}>İlerleme</span>
+                <span style={{ color: '#f59e0b', fontWeight: 700 }}>{learnedCount}/{totalMoves}</span>
+              </div>
+              <div style={{ height: 5, background: darkMode ? '#1e293b' : '#e2e8f0', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{
+                  width: `${totalMoves > 0 ? (learnedCount / totalMoves) * 100 : 0}%`,
+                  height: '100%',
+                  background: 'linear-gradient(90deg, #92400e, #f59e0b)',
+                  borderRadius: 3,
+                  transition: 'width 0.5s ease',
+                }} />
+              </div>
+            </div>
+            <span style={{
+              fontSize: 22, fontWeight: 900, color: '#f59e0b',
+              fontFamily: 'monospace', minWidth: 40, textAlign: 'right',
+            }}>
+              {totalMoves > 0 ? Math.round((learnedCount / totalMoves) * 100) : 0}%
+            </span>
+          </div>
+          {/* Search */}
+          <div className="relative mb-3">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">🔍</span>
+            <input
+              type="text" value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Hareket, kas grubu veya anahtar kelime..."
+              className={`w-full pl-8 pr-3 py-2.5 rounded-xl text-sm outline-none border transition-colors ${darkMode
+                  ? 'bg-slate-900/80 border-slate-700/50 text-white placeholder-slate-500 focus:border-amber-500/50'
+                  : 'bg-white border-gray-200 text-gray-800 placeholder-gray-400 focus:border-amber-400'
+                }`}
+            />
+          </div>
+          {/* Level filters */}
+          <div className="flex gap-1.5 mb-4 flex-wrap">
+            {[
+              { id: 'all', label: 'Tümü' },
+              { id: 'beginner', label: 'Başlangıç' },
+              { id: 'intermediate', label: 'Orta' },
+              { id: 'advanced', label: 'İleri' },
+              { id: 'elite', label: 'Elite' },
+              { id: 'learned', label: '⭐ Öğrendim' },
+            ].map(f => (
+              <button key={f.id} onClick={() => setLevelFilter(f.id)}
+                style={{
+                  padding: '4px 12px',
+                  borderRadius: 20,
+                  fontSize: 11,
+                  fontWeight: levelFilter === f.id ? 700 : 400,
+                  border: `1px solid ${levelFilter === f.id
+                    ? (lc[f.id]?.color || '#f59e0b')
+                    : darkMode ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
+                  background: levelFilter === f.id
+                    ? (lc[f.id]?.bg || 'rgba(245,158,11,0.15)')
+                    : 'transparent',
+                  color: levelFilter === f.id
+                    ? (lc[f.id]?.color || '#f59e0b')
+                    : darkMode ? '#64748b' : '#9ca3af',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}>
+                {f.label}
+              </button>
+            ))}
+          </div>
+          {/* Move list */}
+          {filteredDB.length === 0 ? (
+            <div className="text-center py-12 text-slate-500">
+              <div className="text-4xl mb-3">🔍</div>
+              <p className="text-sm">Sonuç bulunamadı</p>
+              <p className="text-xs mt-1">Farklı bir kelime veya filtre dene</p>
+            </div>
+          ) : (
+            filteredDB.map(cat => (
+              <div key={cat.category} className="mb-6">
+                {/* Category header */}
+                <div className="flex items-center gap-3 mb-2">
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                    {cat.category}
+                  </span>
+                  <div style={{ flex: 1, height: 1, background: darkMode ? '#1e293b' : '#e2e8f0' }} />
+                </div>
+                {cat.moves.map(move => {
+                  const isLearned = learned.includes(move.name);
+                  const isExpanded = expandedMove === move.name;
+                  const levelConf = lc[move.level] || lc.beginner;
+                  return (
+                    <div key={move.name}
+                      style={{
+                        borderRadius: 12,
+                        border: `1px solid ${isLearned ? 'rgba(245,158,11,0.35)' : darkMode ? 'rgba(255,255,255,0.06)' : '#e2e8f0'}`,
+                        background: isLearned
+                          ? 'rgba(245,158,11,0.06)'
+                          : darkMode ? 'rgba(255,255,255,0.02)' : '#fff',
+                        marginBottom: 6,
+                        overflow: 'hidden',
+                        transition: 'all 0.2s',
+                      }}>
+                      {/* Move header */}
+                      <div
+                        onClick={() => setExpandedMove(isExpanded ? null : move.name)}
+                        style={{ padding: '10px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}
+                      >
+                        {/* Level dot */}
+                        <div style={{ width: 3, height: 32, borderRadius: 2, background: levelConf.color, flexShrink: 0 }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: darkMode ? '#f1f5f9' : '#1e293b' }}>
+                              {move.name}
+                            </span>
+                            {isLearned && <span style={{ fontSize: 10 }}>✓</span>}
+                          </div>
+                          <div style={{ display: 'flex', gap: 4, marginTop: 3, flexWrap: 'wrap' }}>
+                            <span style={{
+                              fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 10,
+                              background: levelConf.bg, color: levelConf.color, border: `1px solid ${levelConf.border}`,
+                              textTransform: 'uppercase', letterSpacing: '0.06em',
+                            }}>
+                              {levelConf.label}
+                            </span>
+                            {move.muscles.map(mu => (
+                              <span key={mu} style={{
+                                fontSize: 9, padding: '1px 6px', borderRadius: 10,
+                                background: darkMode ? 'rgba(255,255,255,0.05)' : '#f1f5f9',
+                                color: darkMode ? '#64748b' : '#9ca3af',
+                                border: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : '#e2e8f0'}`,
+                              }}>
+                                {mu}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <ChevronDown size={13} style={{ color: '#475569', flexShrink: 0, transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                      </div>
+                      {/* Expanded body */}
+                      {isExpanded && (
+                        <div style={{
+                          padding: '12px 14px',
+                          borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : '#f1f5f9'}`,
+                          background: darkMode ? 'rgba(0,0,0,0.2)' : '#fafafa',
+                        }}>
+                          {/* Description */}
+                          <p style={{ fontSize: 12, color: darkMode ? '#94a3b8' : '#6b7280', lineHeight: 1.7, marginBottom: 8 }}>
+                            {move.desc}
+                          </p>
+                          {/* Tip */}
+                          <div style={{
+                            padding: '8px 10px', borderRadius: 8, marginBottom: 10,
+                            background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)',
+                            fontSize: 11, color: '#f59e0b', lineHeight: 1.6,
+                          }}>
+                            💡 {move.tip}
+                          </div>
+                          {/* Progression path */}
+                          {move.progression && move.progression.length > 1 && (
+                            <div style={{ marginBottom: 10 }}>
+                              <p style={{ fontSize: 9, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+                                📈 İlerleme Yolu
+                              </p>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap', rowGap: 4 }}>
+                                {move.progression.map((step, i) => {
+                                  const isCurrent = step === move.name;
+                                  const isDone = learned.includes(step) && step !== move.name;
+                                  return (
+                                    <React.Fragment key={step}>
+                                      <span
+                                        onClick={(e) => { e.stopPropagation(); setExpandedMove(step); }}
+                                        style={{
+                                          fontSize: 10, padding: '3px 9px', borderRadius: 6, cursor: 'pointer',
+                                          fontWeight: isCurrent ? 700 : 400,
+                                          background: isCurrent ? 'rgba(245,158,11,0.15)' : isDone ? 'rgba(34,197,94,0.1)' : 'transparent',
+                                          border: `1px solid ${isCurrent ? '#f59e0b' : isDone ? '#22c55e' : darkMode ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
+                                          color: isCurrent ? '#f59e0b' : isDone ? '#22c55e' : darkMode ? '#64748b' : '#9ca3af',
+                                          transition: 'all 0.15s',
+                                        }}>
+                                        {step}
+                                      </span>
+                                      {i < move.progression.length - 1 && (
+                                        <span style={{ fontSize: 10, color: '#334155', margin: '0 2px' }}>→</span>
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                          {/* Actions */}
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            <a href={move.video} target="_blank" rel="noopener noreferrer"
+                              onClick={e => e.stopPropagation()}
+                              style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 5,
+                                padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600,
+                                background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)',
+                                color: '#ef4444', textDecoration: 'none',
+                              }}>
+                              ▶ YouTube
+                            </a>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleToggleLearned(move.name); }}
+                              style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 5,
+                                padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600,
+                                background: isLearned ? 'rgba(245,158,11,0.15)' : 'transparent',
+                                border: `1px solid ${isLearned ? '#f59e0b' : darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
+                                color: isLearned ? '#f59e0b' : darkMode ? '#64748b' : '#9ca3af',
+                                cursor: 'pointer', transition: 'all 0.2s', marginLeft: 'auto',
+                              }}>
+                              {isLearned ? '✓ Öğrendim' : '+ Öğrendim'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))
+          )}
+        </>
+      )}
+      {/* ── WORKOUT GENERATOR VIEW ── */}
+      {activeView === 'workout' && (
+        <div>
+          {/* Config */}
+          <div className={`p-4 rounded-2xl border mb-4 ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
+              Antrenman Ayarları
+            </p>
+            {/* Level */}
+            <div style={{ marginBottom: 14 }}>
+              <p style={{ fontSize: 10, color: '#64748b', marginBottom: 6 }}>Seviye</p>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {[
+                  { id: 'beginner', label: 'Başlangıç' },
+                  { id: 'intermediate', label: 'Orta' },
+                  { id: 'advanced', label: 'İleri' },
+                  { id: 'elite', label: 'Elite' },
+                ].map(l => (
+                  <button key={l.id} onClick={() => setWLevel(l.id)}
+                    style={{
+                      padding: '5px 14px', borderRadius: 20, fontSize: 11, fontWeight: wLevel === l.id ? 700 : 400,
+                      border: `1px solid ${wLevel === l.id ? (lc[l.id]?.color || '#f59e0b') : darkMode ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
+                      background: wLevel === l.id ? (lc[l.id]?.bg || 'rgba(245,158,11,0.15)') : 'transparent',
+                      color: wLevel === l.id ? (lc[l.id]?.color || '#f59e0b') : darkMode ? '#64748b' : '#9ca3af',
+                      cursor: 'pointer', transition: 'all 0.15s',
+                    }}>
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Goal */}
+            <div style={{ marginBottom: 16 }}>
+              <p style={{ fontSize: 10, color: '#64748b', marginBottom: 6 }}>Hedef</p>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {[
+                  { id: 'fullbody', label: '🏋️ Full Body' },
+                  { id: 'pull', label: '💪 Çekiş' },
+                  { id: 'push', label: '🤜 İtiş' },
+                  { id: 'core', label: '🎯 Kor' },
+                  { id: 'legs', label: '🦵 Bacak' },
+                  { id: 'bars', label: '🏗️ Par. Bar' },
+                  { id: 'balance', label: '🤸 Denge' },
+                ].map(g => (
+                  <button key={g.id} onClick={() => setWGoal(g.id)}
+                    style={{
+                      padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: wGoal === g.id ? 700 : 400,
+                      border: `1px solid ${wGoal === g.id ? '#f59e0b' : darkMode ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
+                      background: wGoal === g.id ? 'rgba(245,158,11,0.15)' : 'transparent',
+                      color: wGoal === g.id ? '#f59e0b' : darkMode ? '#64748b' : '#9ca3af',
+                      cursor: 'pointer', transition: 'all 0.15s',
+                    }}>
+                    {g.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button onClick={generateCalisthenicsWorkout}
+              className="w-full py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+              style={{ background: 'linear-gradient(135deg, #92400e, #f59e0b)', color: '#0f172a' }}>
+              ⚡ Antrenman Oluştur
+            </button>
+          </div>
+          {/* Generated workout */}
+          {generatedWorkout && (
+            <div style={{ animation: 'fadeIn 0.3s ease' }}>
+              {[
+                { key: 'warmup', title: '🔥 Isınma', color: '#60a5fa', sets: '2 set' },
+                { key: 'main', title: '💪 Ana Blok', color: '#f59e0b', sets: '3 set' },
+                { key: 'finisher', title: '🔥 Finisher', color: '#ef4444', sets: '2 set' },
+              ].map(section => (
+                <div key={section.key} style={{ marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: section.color }}>{section.title}</span>
+                    <div style={{ flex: 1, height: 1, background: darkMode ? '#1e293b' : '#e2e8f0' }} />
+                  </div>
+                  {generatedWorkout[section.key].map((move, i) => {
+                    const levelConf = lc[move.level] || lc.beginner;
+                    return (
+                      <div key={i} style={{
+                        padding: '10px 12px', borderRadius: 10, marginBottom: 6,
+                        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : '#e2e8f0'}`,
+                        background: darkMode ? 'rgba(255,255,255,0.02)' : '#fff',
+                        display: 'flex', alignItems: 'flex-start', gap: 10,
+                      }}>
+                        <div style={{ width: 3, height: 40, borderRadius: 2, background: levelConf.color, flexShrink: 0, marginTop: 2 }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: darkMode ? '#f1f5f9' : '#1e293b' }}>{move.name}</span>
+                            <span style={{
+                              fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 8,
+                              background: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.25)',
+                            }}>
+                              {move.sets}×{move.reps}
+                            </span>
+                          </div>
+                          <p style={{ fontSize: 11, color: '#64748b', lineHeight: 1.5 }}>{move.note}</p>
+                          {/* Progression hint */}
+                          {move.progression && move.progression.length > 1 && (
+                            <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: 9, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Yol:</span>
+                              {move.progression.map((step, si) => (
+                                <React.Fragment key={step}>
+                                  <span style={{
+                                    fontSize: 9,
+                                    color: step === move.name ? '#f59e0b' : learned.includes(step) ? '#22c55e' : '#475569',
+                                    fontWeight: step === move.name ? 700 : 400,
+                                  }}>
+                                    {step}
+                                  </span>
+                                  {si < move.progression.length - 1 && (
+                                    <span style={{ fontSize: 9, color: '#334155' }}>→</span>
+                                  )}
+                                </React.Fragment>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+              <button onClick={generateCalisthenicsWorkout}
+                className="w-full py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.98]"
+                style={{
+                  background: 'transparent',
+                  border: '1px solid rgba(245,158,11,0.3)',
+                  color: '#f59e0b',
+                }}>
+                🔄 Yeniden Oluştur
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Badge = ({ text, color = "bg-slate-700" }) => (
   <span className={`text-[10px] font-bold px-2 py-1 rounded border border-white/5 uppercase tracking-wider ${color} text-white ml-2 shadow-sm`}>{text}</span>
 );
+
+const getCalisthenicsLearned = () => {
+  try { return JSON.parse(localStorage.getItem('arete_cal_learned') || '[]'); }
+  catch (e) { return []; }
+};
+const toggleCalisthenicsLearned = (moveName) => {
+  const current = getCalisthenicsLearned();
+  const updated = current.includes(moveName)
+    ? current.filter(n => n !== moveName)
+    : [...current, moveName];
+  localStorage.setItem('arete_cal_learned', JSON.stringify(updated));
+  return updated;
+};
 
 // localStorage helper functions
 const loadFromStorage = (key, defaultValue) => {
@@ -2591,8 +3051,8 @@ export default function App() {
       : workedOutToday ? BESLENME_DB.anaYemek : BESLENME_DB.bowl;
     setDailyMeal({
       kahvaltilik: pick(dietMode === 'vegan' ? BESLENME_DB.vegan : BESLENME_DB.kahvaltilik),
-      tatli:       pick(dietMode === 'vegan' ? BESLENME_DB.vegan : BESLENME_DB.tatli),
-      aksam:       pick(aksamPool),
+      tatli: pick(dietMode === 'vegan' ? BESLENME_DB.vegan : BESLENME_DB.tatli),
+      aksam: pick(aksamPool),
     });
   };
 
@@ -3195,20 +3655,20 @@ export default function App() {
     const accessories = config.focus === 'aesthetics'
       ? [...getRandomItems(EXERCISE_DB.strength.push.accessory, 1), ...getRandomItems(EXERCISE_DB.fbb, 2)]
       : [];
-    const isHanik  = config.focus.startsWith('hanik_');
-    const isGVT    = config.focus.startsWith('gvt');
-    const isOVT    = config.focus.startsWith('ovt');
+    const isHanik = config.focus.startsWith('hanik_');
+    const isGVT = config.focus.startsWith('gvt');
+    const isOVT = config.focus.startsWith('ovt');
     const noMetcon = isHanik || isGVT || isOVT || config.focus === 'aesthetics' || config.focus === 'recovery';
     const newWorkout = {
-      name:        generateName(config.focus),
-      quote:       QUOTES[Math.floor(Math.random() * QUOTES.length)],
-      warmup:      isHanik ? getRandomItems(HANIK_DB.warmup, 7) : getRandomItems(EXERCISE_DB.warmup, 4),
-      strength:    generateStrengthBlock(config.focus),
-      metcon:      noMetcon ? null : generateMetconBlock(config.focus),
+      name: generateName(config.focus),
+      quote: QUOTES[Math.floor(Math.random() * QUOTES.length)],
+      warmup: isHanik ? getRandomItems(HANIK_DB.warmup, 7) : getRandomItems(EXERCISE_DB.warmup, 4),
+      strength: generateStrengthBlock(config.focus),
+      metcon: noMetcon ? null : generateMetconBlock(config.focus),
       accessories: config.focus === 'aesthetics' ? accessories : null,
-      core:        isHanik ? [] : getRandomItems(EXERCISE_DB.core, 3),
-      swim:        (config.poolAccess && !isHanik) ? getRandomItems(EXERCISE_DB.swim, 1)[0] : null,
-      focus:       config.focus,
+      core: isHanik ? [] : getRandomItems(EXERCISE_DB.core, 3),
+      swim: (config.poolAccess && !isHanik) ? getRandomItems(EXERCISE_DB.swim, 1)[0] : null,
+      focus: config.focus,
     };
     setWorkout(newWorkout);
     setLoading(false);
@@ -3262,511 +3722,527 @@ export default function App() {
 
   return (
     <ThemeContext.Provider value={darkMode}>
-    <div
-      className={`min-h-screen font-sans selection:bg-amber-500 selection:text-slate-900 pb-24 relative ${darkMode ? 'bg-slate-950 text-slate-200' : 'bg-gray-100 text-gray-800'}`}
-      data-theme={darkMode ? 'dark' : 'light'}
-    >
-      <GuideModal isOpen={showGuide} onClose={() => setShowGuide(false)} />
-      <HistoryModal
-        isOpen={showHistory}
-        onClose={() => setShowHistory(false)}
-        toast={toast}
-        setConfirmState={setConfirmState}
-      />
-      <CalendarModal isOpen={showCalendar} onClose={() => setShowCalendar(false)} />
-      <ChatModal isOpen={showChat} onClose={() => setShowChat(false)} workoutContext={workout} />
-      <ConfirmModal state={confirmState} onClose={() => setConfirmState(null)} />
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
+      <div
+        className={`min-h-screen font-sans selection:bg-amber-500 selection:text-slate-900 pb-24 relative ${darkMode ? 'bg-slate-950 text-slate-200' : 'bg-gray-100 text-gray-800'}`}
+        data-theme={darkMode ? 'dark' : 'light'}
+      >
+        <GuideModal isOpen={showGuide} onClose={() => setShowGuide(false)} />
+        <HistoryModal
+          isOpen={showHistory}
+          onClose={() => setShowHistory(false)}
+          toast={toast}
+          setConfirmState={setConfirmState}
+        />
+        <CalendarModal isOpen={showCalendar} onClose={() => setShowCalendar(false)} />
+        <ChatModal isOpen={showChat} onClose={() => setShowChat(false)} workoutContext={workout} />
+        <ConfirmModal state={confirmState} onClose={() => setConfirmState(null)} />
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
 
-      <header className={`border-b sticky top-0 z-50 shadow-xl ${darkMode ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-gray-200 shadow-gray-200/80'}`}>
-        <div className="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="flex items-center gap-2.5">
-            <div className="relative shrink-0">
-              <div className="absolute inset-0 bg-amber-500 rounded-full blur-md opacity-20"></div>
-              <AreteLogo size={38} />
+        <header className={`border-b sticky top-0 z-50 shadow-xl ${darkMode ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-gray-200 shadow-gray-200/80'}`}>
+          <div className="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div className="flex items-center gap-2.5">
+              <div className="relative shrink-0">
+                <div className="absolute inset-0 bg-amber-500 rounded-full blur-md opacity-20"></div>
+                <AreteLogo size={38} />
+              </div>
+              <div>
+                <h1 className={`text-xl font-black tracking-tighter ${darkMode ? 'text-white' : 'text-gray-900'} font-serif leading-none`}>ARETE</h1>
+                <p className="text-[8px] gradient-text font-bold tracking-[0.2em] uppercase">Philosophy of Strength</p>
+              </div>
             </div>
-            <div>
-              <h1 className={`text-xl font-black tracking-tighter ${darkMode ? 'text-white' : 'text-gray-900'} font-serif leading-none`}>ARETE</h1>
-              <p className="text-[8px] gradient-text font-bold tracking-[0.2em] uppercase">Philosophy of Strength</p>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setShowHistory(true)} className={`p-2 rounded-full ${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`} title="Geçmiş"><Timer size={18} /></button>
+              <button onClick={() => setShowGuide(true)} className={`p-2 rounded-full ${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`}><BookOpen size={18} /></button>
             </div>
           </div>
-          <div className="flex items-center gap-1">
-            <button onClick={() => setShowHistory(true)} className={`p-2 rounded-full ${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`} title="Geçmiş"><Timer size={18} /></button>
-            <button onClick={() => setShowGuide(true)} className={`p-2 rounded-full ${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`}><BookOpen size={18} /></button>
-          </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-4">
+        <main className="max-w-3xl mx-auto px-4 py-4">
 
-        {/* ─── ANTRENMAN TAB ─── */}
-        {activeTab === 'workout' && (
-          <>
-            {/* Collapsible Config Panel */}
-            <div className={`mb-4 rounded-xl border overflow-hidden ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
-              <button
-                onClick={() => setConfigOpen(p => !p)}
-                className={`w-full px-4 py-2.5 flex items-center justify-between transition-colors ${darkMode ? 'hover:bg-slate-800/30' : 'hover:bg-gray-50'}`}
-              >
-                <span className={`text-xs font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                  <Activity className="text-amber-500" size={14} /> Antrenman Ayarları
-                </span>
-                {configOpen
-                  ? <ChevronUp size={14} className="text-slate-400" />
-                  : <ChevronDown size={14} className="text-slate-400" />}
-              </button>
-              {configOpen && (
-                <div className={`px-4 pb-4 border-t ${darkMode ? 'border-slate-800/30' : 'border-gray-200'}`}>
-                  <div className="grid grid-cols-3 gap-2 mt-3 mb-3">
-                    <div>
-                      <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Hedef</label>
-                      <div className="relative">
-                        <select value={config.focus} onChange={(e) => setConfig({ ...config, focus: e.target.value })}
-                          className={`w-full border rounded-lg p-2 text-xs appearance-none focus:border-amber-500 outline-none ${darkMode ? 'bg-slate-950 border-slate-700/50 text-slate-200' : 'bg-gray-50 border-gray-300 text-gray-800'}`}>
-                          <optgroup label="⚡ Patlayıcı &amp; Kuvvet">
-                            <option value="hanik_push_legs">Hanik – Push &amp; Legs</option>
-                            <option value="hanik_pull_core">Hanik – Pull &amp; Core</option>
-                          </optgroup>
-                          <option value="hybrid">Spartan Hybrid</option>
-                          <option value="prime">Arete Prime</option>
-                          <optgroup label="GVT – 10×10">
-                            <option value="gvt">GVT – Alt Vücut (Bacak &amp; Karın)</option>
-                            <option value="gvt_push">GVT – Üst Vücut (Göğüs &amp; Sırt)</option>
-                          </optgroup>
-                          <optgroup label="OVT – Superset">
-                            <option value="ovt">OVT – Üst Vücut (İtiş &amp; Çekiş)</option>
-                            <option value="ovt_pull">OVT – Alt Vücut (Bacak &amp; Alt Sırt)</option>
-                          </optgroup>
-                          <option value="fbb">FBB - Fonksiyonel</option>
-                          <option value="engine">Engine - MetCon</option>
-                          <option value="recovery">Recovery</option>
-                          <optgroup label="Klasik">
-                            <option value="aesthetics">Aesthetics</option>
-                            <option value="strength">Strength</option>
-                            <option value="metcon">Endurance</option>
-                          </optgroup>
-                        </select>
-                        <ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={11} />
+          {/* ─── ANTRENMAN TAB ─── */}
+          {activeTab === 'workout' && (
+            <>
+              {/* Collapsible Config Panel */}
+              <div className={`mb-4 rounded-xl border overflow-hidden ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
+                <button
+                  onClick={() => setConfigOpen(p => !p)}
+                  className={`w-full px-4 py-2.5 flex items-center justify-between transition-colors ${darkMode ? 'hover:bg-slate-800/30' : 'hover:bg-gray-50'}`}
+                >
+                  <span className={`text-xs font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    <Activity className="text-amber-500" size={14} /> Antrenman Ayarları
+                  </span>
+                  {configOpen
+                    ? <ChevronUp size={14} className="text-slate-400" />
+                    : <ChevronDown size={14} className="text-slate-400" />}
+                </button>
+                {configOpen && (
+                  <div className={`px-4 pb-4 border-t ${darkMode ? 'border-slate-800/30' : 'border-gray-200'}`}>
+                    <div className="grid grid-cols-3 gap-2 mt-3 mb-3">
+                      <div>
+                        <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Hedef</label>
+                        <div className="relative">
+                          <select value={config.focus} onChange={(e) => setConfig({ ...config, focus: e.target.value })}
+                            className={`w-full border rounded-lg p-2 text-xs appearance-none focus:border-amber-500 outline-none ${darkMode ? 'bg-slate-950 border-slate-700/50 text-slate-200' : 'bg-gray-50 border-gray-300 text-gray-800'}`}>
+                            <optgroup label="⚡ Patlayıcı &amp; Kuvvet">
+                              <option value="hanik_push_legs">Hanik – Push &amp; Legs</option>
+                              <option value="hanik_pull_core">Hanik – Pull &amp; Core</option>
+                            </optgroup>
+                            <option value="hybrid">Spartan Hybrid</option>
+                            <option value="prime">Arete Prime</option>
+                            <optgroup label="GVT – 10×10">
+                              <option value="gvt">GVT – Alt Vücut (Bacak &amp; Karın)</option>
+                              <option value="gvt_push">GVT – Üst Vücut (Göğüs &amp; Sırt)</option>
+                            </optgroup>
+                            <optgroup label="OVT – Superset">
+                              <option value="ovt">OVT – Üst Vücut (İtiş &amp; Çekiş)</option>
+                              <option value="ovt_pull">OVT – Alt Vücut (Bacak &amp; Alt Sırt)</option>
+                            </optgroup>
+                            <option value="fbb">FBB - Fonksiyonel</option>
+                            <option value="engine">Engine - MetCon</option>
+                            <option value="recovery">Recovery</option>
+                            <optgroup label="Klasik">
+                              <option value="aesthetics">Aesthetics</option>
+                              <option value="strength">Strength</option>
+                              <option value="metcon">Endurance</option>
+                            </optgroup>
+                          </select>
+                          <ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={11} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Süre</label>
+                        <div className="relative">
+                          <select value={config.duration} onChange={(e) => setConfig({ ...config, duration: e.target.value })}
+                            className={`w-full border rounded-lg p-2 text-xs appearance-none focus:border-amber-500 outline-none ${darkMode ? 'bg-slate-950 border-slate-700/50 text-slate-200' : 'bg-gray-50 border-gray-300 text-gray-800'}`}>
+                            <option value="45">45 dk</option>
+                            <option value="60">60 dk</option>
+                            <option value="90">90 dk</option>
+                          </select>
+                          <ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={11} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Havuz</label>
+                        <button
+                          onClick={() => setConfig({ ...config, poolAccess: !config.poolAccess })}
+                          className={`w-full p-2 rounded-lg border flex items-center justify-center gap-1.5 transition-all text-xs ${config.poolAccess ? 'bg-blue-950/40 border-blue-500/30 text-blue-300' : darkMode ? 'bg-slate-950 border-slate-700/50 text-slate-500' : 'bg-gray-50 border-gray-300 text-gray-400'}`}>
+                          <Waves size={12} />{config.poolAccess ? <CheckCircle size={12} /> : '—'}
+                        </button>
                       </div>
                     </div>
-                    <div>
-                      <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Süre</label>
-                      <div className="relative">
-                        <select value={config.duration} onChange={(e) => setConfig({ ...config, duration: e.target.value })}
-                          className={`w-full border rounded-lg p-2 text-xs appearance-none focus:border-amber-500 outline-none ${darkMode ? 'bg-slate-950 border-slate-700/50 text-slate-200' : 'bg-gray-50 border-gray-300 text-gray-800'}`}>
-                          <option value="45">45 dk</option>
-                          <option value="60">60 dk</option>
-                          <option value="90">90 dk</option>
-                        </select>
-                        <ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={11} />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Havuz</label>
-                      <button
-                        onClick={() => setConfig({ ...config, poolAccess: !config.poolAccess })}
-                        className={`w-full p-2 rounded-lg border flex items-center justify-center gap-1.5 transition-all text-xs ${config.poolAccess ? 'bg-blue-950/40 border-blue-500/30 text-blue-300' : darkMode ? 'bg-slate-950 border-slate-700/50 text-slate-500' : 'bg-gray-50 border-gray-300 text-gray-400'}`}>
-                        <Waves size={12} />{config.poolAccess ? <CheckCircle size={12} /> : '—'}
+                    <button onClick={generateWorkout} disabled={loading}
+                      className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-2.5 rounded-lg shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm">
+                      {loading ? <RefreshCw className="animate-spin" size={15} /> : <Flame size={15} />} ANTRENMAN OLUŞTUR
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {workout && (
+                <div className="space-y-1">
+                  <div className="text-center mb-4 pt-1">
+                    <h2 className={`text-base font-black uppercase tracking-tight ${darkMode ? 'text-white' : 'text-gray-800'}`}>{workout.name}</h2>
+                    <p className="text-[11px] text-amber-500/80 italic mt-1">"{workout.quote}"</p>
+                    {(() => {
+                      const todayKey = new Date().toISOString().split('T')[0];
+                      const saved = JSON.parse(localStorage.getItem('recoveryScores') || '{}');
+                      const scores = saved[todayKey];
+                      if (!scores) return null;
+                      const readiness = Math.round(((scores.sleep + scores.energy + (6 - scores.soreness)) / 3) * 20);
+                      const color = readiness >= 70 ? '#22c55e' : readiness >= 40 ? '#f59e0b' : '#ef4444';
+                      const label = readiness >= 70 ? 'Hazır' : readiness >= 40 ? 'Orta' : 'Düşük';
+                      return (
+                        <div className="inline-flex items-center gap-1.5 mt-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold" style={{ color, borderColor: color + '40', background: color + '18' }}>
+                          <span style={{ color }}>●</span> Toparlanma: {readiness}% · {label}
+                        </div>
+                      );
+                    })()}
+                    <div className="mt-2">
+                      <button onClick={() => setShowChat(true)} className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full text-[10px] text-amber-400 hover:bg-amber-500/20 transition-all">
+                        <Sparkles size={9} /> Kahine Sor
                       </button>
                     </div>
                   </div>
-                  <button onClick={generateWorkout} disabled={loading}
-                    className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-2.5 rounded-lg shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm">
-                    {loading ? <RefreshCw className="animate-spin" size={15} /> : <Flame size={15} />} ANTRENMAN OLUŞTUR
-                  </button>
-                </div>
-              )}
-            </div>
 
-            {workout && (
-              <div className="space-y-1">
-                <div className="text-center mb-4 pt-1">
-                  <h2 className={`text-base font-black uppercase tracking-tight ${darkMode ? 'text-white' : 'text-gray-800'}`}>{workout.name}</h2>
-                  <p className="text-[11px] text-amber-500/80 italic mt-1">"{workout.quote}"</p>
-                  {(() => {
-                    const todayKey = new Date().toISOString().split('T')[0];
-                    const saved = JSON.parse(localStorage.getItem('recoveryScores') || '{}');
-                    const scores = saved[todayKey];
-                    if (!scores) return null;
-                    const readiness = Math.round(((scores.sleep + scores.energy + (6 - scores.soreness)) / 3) * 20);
-                    const color = readiness >= 70 ? '#22c55e' : readiness >= 40 ? '#f59e0b' : '#ef4444';
-                    const label = readiness >= 70 ? 'Hazır' : readiness >= 40 ? 'Orta' : 'Düşük';
-                    return (
-                      <div className="inline-flex items-center gap-1.5 mt-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold" style={{ color, borderColor: color + '40', background: color + '18' }}>
-                        <span style={{ color }}>●</span> Toparlanma: {readiness}% · {label}
-                      </div>
-                    );
-                  })()}
-                  <div className="mt-2">
-                    <button onClick={() => setShowChat(true)} className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full text-[10px] text-amber-400 hover:bg-amber-500/20 transition-all">
-                      <Sparkles size={9} /> Kahine Sor
-                    </button>
-                  </div>
-                </div>
-
-                <SectionCard title="Hazırlık" subTitle="Warm-Up" icon={RefreshCw} number={1}>
-                  {workout.warmup.map((item, idx) => (
-                    <ExerciseItem key={idx} exercise={item} onLogUpdate={handleLogUpdate} currentLog={logs[item.name]} />
-                  ))}
-                </SectionCard>
-
-                <SectionCard
-                  title="Güç Bloku"
-                  subTitle={config.focus === 'prime' ? 'Prime' : config.focus.includes('gvt') ? 'GVT 10×10' : config.focus.includes('ovt') ? 'OVT Superset' : 'Strength'}
-                  icon={config.focus === 'prime' ? Zap : Dumbbell}
-                  number={2}
-                >
-                  {workout.strength.map((block, bIdx) => (
-                    <div key={bIdx} className="mb-2 last:mb-0">
-                      <div className={`flex items-center gap-2 py-1 px-2 rounded-t border-b ${darkMode ? 'bg-slate-800/50 border-slate-700/30' : 'bg-gray-100 border-gray-200'}`}>
-                        <span className="text-amber-500 font-bold text-[10px] font-mono">{String.fromCharCode(65 + bIdx)}</span>
-                        <h4 className="text-slate-400 text-[10px] uppercase flex-1">{block.type}</h4>
-                        {block.exercises.length > 1 && <Badge text="SUPERSET" color="bg-amber-900/40 text-amber-300" />}
-                        {block.type.includes("10x10") && <Badge text="10×10" color="bg-red-900/40 text-red-200" />}
-                        {block.type.includes("CLUSTER") && <Badge text="CLUSTER" color="bg-purple-900/40 text-purple-200" />}
-                      </div>
-                      {block.exercises.map((ex, eIdx) => (
-                        <ExerciseItem key={eIdx} exercise={ex} onLogUpdate={handleLogUpdate} currentLog={logs[ex.name]} />
-                      ))}
-                    </div>
-                  ))}
-                </SectionCard>
-
-                {workout.accessories && (
-                  <SectionCard title="FBB & Aksesuar" subTitle="Functional Bodybuilding" icon={BicepsFlexed} number={3}>
-                    {workout.accessories.map((move, idx) => (
-                      <ExerciseItem key={idx} exercise={move} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />
+                  <SectionCard title="Hazırlık" subTitle="Warm-Up" icon={RefreshCw} number={1}>
+                    {workout.warmup.map((item, idx) => (
+                      <ExerciseItem key={idx} exercise={item} onLogUpdate={handleLogUpdate} currentLog={logs[item.name]} />
                     ))}
                   </SectionCard>
-                )}
 
-                {workout.metcon && workout.metcon.exercises && (
-                  <SectionCard title="Kondisyon" subTitle={workout.metcon.structure || 'MetCon'} icon={Timer} number={workout.accessories ? 4 : 3}>
-                    <div className="mb-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg flex justify-between items-center">
-                      <span className="text-amber-400 font-bold text-xs">{workout.metcon.structure}</span>
-                      <span className="text-slate-400 text-xs">{workout.metcon.rounds ? `${workout.metcon.rounds} Tur` : ''}{workout.metcon.time ? ` • ${workout.metcon.time} dk` : ''}</span>
-                    </div>
-                    {workout.metcon.exercises.map((move, idx) => (
+                  <SectionCard
+                    title="Güç Bloku"
+                    subTitle={config.focus === 'prime' ? 'Prime' : config.focus.includes('gvt') ? 'GVT 10×10' : config.focus.includes('ovt') ? 'OVT Superset' : 'Strength'}
+                    icon={config.focus === 'prime' ? Zap : Dumbbell}
+                    number={2}
+                  >
+                    {workout.strength.map((block, bIdx) => (
+                      <div key={bIdx} className="mb-2 last:mb-0">
+                        <div className={`flex items-center gap-2 py-1 px-2 rounded-t border-b ${darkMode ? 'bg-slate-800/50 border-slate-700/30' : 'bg-gray-100 border-gray-200'}`}>
+                          <span className="text-amber-500 font-bold text-[10px] font-mono">{String.fromCharCode(65 + bIdx)}</span>
+                          <h4 className="text-slate-400 text-[10px] uppercase flex-1">{block.type}</h4>
+                          {block.exercises.length > 1 && <Badge text="SUPERSET" color="bg-amber-900/40 text-amber-300" />}
+                          {block.type.includes("10x10") && <Badge text="10×10" color="bg-red-900/40 text-red-200" />}
+                          {block.type.includes("CLUSTER") && <Badge text="CLUSTER" color="bg-purple-900/40 text-purple-200" />}
+                        </div>
+                        {block.exercises.map((ex, eIdx) => (
+                          <ExerciseItem key={eIdx} exercise={ex} onLogUpdate={handleLogUpdate} currentLog={logs[ex.name]} />
+                        ))}
+                      </div>
+                    ))}
+                  </SectionCard>
+
+                  {workout.accessories && (
+                    <SectionCard title="FBB & Aksesuar" subTitle="Functional Bodybuilding" icon={BicepsFlexed} number={3}>
+                      {workout.accessories.map((move, idx) => (
+                        <ExerciseItem key={idx} exercise={move} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />
+                      ))}
+                    </SectionCard>
+                  )}
+
+                  {workout.metcon && workout.metcon.exercises && (
+                    <SectionCard title="Kondisyon" subTitle={workout.metcon.structure || 'MetCon'} icon={Timer} number={workout.accessories ? 4 : 3}>
+                      <div className="mb-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg flex justify-between items-center">
+                        <span className="text-amber-400 font-bold text-xs">{workout.metcon.structure}</span>
+                        <span className="text-slate-400 text-xs">{workout.metcon.rounds ? `${workout.metcon.rounds} Tur` : ''}{workout.metcon.time ? ` • ${workout.metcon.time} dk` : ''}</span>
+                      </div>
+                      {workout.metcon.exercises.map((move, idx) => (
+                        <ExerciseItem key={idx} exercise={move} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />
+                      ))}
+                    </SectionCard>
+                  )}
+
+                  <SectionCard title="Merkez Bölge" subTitle="Iron Core" icon={Activity} number={workout.accessories ? (workout.metcon ? 5 : 4) : (workout.metcon ? 4 : 3)}>
+                    {workout.core.map((move, idx) => (
                       <ExerciseItem key={idx} exercise={move} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />
                     ))}
                   </SectionCard>
-                )}
 
-                <SectionCard title="Merkez Bölge" subTitle="Iron Core" icon={Activity} number={workout.accessories ? (workout.metcon ? 5 : 4) : (workout.metcon ? 4 : 3)}>
-                  {workout.core.map((move, idx) => (
-                    <ExerciseItem key={idx} exercise={move} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />
-                  ))}
-                </SectionCard>
-
-                {workout.swim && (
-                  <SectionCard title="Havuz" subTitle="Hydro Recovery" icon={Waves}>
-                    <ExerciseItem exercise={workout.swim} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[workout.swim.name]} />
-                  </SectionCard>
-                )}
-
-                {/* FAB buttons – above bottom nav */}
-                <div className="fixed bottom-[80px] right-4 z-[90] flex flex-col gap-2">
-                  {workout?.strength && workout.strength.length > 0 && (
-                    <button onClick={() => setFocusMode('strength')}
-                      className={`${darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700' : 'bg-white hover:bg-gray-50 border-gray-300 shadow-md'} border hover:border-amber-500 p-3 rounded-full shadow-xl transition-all`}
-                      title="Güç Modu">
-                      <Target size={20} className="text-amber-500" />
-                    </button>
+                  {workout.swim && (
+                    <SectionCard title="Havuz" subTitle="Hydro Recovery" icon={Waves}>
+                      <ExerciseItem exercise={workout.swim} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[workout.swim.name]} />
+                    </SectionCard>
                   )}
-                  {workout?.metcon && workout.metcon.exercises && (
-                    <button onClick={() => setFocusMode('metcon')}
-                      className={`${darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700' : 'bg-white hover:bg-gray-50 border-gray-300 shadow-md'} border hover:border-amber-500 p-3 rounded-full shadow-xl transition-all`}
-                      title="Kondisyon Modu">
-                      <Timer size={20} className="text-amber-500" />
+
+                  {/* FAB buttons – above bottom nav */}
+                  <div className="fixed bottom-[80px] right-4 z-[90] flex flex-col gap-2">
+                    {workout?.strength && workout.strength.length > 0 && (
+                      <button onClick={() => setFocusMode('strength')}
+                        className={`${darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700' : 'bg-white hover:bg-gray-50 border-gray-300 shadow-md'} border hover:border-amber-500 p-3 rounded-full shadow-xl transition-all`}
+                        title="Güç Modu">
+                        <Target size={20} className="text-amber-500" />
+                      </button>
+                    )}
+                    {workout?.metcon && workout.metcon.exercises && (
+                      <button onClick={() => setFocusMode('metcon')}
+                        className={`${darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700' : 'bg-white hover:bg-gray-50 border-gray-300 shadow-md'} border hover:border-amber-500 p-3 rounded-full shadow-xl transition-all`}
+                        title="Kondisyon Modu">
+                        <Timer size={20} className="text-amber-500" />
+                      </button>
+                    )}
+                    <button onClick={handleSaveWorkout}
+                      className="bg-green-600 hover:bg-green-500 text-white p-3 rounded-full shadow-xl shadow-green-900/40 transition-all">
+                      <Save size={20} />
                     </button>
-                  )}
-                  <button onClick={handleSaveWorkout}
-                    className="bg-green-600 hover:bg-green-500 text-white p-3 rounded-full shadow-xl shadow-green-900/40 transition-all">
-                    <Save size={20} />
-                  </button>
+                  </div>
+
+                  <div className="mt-10 text-center opacity-40">
+                    <div className="w-12 h-px bg-amber-600 mx-auto mb-3"></div>
+                    <p className="text-[9px] text-slate-500 uppercase tracking-[0.3em]">Excellence is a habit</p>
+                  </div>
                 </div>
+              )}
+            </>
+          )}
 
-                <div className="mt-10 text-center opacity-40">
-                  <div className="w-12 h-px bg-amber-600 mx-auto mb-3"></div>
-                  <p className="text-[9px] text-slate-500 uppercase tracking-[0.3em]">Excellence is a habit</p>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* ─── BESLENME TAB ─── */}
-        {activeTab === 'nutrition' && (
-          <div>
-            {/* Diyet Modu Butonları */}
-            <div className="flex gap-2 mb-3">
-              <button
-                onClick={() => { setDietMode('normal'); setDailyMeal(null); }}
-                className={`flex-1 py-2 rounded-xl font-bold text-xs transition-all ${
-                  dietMode === 'normal'
-                    ? 'bg-amber-500 text-slate-900 shadow-md shadow-amber-900/30'
-                    : darkMode ? 'bg-slate-800/60 text-slate-400 border border-slate-700/50' : 'bg-gray-100 text-gray-500 border border-gray-200'
-                }`}>
-                🍳 Normal
-              </button>
-              <button
-                onClick={() => { setDietMode('vegan'); setDailyMeal(null); }}
-                className={`flex-1 py-2 rounded-xl font-bold text-xs transition-all ${
-                  dietMode === 'vegan'
-                    ? 'bg-green-500 text-white shadow-md shadow-green-900/30'
-                    : darkMode ? 'bg-slate-800/60 text-slate-400 border border-slate-700/50' : 'bg-gray-100 text-gray-500 border border-gray-200'
-                }`}>
-                🌱 Vegan
-              </button>
-            </div>
-
-            {/* Antrenman Durumu */}
-            <div className={`flex items-center justify-between p-3 rounded-xl mb-4 border ${
-              darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'
-            }`}>
-              <div>
-                <p className={`text-xs font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Bugün antrenman yaptım</p>
-                <p className="text-[9px] text-slate-500 mt-0.5">
-                  {workedOutToday
-                    ? '💪 Aktif gün — yüksek protein öğünleri'
-                    : '😴 Dinlenme günü — hafif öğünler'}
+          {/* ─── CALİSTHENİCS TAB ─── */}
+          {activeTab === 'calisthenics' && (
+            <div>
+              <div className="text-center mb-4">
+                <h2 className={`text-sm font-black uppercase tracking-widest ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  Calisthenics
+                </h2>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Başlangıçtan elite'e · {CALISTHENICS_DB.reduce((acc, cat) => acc + cat.moves.length, 0)} hareket
                 </p>
               </div>
-              <button
-                onClick={() => { setWorkedOutToday(p => !p); setDailyMeal(null); }}
-                className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 ${
-                  workedOutToday ? 'bg-amber-500' : darkMode ? 'bg-slate-700' : 'bg-gray-300'
-                }`}>
-                <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-                  workedOutToday ? 'translate-x-5' : 'translate-x-0.5'
-                }`} />
-              </button>
+              <CalisthenicsTab darkMode={darkMode} toast={toast} />
             </div>
+          )}
 
-            {/* Makro Özet Kartı */}
-            <MacroSummaryCard dailyMeal={dailyMeal} workedOutToday={workedOutToday} darkMode={darkMode} />
-
-            {/* Öğün Oluşturulmadıysa */}
-            {!dailyMeal && (
-              <div className="text-center py-14">
-                <div className="mb-5 opacity-30">
-                  <Utensils size={48} className="mx-auto text-amber-500" />
-                </div>
-                <p className={`text-sm font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Günlük Öğün Planı</p>
-                <p className="text-[11px] text-slate-500 mb-6">
-                  {dietMode === 'vegan' ? 'Vegan tarifleri' : workedOutToday ? 'Yüksek proteinli aktif gün öğünleri' : 'Dinlenme günü hafif öğünleri'}
-                </p>
+          {/* ─── BESLENME TAB ─── */}
+          {activeTab === 'nutrition' && (
+            <div>
+              {/* Diyet Modu Butonları */}
+              <div className="flex gap-2 mb-3">
                 <button
-                  onClick={generateDailyMeal}
-                  className="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-amber-900/30 active:scale-[0.97] transition-all flex items-center gap-2 mx-auto text-sm">
-                  <Utensils size={16} /> Günlük Öğün Oluştur
+                  onClick={() => { setDietMode('normal'); setDailyMeal(null); }}
+                  className={`flex-1 py-2 rounded-xl font-bold text-xs transition-all ${dietMode === 'normal'
+                      ? 'bg-amber-500 text-slate-900 shadow-md shadow-amber-900/30'
+                      : darkMode ? 'bg-slate-800/60 text-slate-400 border border-slate-700/50' : 'bg-gray-100 text-gray-500 border border-gray-200'
+                    }`}>
+                  🍳 Normal
+                </button>
+                <button
+                  onClick={() => { setDietMode('vegan'); setDailyMeal(null); }}
+                  className={`flex-1 py-2 rounded-xl font-bold text-xs transition-all ${dietMode === 'vegan'
+                      ? 'bg-green-500 text-white shadow-md shadow-green-900/30'
+                      : darkMode ? 'bg-slate-800/60 text-slate-400 border border-slate-700/50' : 'bg-gray-100 text-gray-500 border border-gray-200'
+                    }`}>
+                  🌱 Vegan
                 </button>
               </div>
-            )}
 
-            {/* Oluşturulan Öğün Planı */}
-            {dailyMeal && (
-              <div className="animate-fade-in-scale">
-                <MealSection
-                  emoji={dietMode === 'vegan' ? '🌱' : '🍳'}
-                  title="Kahvaltı / Öğle"
-                  time="12:00 - 13:00 Arası"
-                  recipes={[dailyMeal.kahvaltilik]}
-                  darkMode={darkMode}
-                />
-                <MealSection
-                  emoji={dietMode === 'vegan' ? '🌱' : '🍪'}
-                  title="Ara Öğün"
-                  time="15:00 - 16:00 Arası"
-                  recipes={[dailyMeal.tatli]}
-                  darkMode={darkMode}
-                />
-                <MealSection
-                  emoji={dietMode === 'vegan' ? '🌱' : workedOutToday ? '🍲' : '🥗'}
-                  title={workedOutToday ? 'Akşam Yemeği' : 'Akşam (Hafif)'}
-                  time="19:00 - 20:00 Arası"
-                  recipes={[dailyMeal.aksam]}
-                  darkMode={darkMode}
-                />
+              {/* Antrenman Durumu */}
+              <div className={`flex items-center justify-between p-3 rounded-xl mb-4 border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'
+                }`}>
+                <div>
+                  <p className={`text-xs font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Bugün antrenman yaptım</p>
+                  <p className="text-[9px] text-slate-500 mt-0.5">
+                    {workedOutToday
+                      ? '💪 Aktif gün — yüksek protein öğünleri'
+                      : '😴 Dinlenme günü — hafif öğünler'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => { setWorkedOutToday(p => !p); setDailyMeal(null); }}
+                  className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 ${workedOutToday ? 'bg-amber-500' : darkMode ? 'bg-slate-700' : 'bg-gray-300'
+                    }`}>
+                  <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${workedOutToday ? 'translate-x-5' : 'translate-x-0.5'
+                    }`} />
+                </button>
+              </div>
 
-                <div className="flex gap-2 mt-4">
+              {/* Makro Özet Kartı */}
+              <MacroSummaryCard dailyMeal={dailyMeal} workedOutToday={workedOutToday} darkMode={darkMode} />
+
+              {/* Öğün Oluşturulmadıysa */}
+              {!dailyMeal && (
+                <div className="text-center py-14">
+                  <div className="mb-5 opacity-30">
+                    <Utensils size={48} className="mx-auto text-amber-500" />
+                  </div>
+                  <p className={`text-sm font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Günlük Öğün Planı</p>
+                  <p className="text-[11px] text-slate-500 mb-6">
+                    {dietMode === 'vegan' ? 'Vegan tarifleri' : workedOutToday ? 'Yüksek proteinli aktif gün öğünleri' : 'Dinlenme günü hafif öğünleri'}
+                  </p>
                   <button
                     onClick={generateDailyMeal}
-                    className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-2.5 rounded-xl text-xs shadow-md active:scale-[0.97] transition-all">
-                    <RefreshCw size={13} /> Yeni Plan
+                    className="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-amber-900/30 active:scale-[0.97] transition-all flex items-center gap-2 mx-auto text-sm">
+                    <Utensils size={16} /> Günlük Öğün Oluştur
                   </button>
+                </div>
+              )}
+
+              {/* Oluşturulan Öğün Planı */}
+              {dailyMeal && (
+                <div className="animate-fade-in-scale">
+                  <MealSection
+                    emoji={dietMode === 'vegan' ? '🌱' : '🍳'}
+                    title="Kahvaltı / Öğle"
+                    time="12:00 - 13:00 Arası"
+                    recipes={[dailyMeal.kahvaltilik]}
+                    darkMode={darkMode}
+                  />
+                  <MealSection
+                    emoji={dietMode === 'vegan' ? '🌱' : '🍪'}
+                    title="Ara Öğün"
+                    time="15:00 - 16:00 Arası"
+                    recipes={[dailyMeal.tatli]}
+                    darkMode={darkMode}
+                  />
+                  <MealSection
+                    emoji={dietMode === 'vegan' ? '🌱' : workedOutToday ? '🍲' : '🥗'}
+                    title={workedOutToday ? 'Akşam Yemeği' : 'Akşam (Hafif)'}
+                    time="19:00 - 20:00 Arası"
+                    recipes={[dailyMeal.aksam]}
+                    darkMode={darkMode}
+                  />
+
+                  <div className="flex gap-2 mt-4">
+                    <button
+                      onClick={generateDailyMeal}
+                      className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-2.5 rounded-xl text-xs shadow-md active:scale-[0.97] transition-all">
+                      <RefreshCw size={13} /> Yeni Plan
+                    </button>
+                    <button
+                      onClick={() => setDailyMeal(null)}
+                      className={`px-4 py-2.5 rounded-xl font-bold text-xs transition-all ${darkMode ? 'bg-slate-800 text-slate-400 border border-slate-700/50 hover:text-white' : 'bg-gray-100 text-gray-500 border border-gray-200'
+                        }`}>
+                      Sıfırla
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ─── TOPARLANMA TAB ─── */}
+          {activeTab === 'recovery' && (
+            <RecoveryCheckIn toast={toast} darkMode={darkMode} />
+          )}
+
+          {/* ─── AYARLAR TAB ─── */}
+          {activeTab === 'settings' && (
+            <div className="space-y-3">
+              <h2 className={`text-xs font-bold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                <Target className="text-amber-500" size={14} /> Ayarlar
+              </h2>
+
+              {/* Görünüm toggle */}
+              <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Görünüm</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">{darkMode ? '🌙 Karanlık Tema' : '☀️ Aydınlık Tema'}</p>
+                  </div>
                   <button
-                    onClick={() => setDailyMeal(null)}
-                    className={`px-4 py-2.5 rounded-xl font-bold text-xs transition-all ${
-                      darkMode ? 'bg-slate-800 text-slate-400 border border-slate-700/50 hover:text-white' : 'bg-gray-100 text-gray-500 border border-gray-200'
-                    }`}>
-                    Sıfırla
+                    onClick={() => setDarkMode(p => !p)}
+                    className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${darkMode ? 'bg-amber-500' : 'bg-slate-300'}`}>
+                    <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 ${darkMode ? 'translate-x-6' : 'translate-x-0.5'}`} />
                   </button>
                 </div>
               </div>
-            )}
-          </div>
-        )}
 
-        {/* ─── TOPARLANMA TAB ─── */}
-        {activeTab === 'recovery' && (
-          <RecoveryCheckIn toast={toast} darkMode={darkMode} />
-        )}
-
-        {/* ─── AYARLAR TAB ─── */}
-        {activeTab === 'settings' && (
-          <div className="space-y-3">
-            <h2 className={`text-xs font-bold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-              <Target className="text-amber-500" size={14} /> Ayarlar
-            </h2>
-
-            {/* Görünüm toggle */}
-            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Görünüm</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">{darkMode ? '🌙 Karanlık Tema' : '☀️ Aydınlık Tema'}</p>
+              {/* Geçmiş */}
+              <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Antrenman Geçmişi</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Kaydedilen antrenmanlar</p>
+                  </div>
+                  <button onClick={() => setShowHistory(true)}
+                    className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition-colors">
+                    Görüntüle
+                  </button>
                 </div>
-                <button
-                  onClick={() => setDarkMode(p => !p)}
-                  className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${darkMode ? 'bg-amber-500' : 'bg-slate-300'}`}>
-                  <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 ${darkMode ? 'translate-x-6' : 'translate-x-0.5'}`} />
-                </button>
+              </div>
+
+              {/* Rehber */}
+              <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Antrenman Rehberi</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Metodoloji & açıklamalar</p>
+                  </div>
+                  <button onClick={() => setShowGuide(true)}
+                    className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition-colors">
+                    Aç
+                  </button>
+                </div>
+              </div>
+
+              {/* Sohbet / Kahin */}
+              <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Kahin – AI Koç</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Antrenman sorularını sor</p>
+                  </div>
+                  <button onClick={() => setShowChat(true)}
+                    className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition-colors">
+                    Aç
+                  </button>
+                </div>
+              </div>
+
+              <div className={`p-3 rounded-xl border text-center ${darkMode ? 'bg-slate-900/30 border-slate-800/30' : 'bg-gray-50 border-gray-200'}`}>
+                <p className="text-[10px] font-black text-amber-500">ARETE v2.5</p>
+                <p className="text-[9px] text-slate-500 mt-0.5">Philosophy of Strength · Excellence is a Habit</p>
               </div>
             </div>
+          )}
 
-            {/* Geçmiş */}
-            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Antrenman Geçmişi</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Kaydedilen antrenmanlar</p>
-                </div>
-                <button onClick={() => setShowHistory(true)}
-                  className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition-colors">
-                  Görüntüle
-                </button>
-              </div>
-            </div>
+        </main>
 
-            {/* Rehber */}
-            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Antrenman Rehberi</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Metodoloji & açıklamalar</p>
-                </div>
-                <button onClick={() => setShowGuide(true)}
-                  className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition-colors">
-                  Aç
-                </button>
-              </div>
-            </div>
+        {/* ─── COMPACT BOTTOM NAV ─── */}
+        <nav className={`fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-md ${darkMode ? 'bg-slate-900/96 border-slate-800/60' : 'bg-white/96 border-gray-200'}`}>
+          <div className="max-w-3xl mx-auto flex items-end relative">
 
-            {/* Sohbet / Kahin */}
-            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Kahin – AI Koç</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Antrenman sorularını sor</p>
-                </div>
-                <button onClick={() => setShowChat(true)}
-                  className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition-colors">
-                  Aç
-                </button>
-              </div>
-            </div>
-
-            <div className={`p-3 rounded-xl border text-center ${darkMode ? 'bg-slate-900/30 border-slate-800/30' : 'bg-gray-50 border-gray-200'}`}>
-              <p className="text-[10px] font-black text-amber-500">ARETE v2.5</p>
-              <p className="text-[9px] text-slate-500 mt-0.5">Philosophy of Strength · Excellence is a Habit</p>
-            </div>
-          </div>
-        )}
-
-      </main>
-
-      {/* ─── COMPACT BOTTOM NAV ─── */}
-      <nav className={`fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-md ${darkMode ? 'bg-slate-900/96 border-slate-800/60' : 'bg-white/96 border-gray-200'}`}>
-        <div className="max-w-3xl mx-auto flex items-end relative">
-
-          {/* Antrenman */}
-          <button
-            onClick={() => setActiveTab('workout')}
-            className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${
-              activeTab === 'workout' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
-            }`}
-          >
-            <Activity size={22} />
-            <span className="text-[10px] font-semibold tracking-wide">Antrenman</span>
-          </button>
-
-          {/* Beslenme */}
-          <button
-            onClick={() => setActiveTab('nutrition')}
-            className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${
-              activeTab === 'nutrition' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
-            }`}
-          >
-            <Utensils size={22} />
-            <span className="text-[10px] font-semibold tracking-wide">Beslenme</span>
-          </button>
-
-          {/* ── Futuristic AI Button (center floating) ── */}
-          <div className="relative flex flex-col items-center justify-end pb-1" style={{ width: '72px', flexShrink: 0 }}>
-            {/* Glow ring behind button */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-amber-500/20 blur-lg animate-pulse pointer-events-none" />
+            {/* Antrenman */}
             <button
-              onClick={() => setShowChat(true)}
-              className="relative bottom-4 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all duration-150"
-              style={{
-                background: 'linear-gradient(135deg, #92400e 0%, #d97706 40%, #fbbf24 70%, #f59e0b 100%)',
-                boxShadow: '0 0 0 3px rgba(245,158,11,0.25), 0 0 18px 4px rgba(217,119,6,0.45), 0 8px 24px rgba(0,0,0,0.5)',
-              }}
-              title="Kahin AI"
+              onClick={() => setActiveTab('workout')}
+              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'workout' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
+                }`}
             >
-              {/* Inner shine ring */}
-              <div className="absolute inset-1 rounded-full border border-yellow-200/30 pointer-events-none" />
-              <Sparkles size={22} className="text-slate-900 drop-shadow" />
+              <Activity size={22} />
+              <span className="text-[10px] font-semibold tracking-wide">Antrenman</span>
             </button>
-            <span className="text-[9px] font-black tracking-widest text-amber-400 -mt-3 mb-0.5" style={{ letterSpacing: '0.18em' }}>KAHİN</span>
+
+            {/* Beslenme */}
+            <button
+              onClick={() => setActiveTab('nutrition')}
+              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'nutrition' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
+                }`}
+            >
+              <Utensils size={22} />
+              <span className="text-[10px] font-semibold tracking-wide">Beslenme</span>
+            </button>
+
+            {/* Calisthenics */}
+            <button
+              onClick={() => setActiveTab('calisthenics')}
+              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'calisthenics' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
+                }`}
+            >
+              <BicepsFlexed size={22} />
+              <span className="text-[10px] font-semibold tracking-wide">Calisthenics</span>
+            </button>
+
+            {/* ── Futuristic AI Button (center floating) ── */}
+            <div className="relative flex flex-col items-center justify-end pb-1" style={{ width: '72px', flexShrink: 0 }}>
+              {/* Glow ring behind button */}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-amber-500/20 blur-lg animate-pulse pointer-events-none" />
+              <button
+                onClick={() => setShowChat(true)}
+                className="relative bottom-4 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all duration-150"
+                style={{
+                  background: 'linear-gradient(135deg, #92400e 0%, #d97706 40%, #fbbf24 70%, #f59e0b 100%)',
+                  boxShadow: '0 0 0 3px rgba(245,158,11,0.25), 0 0 18px 4px rgba(217,119,6,0.45), 0 8px 24px rgba(0,0,0,0.5)',
+                }}
+                title="Kahin AI"
+              >
+                {/* Inner shine ring */}
+                <div className="absolute inset-1 rounded-full border border-yellow-200/30 pointer-events-none" />
+                <Sparkles size={22} className="text-slate-900 drop-shadow" />
+              </button>
+              <span className="text-[9px] font-black tracking-widest text-amber-400 -mt-3 mb-0.5" style={{ letterSpacing: '0.18em' }}>KAHİN</span>
+            </div>
+
+            {/* Takvim */}
+            <button
+              onClick={() => setShowCalendar(true)}
+              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              <Calendar size={22} />
+              <span className="text-[10px] font-semibold tracking-wide">Takvim</span>
+            </button>
+
+            {/* Toparlanma */}
+            <button
+              onClick={() => setActiveTab('recovery')}
+              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'recovery' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
+                }`}
+            >
+              <Heart size={22} />
+              <span className="text-[10px] font-semibold tracking-wide">Toparlanma</span>
+            </button>
+
+            {/* Ayarlar */}
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'settings' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
+                }`}
+            >
+              <Target size={22} />
+              <span className="text-[10px] font-semibold tracking-wide">Ayarlar</span>
+            </button>
+
           </div>
-
-          {/* Takvim */}
-          <button
-            onClick={() => setShowCalendar(true)}
-            className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
-          >
-            <Calendar size={22} />
-            <span className="text-[10px] font-semibold tracking-wide">Takvim</span>
-          </button>
-
-          {/* Toparlanma */}
-          <button
-            onClick={() => setActiveTab('recovery')}
-            className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${
-              activeTab === 'recovery' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
-            }`}
-          >
-            <Heart size={22} />
-            <span className="text-[10px] font-semibold tracking-wide">Toparlanma</span>
-          </button>
-
-          {/* Ayarlar */}
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${
-              activeTab === 'settings' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
-            }`}
-          >
-            <Target size={22} />
-            <span className="text-[10px] font-semibold tracking-wide">Ayarlar</span>
-          </button>
-
-        </div>
-      </nav>
-    </div>
+        </nav>
+      </div>
     </ThemeContext.Provider>
+
+
   );
 }
-
