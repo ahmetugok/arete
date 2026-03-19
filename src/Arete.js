@@ -7,6 +7,7 @@ import { CALISTHENICS_DB, LEVEL_CONFIG, GOAL_CATEGORY_MAP } from './data/calisth
 import { useToast } from './hooks/useToast';
 import { ToastContainer } from './components/ui/Toast';
 import ConfirmModal from './components/ui/ConfirmModal';
+import { EXERCISE_DB, getImgUrl } from './data/exerciseData';
 
 // Theme context — propagates darkMode to all sub-components without prop drilling
 const ThemeContext = React.createContext(true); // default: dark
@@ -37,195 +38,7 @@ const callGemini = async (userQuery, systemInstruction) => {
 
 // --- DATA & LOGIC ---
 
-const getImgUrl = (text) => `https://placehold.co/600x400/0f172a/f59e0b?text=${encodeURIComponent(text)}&font=montserrat`;
 const getGifSearchUrl = (exerciseName) => getYouTubeSearchUrl(exerciseName);
-
-// EXPANDED EXERCISE DATABASE v5.0 - MASSIVE COMPENDIUM 
-const EXERCISE_DB = {
-  warmup: [
-    // Genel 
-    { name: "Shoulder Circles & Dislocates", sets: "1", reps: "20", description: "Bant veya havlu ile omuz çevirme. Eklemi tam tur döndür.", image: getImgUrl("Shoulder Circles") },
-    { name: "Scapula Pulls & Push-ups", sets: "1", reps: "15", description: "Sadece kürek kemiklerini kullanarak asılma ve şınav pozisyonunda itiş.", image: getImgUrl("Scapula Activations") },
-    { name: "Deep Squat Hold with Rotation", sets: "1", reps: "45sn", description: "Dip squat pozisyonunda bekle, göğsünü sırayla tavana aç.", image: getImgUrl("Deep Squat Rot") },
-    // Omurga ve Kalça 
-    { name: "Camel to Cobra", sets: "1", reps: "10", description: "Omurgayı dalgalandırarak esnet (Kedi-Deve varyasyonu).", image: getImgUrl("Camel Cobra") },
-    { name: "Lizard Stretch (L to R)", sets: "1", reps: "10", description: "Lunge pozisyonunda kalçayı yere yaklaştır, taraf değiştir.", image: getImgUrl("Lizard Stretch") },
-    { name: "90/90 Hip Switches", sets: "1", reps: "12", description: "Yerde oturarak kalçaları içe ve dışa rotasyona sok.", image: getImgUrl("90/90 Hip") },
-    { name: "Glute Bridge & Rolls", sets: "1", reps: "15", description: "Sırt üstü kalça kaldırma ve foam roller ile glute masajı.", image: getImgUrl("Glute Bridge") },
-    { name: "Butterfly Stretch", sets: "1", reps: "60sn", description: "Ayak tabanları birleşik, dizleri yanlara aç.", image: getImgUrl("Butterfly") },
-    // Aktivasyon 
-    { name: "Banded I-Y-T Raises", sets: "1", reps: "15", description: "Bant ile omuz başlarını ve sırtı aktifleştir.", image: getImgUrl("IYT Raises") },
-    { name: "Dead Bug / Core Activation", sets: "1", reps: "20", description: "Bel boşluğunu yere bas, ters kol ters bacak uzat.", image: getImgUrl("Dead Bug") },
-    { name: "Bear Crawl (Warmup Pace)", sets: "1", reps: "20m", description: "Dizler havada, eller ve ayaklar üzerinde yürü.", image: getImgUrl("Bear Crawl") }
-  ],
-  power: [
-    { name: "Hang Power Clean", description: "Diz hizasından patlayıcı çekiş ve omuzlama.", image: getImgUrl("Hang Clean") },
-    { name: "Box Jumps", description: "Maksimum yükseklik, yumuşak iniş.", image: getImgUrl("Box Jump") },
-    { name: "Medicine Ball Slams", description: "Tüm vücutla topu yere vur.", image: getImgUrl("Ball Slam") },
-    { name: "Kettlebell Snatch", description: "Tek hamlede baş üstüne.", image: getImgUrl("KB Snatch") },
-    { name: "Broad Jumps", description: "Durduğun yerden en uzağa atla.", image: getImgUrl("Broad Jump") },
-    { name: "Plyometric Push-ups", description: "Eller yerden kesilecek şekilde patlayıcı şınav.", image: getImgUrl("Plyo Pushup") },
-    { name: "Landmine Clean & Jerk", description: "Barın ucuyla omuzlama ve itiş.", image: getImgUrl("Landmine CJ") }
-  ],
-  strength: {
-    legs: {
-      compound: [
-        // Squat Varyasyonları 
-        { name: "High Bar Back Squat", description: "Bar trapezde. Tam derinlik.", image: getImgUrl("Back Squat") },
-        { name: "Front Squat", description: "Bar ön omuzda. Dik duruş, quad odaklı.", image: getImgUrl("Front Squat") },
-        { name: "Zercher Squat", description: "Bar dirsek içinde. Core ve üst sırt aktivasyonu.", image: getImgUrl("Zercher Squat") },
-        { name: "Goblet Squat", description: "Dumbbell/KB göğüste. Başlangıç ve mobilite için.", image: getImgUrl("Goblet Squat") },
-        { name: "Landmine Squat", description: "Barın ucunu tutarak squat.", image: getImgUrl("Landmine Squat") },
-        { name: "Leg Press (Deep)", description: "Ayaklar aşağıda, tam derinlik.", image: getImgUrl("Leg Press") },
-        { name: "Hack Squat", description: "Makinede quad süpürme.", image: getImgUrl("Hack Squat") },
-        // Deadlift Varyasyonları 
-        { name: "Conventional Deadlift", description: "Klasik yerden çekiş.", image: getImgUrl("Deadlift") },
-        { name: "Sumo Deadlift", description: "Geniş duruş, iç bacak ve kalça.", image: getImgUrl("Sumo DL") },
-        { name: "Trap Bar Deadlift", description: "Daha doğal tutuş, bele daha az yük.", image: getImgUrl("Trap Bar DL") }
-      ],
-      accessory: [
-        // Lunge & Unilateral 
-        { name: "Bulgarian Split Squat", description: "Arka ayak sehpada. Tek bacak gücü.", image: getImgUrl("Split Squat") },
-        { name: "Walking Lunges", description: "Uzun adımlar, arka diz yere yakın.", image: getImgUrl("Walking Lunge") },
-        { name: "Reverse Lunges", description: "Geriye adım. Diz sağlığı için güvenli.", image: getImgUrl("Reverse Lunge") },
-        { name: "Step-Ups", description: "Kutuya çıkış. Kalça odaklı.", image: getImgUrl("Step Up") },
-        { name: "Side Lunges (Cossack)", description: "Yana açıl, iç bacak esnemesi.", image: getImgUrl("Side Lunge") },
-        // Hamstring & Glute 
-        { name: "Romanian Deadlift (Barbell/DB)", description: "Dizler sabit, kalça geriye.", image: getImgUrl("RDL") },
-        { name: "Hip Thrust", description: "Sehpa destekli kalça kaldırma. Glute odaklı.", image: getImgUrl("Hip Thrust") },
-        { name: "Lying Leg Curl", description: "Arka bacak izolasyonu.", image: getImgUrl("Leg Curl") },
-        { name: "Nordic Hamstring Curl", description: "Sadece negatif veya destekli.", image: getImgUrl("Nordic Curl") },
-        { name: "Glute-Ham Raise", description: "GHD makinesinde.", image: getImgUrl("GHR") },
-        // Quad & Calf 
-        { name: "Leg Extension", description: "Tepe noktada sıkıştır.", image: getImgUrl("Leg Ext") },
-        { name: "Sissy Squats", description: "Gövde geriye, dizler ileri.", image: getImgUrl("Sissy Squat") },
-        { name: "Standing/Seated Calf Raise", description: "Tam esneme, tam parmak ucu.", image: getImgUrl("Calf Raise") },
-        { name: "Donkey Calf Raise", description: "Eşek varyasyonu, belden eğilerek.", image: getImgUrl("Donkey Calf") }
-      ]
-    },
-    push: {
-      compound: [
-        // Chest Press 
-        { name: "Barbell Bench Press", description: "Güç klasiği.", image: getImgUrl("Bench Press") },
-        { name: "Incline Bench Press", description: "Üst göğüs (Barbell veya DB).", image: getImgUrl("Incline Press") },
-        { name: "Decline Bench Press", description: "Alt göğüs.", image: getImgUrl("Decline Press") },
-        { name: "Floor Press", description: "Yerde press. Kilitlenme gücü.", image: getImgUrl("Floor Press") },
-        { name: "Weighted Dips", description: "Öne eğilerek göğüs odaklı.", image: getImgUrl("Dips") },
-        { name: "Close Grip Bench Press", description: "Dar tutuş, triceps ve iç göğüs.", image: getImgUrl("Close Grip Bench") },
-        // Shoulder Press 
-        { name: "Strict OHP (Military Press)", description: "Ayakta, barsız itiş.", image: getImgUrl("OHP") },
-        { name: "Seated DB Shoulder Press", description: "Oturarak dambıl pres.", image: getImgUrl("Seated DB Press") },
-        { name: "Push Press", description: "Bacaklardan destek alarak.", image: getImgUrl("Push Press") },
-        { name: "Landmine Press", description: "Tek kol, omuz dostu.", image: getImgUrl("Landmine Press") },
-        { name: "Handstand Push-ups", description: "Amuda kalkıp şınav (veya Pike).", image: getImgUrl("HSPU") }
-      ],
-      accessory: [
-        // Chest Isolation 
-        { name: "Cable Flys (High/Low)", description: "Kablolarla göğüs sıkıştırma.", image: getImgUrl("Cable Fly") },
-        { name: "Incline DB Fly", description: "Üst göğüs açış.", image: getImgUrl("Incline Fly") },
-        { name: "Pec Dec Machine", description: "Makine kelebek.", image: getImgUrl("Pec Dec") },
-        { name: "Landmine Flys", description: "Tek elle veya çift elle sıkıştırma.", image: getImgUrl("Landmine Fly") },
-        // Shoulder Isolation 
-        { name: "DB Lateral Raise", description: "Yana açış. Dirsekler hafif kırık.", image: getImgUrl("Lat Raise") },
-        { name: "Face Pulls", description: "Arka omuz ve rotator cuff.", image: getImgUrl("Face Pull") },
-        { name: "Upright Row", description: "Çeneye çekiş (Geniş tutuş önerilir).", image: getImgUrl("Upright Row") },
-        { name: "Arnold Press", description: "Rotasyonlu omuz presi.", image: getImgUrl("Arnold Press") },
-        { name: "Cable Front Raise", description: "Ön omuz.", image: getImgUrl("Front Raise") },
-        // Triceps 
-        { name: "Skull Crushers (Z-Bar)", description: "Alına indiriş.", image: getImgUrl("Skullcrusher") },
-        { name: "Tricep Pushdown (Rope/Bar)", description: "Kablo itiş.", image: getImgUrl("Pushdown") },
-        { name: "Overhead Tricep Extension", description: "Baş üstü (DB veya Kablo). Uzun baş için.", image: getImgUrl("Overhead Ext") },
-        { name: "Tricep Kickbacks", description: "Dambıl ile geriye itiş.", image: getImgUrl("Kickback") },
-        // Push Ups 
-        { name: "Push-ups (Weighted)", description: "Sırtta ağırlıkla şınav.", image: getImgUrl("Weighted Pushup") },
-        { name: "Diamond Push-ups", description: "Eller birleşik, triceps odaklı.", image: getImgUrl("Diamond Pushup") }
-      ]
-    },
-    pull: {
-      compound: [
-        // Vertical Pull 
-        { name: "Weighted Pull-Ups", description: "Geniş veya nötr tutuş barfiks.", image: getImgUrl("Pull Up") },
-        { name: "Chin-ups", description: "Avuç içi yüze dönük. Biceps katkılı.", image: getImgUrl("Chin Up") },
-        { name: "Lat Pulldown", description: "Göğse çekiş (Geniş/Dar/V-Bar).", image: getImgUrl("Lat Pulldown") },
-        { name: "Behind Neck Pulldown", description: "Enseye çekiş (Dikkatli yap).", image: getImgUrl("Behind Neck Pull") },
-        // Horizontal Pull 
-        { name: "Barbell Bent-Over Row", description: "Bel paralel, bara karına çek.", image: getImgUrl("BB Row") },
-        { name: "T-Bar Row", description: "Köşe bar veya makine çekişi.", image: getImgUrl("T-Bar Row") },
-        { name: "One Arm DB Row", description: "Tek kol dambıl çekiş.", image: getImgUrl("DB Row") },
-        { name: "Seated Cable Row", description: "Oturarak kablo çekiş.", image: getImgUrl("Cable Row") },
-        { name: "Meadows Row", description: "Landmine ucuyla geniş açılı çekiş.", image: getImgUrl("Meadows Row") },
-        { name: "Renegade Row", description: "Plank pozisyonunda dambıl çekiş.", image: getImgUrl("Renegade Row") },
-        { name: "Rack Pulls", description: "Dizden çekiş.", image: getImgUrl("Rack Pull") }
-      ],
-      accessory: [
-        // Back Detail 
-        { name: "Straight Arm Pulldown", description: "Kollar düz, kanat izolasyonu.", image: getImgUrl("Straight Arm") },
-        { name: "Shrugs (Barbell/DB)", description: "Omuz silkme (Trapez).", image: getImgUrl("Shrugs") },
-        { name: "Back Extensions", description: "Bel ve glute için hiperekstansiyon.", image: getImgUrl("Back Ext") },
-        { name: "Pullovers (DB/Cable)", description: "Sırt ve göğüs esnetme.", image: getImgUrl("Pullover") },
-        // Biceps 
-        { name: "Barbell Curl", description: "Klasik düz bar.", image: getImgUrl("BB Curl") },
-        { name: "Incline DB Curl", description: "Sehpada geriye yaslanarak.", image: getImgUrl("Incline Curl") },
-        { name: "Hammer Curl", description: "Çekiç tutuş (Brachialis).", image: getImgUrl("Hammer Curl") },
-        { name: "Preacher Curl", description: "Sehpa destekli izole.", image: getImgUrl("Preacher Curl") },
-        { name: "Zottman Curl", description: "Kaldırırken düz, indirirken ters tutuş.", image: getImgUrl("Zottman Curl") },
-        { name: "Spider Curl", description: "Göğüs dayalı, yerçekimine karşı.", image: getImgUrl("Spider Curl") },
-        { name: "Concentration Curl", description: "Oturarak tek kol odaklı.", image: getImgUrl("Concentration Curl") }
-      ]
-    }
-  },
-  fbb: [
-    // Marcus Filly / Fonksiyonel 
-    { name: "Filly Press", description: "Bir el rack'te beklerken diğeri press yapar.", image: getImgUrl("Filly Press"), type: "Stabilite" },
-    { name: "Z-Press", description: "Yerde bacaklar açık oturarak press.", image: getImgUrl("Z-Press"), type: "Core/Omuz" },
-    { name: "Landmine Rotations", description: "Barı gövdenle döndür (Anti-rotasyon).", image: getImgUrl("Landmine Rot"), type: "Rotasyon" },
-    { name: "Cross-Body Carry", description: "Bir el havada, bir el yanda yürü.", image: getImgUrl("Cross Carry"), type: "Taşıma" },
-    { name: "Farmers Walk", description: "Ağır yükle yürü (Çiftçi yürüyüşü).", image: getImgUrl("Farmers Walk"), type: "Grip/Core" },
-    { name: "Turkish Get Up", description: "Yerden kalkış. Tüm vücut stabilizasyonu.", image: getImgUrl("TGU"), type: "Full Body" },
-    { name: "Windmill", description: "KB havada, gövdeyi yana bük.", image: getImgUrl("Windmill"), type: "Mobility" },
-    { name: "Single Arm Ring Row", description: "Halkada tek kol çekiş + rotasyon.", image: getImgUrl("Ring Row"), type: "Anti-Rotasyon" },
-    { name: "Copenhagen Plank", description: "İç bacak (Adductor) plank.", image: getImgUrl("Copenhagen"), type: "Core" },
-    { name: "Man Maker", description: "Pushup + Row + Squat Clean + Thruster.", image: getImgUrl("Man Maker"), type: "Hybrid" },
-    { name: "Waiter's Walk", description: "Ağırlık baş üstünde tepsi taşır gibi yürü.", image: getImgUrl("Waiter Walk"), type: "Stabilite" }
-  ],
-  metcon: [
-    // Patlayıcı & Kardiyo 
-    { name: "KB American Swings", description: "Tam baş üstü.", image: getImgUrl("KB Swing") },
-    { name: "KB Russian Swings", description: "Göz hizasına kadar.", image: getImgUrl("Russian Swing") },
-    { name: "Thrusters", description: "Squat + Press. Tek akıcı hareket.", image: getImgUrl("Thruster") },
-    { name: "Box Jumps", description: "Sıçra ve tam açıl.", image: getImgUrl("Box Jump") },
-    { name: "Burpee Over Bar", description: "Yere yat, kalk, bardan atla.", image: getImgUrl("Burpee") },
-    { name: "Wall Balls", description: "Squat yap ve topu hedefe at.", image: getImgUrl("Wall Ball") },
-    { name: "Devil's Press", description: "Burpee + Çift DB Snatch.", image: getImgUrl("Devils Press") },
-    { name: "Double Unders", description: "Çift ip atlama.", image: getImgUrl("Double Under") },
-    { name: "Handstand Push-ups", description: "Amuda kalk şınav.", image: getImgUrl("HSPU") },
-    { name: "Sled Push/Pull", description: "Kızak itme veya çekme.", image: getImgUrl("Sled") },
-    { name: "Mountain Climbers", description: "Şınav pozisyonunda koş.", image: getImgUrl("Mountain Climber") },
-    { name: "Jumping Jacks", description: "Klasik yıldız sıçrama.", image: getImgUrl("Jumping Jack") },
-    { name: "Pistol Squats", description: "Tek bacak squat.", image: getImgUrl("Pistol Squat") }
-  ],
-  core: [
-    // Merkez Bölge 
-    { name: "Hollow Body Hold", description: "Muz pozisyonu.", image: getImgUrl("Hollow Hold") },
-    { name: "Pallof Press", description: "Kabloyu göğüsten ileri it (Anti-rotasyon).", image: getImgUrl("Pallof") },
-    { name: "Dragon Flags", description: "Vücudu düz tutarak in (Bruce Lee).", image: getImgUrl("Dragon Flag") },
-    { name: "Ab Wheel Rollout", description: "Tekerlek ile ileri uzan.", image: getImgUrl("Ab Wheel") },
-    { name: "Toes to Bar", description: "Ayakları bara değdir.", image: getImgUrl("T2B") },
-    { name: "L-Sit", description: "Bacaklar düz havada bekle.", image: getImgUrl("L-Sit") },
-    { name: "Russian Twist (Weighted)", description: "Ağırlıkla gövde dönüşü.", image: getImgUrl("Russian Twist") },
-    { name: "Hanging Leg Raise", description: "Asılıyken bacakları kaldır.", image: getImgUrl("Leg Raise") },
-    { name: "Landmine 180s", description: "Barı sağa sola çevir.", image: getImgUrl("Landmine 180") },
-    { name: "Wood Chops", description: "Kablo ile oduncu vuruşu.", image: getImgUrl("Wood Chop") },
-    { name: "V-Ups", description: "Mekik çakısı. El ve ayaklar ortada buluşur.", image: getImgUrl("V-Up") },
-    { name: "Plank / Side Plank", description: "Statik bekleme.", image: getImgUrl("Plank") },
-    { name: "Bicycle Crunch", description: "Dirsek dize.", image: getImgUrl("Bicycle Crunch") }
-  ],
-  swim: [
-    { name: "Pyramid Set", description: "50-100-150-100-50m.", image: getImgUrl("Swim Pyramid") },
-    { name: "Hypoxic Swim", description: "3, 5, 7 kulaçta bir nefes.", image: getImgUrl("Hypoxic") },
-    { name: "Sprint Intervals", description: "10x50m Maksimum hız.", image: getImgUrl("Sprints") }
-  ]
-};
 
 const QUOTES = [
   "Bedenin eğitilmesi, zihnin eğitilmesidir. - Arete",
@@ -479,30 +292,91 @@ const CalendarModal = ({ isOpen, onClose }) => {
 
           {/* Selected day detail */}
           {selected && (
-            <div className="mx-3 mb-4 bg-slate-800/60 border border-amber-500/20 rounded-2xl p-4 space-y-3">
+            <div className="mx-3 mb-4 rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(245,158,11,0.2)' }}>
               {selected.entries.map((entry, i) => {
                 const muscles = focusMuscleLabel[entry.focus] || ['Full Body'];
+                const logCount = Object.keys(entry.exercises || {}).length;
+                const hasLogs = logCount > 0;
+
+                // Toplam hacim
+                const volume = Object.values(entry.exercises || {}).reduce((acc, log) => {
+                  const w = parseFloat(log.weight) || 0;
+                  const r = parseInt(log.reps) || 0;
+                  return acc + w * r;
+                }, 0);
+
                 return (
-                  <div key={i} className={i > 0 ? 'border-t border-slate-700 pt-3' : ''}>
-                    <p className="text-xs text-slate-500 mb-1">{entry.date}</p>
-                    <h3 className="text-white font-bold text-sm mb-2">{entry.workoutName}</h3>
-                    <div className="flex flex-wrap gap-1">
-                      <span className="text-[9px] font-bold px-2 py-1 rounded bg-amber-500/20 text-amber-400 uppercase border border-amber-500/30">
-                        {entry.focus?.toUpperCase() || 'ANTRENMAN'}
+                  <div key={i} style={{
+                    padding: '14px 16px',
+                    background: 'rgba(15,23,42,0.8)',
+                    borderBottom: i < selected.entries.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                  }}>
+                    <p style={{ fontSize: 10, color: '#475569', marginBottom: 4 }}>{entry.date}</p>
+                    <h3 style={{ fontSize: 14, fontWeight: 800, color: '#f1f5f9', marginBottom: 8 }}>
+                      {entry.workoutName}
+                    </h3>
+
+                    {/* Kas grubu etiketleri */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
+                      <span style={{
+                        fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+                        background: 'rgba(245,158,11,0.15)', color: '#f59e0b',
+                        border: '1px solid rgba(245,158,11,0.3)',
+                        textTransform: 'uppercase', letterSpacing: '0.06em',
+                      }}>
+                        {entry.focus?.toUpperCase()}
                       </span>
                       {muscles.map(m => (
-                        <span key={m} className="text-[9px] font-bold px-2 py-1 rounded bg-slate-700 text-slate-300 uppercase">{m}</span>
+                        <span key={m} style={{
+                          fontSize: 9, padding: '2px 7px', borderRadius: 10,
+                          background: 'rgba(255,255,255,0.05)', color: '#64748b',
+                          border: '1px solid rgba(255,255,255,0.06)',
+                        }}>
+                          {m}
+                        </span>
                       ))}
                     </div>
-                    {/* Strength exercises */}
-                    {entry.workoutData?.strength?.length > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {entry.workoutData.strength.flatMap(b => b.exercises || []).slice(0, 4).map((ex, j) => (
-                          <div key={j} className="text-xs text-slate-400 flex items-center gap-1">
-                            <span className="w-1 h-1 rounded-full bg-amber-500/60 shrink-0" />
-                            {ex.name} <span className="text-slate-600 ml-auto">{ex.sets}×{ex.reps}</span>
+
+                    {/* Stats satırı */}
+                    <div style={{ display: 'flex', gap: 12, marginBottom: hasLogs ? 10 : 0 }}>
+                      {hasLogs && (
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: 16, fontWeight: 900, color: '#f59e0b', fontFamily: 'monospace' }}>{logCount}</div>
+                          <div style={{ fontSize: 8, color: '#475569', textTransform: 'uppercase' }}>Kayıt</div>
+                        </div>
+                      )}
+                      {volume > 0 && (
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: 16, fontWeight: 900, color: '#60a5fa', fontFamily: 'monospace' }}>
+                            {volume >= 1000 ? `${Math.round(volume / 100) / 10}t` : `${Math.round(volume)}kg`}
                           </div>
-                        ))}
+                          <div style={{ fontSize: 8, color: '#475569', textTransform: 'uppercase' }}>Hacim</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Egzersiz listesi */}
+                    {entry.workoutData?.strength?.length > 0 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        {entry.workoutData.strength.flatMap(b => b.exercises || []).slice(0, 5).map((ex, j) => {
+                          const log = entry.exercises?.[ex.name];
+                          return (
+                            <div key={j} style={{
+                              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                              padding: '4px 8px', borderRadius: 6,
+                              background: 'rgba(255,255,255,0.03)',
+                            }}>
+                              <span style={{ fontSize: 11, color: '#94a3b8' }}>{ex.name}</span>
+                              <div style={{ display: 'flex', gap: 6 }}>
+                                {log?.weight && <span style={{ fontSize: 11, fontFamily: 'monospace', color: '#f59e0b' }}>{log.weight}kg</span>}
+                                {log?.reps   && <span style={{ fontSize: 11, fontFamily: 'monospace', color: '#60a5fa' }}>×{log.reps}</span>}
+                                {(!log?.weight && !log?.reps) && (
+                                  <span style={{ fontSize: 10, color: '#334155' }}>{ex.sets}×{ex.reps}</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -1039,57 +913,67 @@ const MealSection = ({ emoji, title, time, recipes, darkMode }) => (
 // Egzersiz adı/kategorisine göre aktif kasları döner
 const getMuscleGroups = (exercise) => {
   const name = (exercise.name || '').toLowerCase();
-  const cat = (exercise.category || '').toLowerCase();
   const desc = (exercise.description || '').toLowerCase();
-  const combined = name + ' ' + cat + ' ' + desc;
+  const combined = name + ' ' + desc;
 
   const groups = { primary: [], secondary: [] };
 
   // GÖĞÜS
-  if (/bench|chest|pres|flye|push.up|şınav|dips|dip/.test(combined))
+  if (/bench|chest|pres|flye|push.up|şınav|dip/.test(combined))
     groups.primary.push('chest');
 
   // OMUZ
-  if (/shoulder|omuz|overhead|press|lateral|raise|military|pike/.test(combined))
+  if (/shoulder|omuz|overhead|press|lateral|raise|military|pike|jerk|snatch|clean/.test(combined))
     groups.primary.push('shoulder');
 
   // TRİSEPS
-  if (/tricep|trisep|skull|extension|dips|pushdown/.test(combined))
+  if (/tricep|trisep|skull|pushdown|kickback|extension/.test(combined))
     groups.primary.push('triceps');
 
   // SIRT (LAT)
-  if (/lat|pulldown|pull.up|chin|row|sırt|back|deadrow|gorilla|cable pull/.test(combined))
+  if (/lat|pulldown|pull.up|chin.up|row|sırt|back|rack pull|pull over/.test(combined))
     groups.primary.push('back');
 
   // BİSEPS
-  if (/bicep|bisep|curl|hammer|supination/.test(combined))
+  if (/bicep|bisep|curl|hammer|chin.up/.test(combined))
     groups.primary.push('biceps');
 
   // BACAK (QUAD)
-  if (/squat|lunge|leg press|quad|hack|goblet|front sq|pistol/.test(combined))
+  if (/squat|lunge|leg press|quad|hack|goblet|pistol|step.up|split/.test(combined))
     groups.primary.push('quads');
 
   // HAMSTRİNG
-  if (/hamstring|rdl|deadlift|romanian|nordic|leg curl|hip hinge/.test(combined))
+  if (/hamstring|rdl|deadlift|romanian|nordic|leg curl|hip hinge|good morning/.test(combined))
     groups.primary.push('hamstrings');
 
   // GLUT
-  if (/glute|hip thrust|bridge|romanian|lunge|deadlift|squat/.test(combined))
+  if (/glute|hip thrust|bridge|deadlift|squat|lunge/.test(combined))
     groups.secondary.push('glutes');
 
   // KARNI/CORE
-  if (/plank|core|ab |abs|crunch|sit.up|karın|l-sit|hollow|mountain climber|oblique/.test(combined))
+  if (/plank|core|ab |abs|crunch|sit.up|karın|l.sit|hollow|mountain|oblique|v.up|toes|dragon|rollout|pallof|twist|chop|180/.test(combined))
     groups.primary.push('abs');
 
   // ALT SIRT
-  if (/lower back|deadlift|rdl|hyperextension|good morning|alt sırt/.test(combined))
+  if (/lower back|deadlift|rdl|hyperextension|good morning|back extension/.test(combined))
     groups.secondary.push('lowerback');
 
-  // OMUZ (secondary for push)
+  // TRAPEZ (Shrug, Clean, Snatch)
+  if (/shrug|trapez|clean|snatch|upright/.test(combined))
+    groups.secondary.push('back');
+
+  // FULL BODY — taşıma, kompleks, atletik
+  if (/farmer|carry|get up|turkish|man maker|bear crawl|thruster|burpee|swing|broad jump|box jump|sled|slam|windmill|waiter/.test(combined)) {
+    groups.primary.push('full');
+  }
+
+  // OMUZ secondary for push hareketleri
   if (groups.primary.includes('chest') && !groups.primary.includes('shoulder'))
     groups.secondary.push('shoulder');
 
+  // Hiçbir şey eşleşmediyse full
   if (groups.primary.length === 0) groups.primary.push('full');
+
   return groups;
 };
 
@@ -1101,8 +985,9 @@ const MuscleDiagram = ({ exercise }) => {
   const isActive = (m) => all.includes(m) || all.includes('full');
 
   const fill = (m) => {
-    if (!isActive(m)) return '#1e293b'; // inactive = slate-800
-    return isPrimary(m) ? '#f59e0b' : '#92400e'; // amber-400 : amber-800
+    if (all.includes('full')) return '#92400e'; // full body = dim amber for all
+    if (!isActive(m)) return '#1e293b';
+    return isPrimary(m) ? '#f59e0b' : '#92400e';
   };
 
   const stroke = '#334155'; // slate-700
@@ -1192,6 +1077,7 @@ const MuscleDiagramBack = ({ exercise }) => {
   const isPrimary = (m) => muscles.primary.includes(m);
   const isActive = (m) => all.includes(m) || all.includes('full');
   const fill = (m) => {
+    if (all.includes('full')) return '#92400e'; // full body = dim amber for all
     if (!isActive(m)) return '#1e293b';
     return isPrimary(m) ? '#f59e0b' : '#92400e';
   };
@@ -1502,7 +1388,48 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog }) =
               <TempoVisualizer tempoStr={tempo} />
             </div>
           )}
-          {/* AĞIRLIK / TEKRAR giriş alanları */}
+          {/* Önceki antrenman verisi */}
+          {onLogUpdate && (() => {
+            const history = JSON.parse(localStorage.getItem('arete_history') || '[]');
+            let prevLog = null;
+            for (const entry of history) {
+              if (entry.exercises?.[exercise.name]) {
+                prevLog = entry.exercises[exercise.name];
+                break;
+              }
+            }
+            if (!prevLog?.weight) return null;
+
+            const prevWeight = parseFloat(prevLog.weight);
+            const suggestedWeight = prevWeight + 2.5;
+
+            return (
+              <div style={{
+                marginBottom: 8, padding: '6px 10px', borderRadius: 8,
+                background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.2)',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              }}>
+                <div>
+                  <span style={{ fontSize: 9, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    Son antrenman
+                  </span>
+                  <div style={{ fontSize: 12, color: '#94a3b8', fontFamily: 'monospace', marginTop: 1 }}>
+                    {prevLog.weight} kg {prevLog.reps ? `× ${prevLog.reps}` : ''}
+                    {prevLog.rpe ? <span style={{ color: '#64748b' }}> · RPE {prevLog.rpe}</span> : ''}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontSize: 9, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    Öneri
+                  </span>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#60a5fa', fontFamily: 'monospace', marginTop: 1 }}>
+                    {suggestedWeight} kg ↑
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+                    {/* AĞIRLIK / TEKRAR giriş alanları */}
           {onLogUpdate && (
             <div className={`pt-2.5 border-t ${darkMode ? 'border-slate-700/30' : 'border-gray-200'} grid grid-cols-2 gap-2 mb-3`}>
               <div>
@@ -2979,6 +2906,240 @@ const CalisthenicsTab = ({ darkMode, toast }) => {
   );
 };
 
+const WorkoutSummaryModal = ({ isOpen, onClose, workout, logs, toast, setConfirmState }) => {
+  const darkMode = React.useContext(ThemeContext);
+  if (!isOpen || !workout) return null;
+
+  // Toplam hacim hesapla
+  const totalVolume = Object.entries(logs).reduce((total, [name, log]) => {
+    const weight = parseFloat(log.weight) || 0;
+    const reps   = parseInt(log.reps) || 0;
+    // Set sayısını workout'tan bul
+    const allExercises = workout.strength?.flatMap(b => b.exercises) || [];
+    const ex = allExercises.find(e => e.name === name);
+    const sets = parseInt(ex?.sets) || 1;
+    return total + (weight * reps * sets);
+  }, 0);
+
+  const loggedCount  = Object.keys(logs).length;
+  const prExercises  = Object.entries(logs).filter(([, log]) => log.weight && parseFloat(log.weight) > 0);
+  const avgRpe       = Object.values(logs)
+    .filter(l => l.rpe)
+    .map(l => parseInt(l.rpe));
+  const rpeAvg = avgRpe.length > 0
+    ? Math.round(avgRpe.reduce((a, b) => a + b, 0) / avgRpe.length)
+    : null;
+
+  const rpeColor = !rpeAvg ? '#64748b'
+    : rpeAvg <= 7 ? '#22c55e'
+    : rpeAvg <= 8 ? '#f59e0b'
+    : '#ef4444';
+
+  // Bir sonraki antrenman önerisi
+  const nextSuggestion = (() => {
+    const focus = workout.focus;
+    const suggestions = {
+      gvt:             'Yarın üst vücut ya da dinlenme. GVT sonrası 48 saat toparlanma önerilir.',
+      gvt_push:        'Yarın çekiş (Pull) veya bacak günü. Göğüs ve omuz 48 saat dinlenmeli.',
+      gvt_pull:        'Yarın itiş (Push) veya bacak günü. Sırt ve biseps dinlenmeli.',
+      ovt:             'Yarın alt vücut veya dinlenme. OVT yoğun nöromotor yük bırakır.',
+      ovt_push:        'Yarın çekiş veya bacak günü öner.',
+      ovt_pull:        'Yarın itiş veya dinlenme günü.',
+      hanik_push_legs: 'Yarın Pull & Core günü yapabilirsin.',
+      hanik_pull_core: 'Yarın Push & Legs günü yapabilirsin.',
+      prime:           'Yarın aktif dinlenme veya Recovery modu.',
+      engine:          'Yarın güç antrenmanı. Kondisyon günü sonrası kas inşası.',
+      aesthetics:      'Yarın farklı bir split. Aynı kas grubunu arka arkaya çalıştırma.',
+      fbb:             'Yarın güç odaklı bir gün ya da dinlenme.',
+      hybrid:          'Yarın dinlenme veya hafif Recovery.',
+      recovery:        'Yarın tam güç antrenmanına hazırsın!',
+    };
+    return suggestions[focus] || 'Dinlenme günü veya farklı bir mod dene.';
+  })();
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)' }}>
+      <div className={`w-full max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl
+        ${darkMode ? 'bg-slate-900 border border-amber-500/20' : 'bg-white border border-gray-200'}`}
+        style={{ animation: 'slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1)' }}>
+
+        {/* Header */}
+        <div style={{
+          padding: '24px 20px 16px',
+          background: 'linear-gradient(135deg, rgba(146,64,14,0.3), rgba(245,158,11,0.1))',
+          borderBottom: `1px solid rgba(245,158,11,0.2)`,
+          textAlign: 'center',
+        }}>
+          <div style={{ fontSize: 40, marginBottom: 8 }}>🏆</div>
+          <h2 style={{ fontSize: 20, fontWeight: 900, color: '#f59e0b', letterSpacing: '0.05em' }}>
+            ANTRENMAN TAMAMLANDI
+          </h2>
+          <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{workout.name}</p>
+        </div>
+
+        {/* Stats grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1, background: darkMode ? '#1e293b' : '#e2e8f0' }}>
+          {[
+            { label: 'Kayıtlı Egzersiz', value: loggedCount, unit: 'adet', color: '#f59e0b' },
+            { label: 'Toplam Hacim',     value: totalVolume > 0 ? `${Math.round(totalVolume / 1000 * 10) / 10}t` : '—', unit: totalVolume > 0 ? 'ton' : '', color: '#60a5fa' },
+            { label: 'Ort. RPE',         value: rpeAvg || '—', unit: rpeAvg ? '/10' : '', color: rpeColor },
+          ].map(stat => (
+            <div key={stat.label} style={{
+              padding: '16px 12px', textAlign: 'center',
+              background: darkMode ? '#0f172a' : '#fff',
+            }}>
+              <div style={{ fontSize: 24, fontWeight: 900, color: stat.color, fontFamily: 'monospace' }}>
+                {stat.value}<span style={{ fontSize: 11, color: '#64748b' }}>{stat.unit}</span>
+              </div>
+              <div style={{ fontSize: 9, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 }}>
+                {stat.label}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* En iyi setler */}
+        {prExercises.length > 0 && (
+          <div style={{ padding: '16px 20px', borderBottom: `1px solid ${darkMode ? '#1e293b' : '#f1f5f9'}` }}>
+            <p style={{ fontSize: 10, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>
+              📊 Kaydedilen Performans
+            </p>
+            {prExercises.slice(0, 4).map(([name, log]) => (
+              <div key={name} style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '6px 0',
+                borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : '#f8fafc'}`,
+              }}>
+                <span style={{ fontSize: 12, color: darkMode ? '#94a3b8' : '#64748b', flex: 1 }}>{name}</span>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {log.weight && <span style={{ fontSize: 12, fontWeight: 700, color: '#f59e0b', fontFamily: 'monospace' }}>{log.weight} kg</span>}
+                  {log.reps   && <span style={{ fontSize: 12, color: '#60a5fa', fontFamily: 'monospace' }}>×{log.reps}</span>}
+                  {log.rpe    && <span style={{ fontSize: 11, color: rpeColor, fontFamily: 'monospace' }}>RPE {log.rpe}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Bir sonraki öneri */}
+        <div style={{
+          margin: '16px 20px',
+          padding: '12px 14px',
+          borderRadius: 10,
+          background: 'rgba(245,158,11,0.08)',
+          border: '1px solid rgba(245,158,11,0.2)',
+        }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+            ✨ Kahin — Sonraki Adım
+          </p>
+          <p style={{ fontSize: 12, color: darkMode ? '#94a3b8' : '#64748b', lineHeight: 1.6 }}>
+            {nextSuggestion}
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: 8, padding: '0 20px 24px' }}>
+          <button onClick={onClose}
+            style={{
+              flex: 1, padding: '12px 0', borderRadius: 12, fontSize: 13, fontWeight: 700,
+              background: 'transparent', border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
+              color: darkMode ? '#64748b' : '#9ca3af', cursor: 'pointer',
+            }}>
+            Kapat
+          </button>
+          <button
+            onClick={() => {
+              onClose();
+              // handleSaveWorkout'u dışarıdan tetikle
+              document.getElementById('arete-save-btn')?.click();
+            }}
+            style={{
+              flex: 2, padding: '12px 0', borderRadius: 12, fontSize: 13, fontWeight: 700,
+              background: 'linear-gradient(135deg, #16a34a, #22c55e)',
+              color: '#fff', cursor: 'pointer', border: 'none',
+            }}>
+            💾 Zaferi Kaydet
+          </button>
+        </div>
+      </div>
+      <style>{`@keyframes slideUp { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:translateY(0); } }`}</style>
+    </div>
+  );
+};
+
+const ProactiveKahin = ({ workout, darkMode }) => {
+  const [msg, setMsg] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [generated, setGenerated] = useState(false);
+
+  const generate = async () => {
+    setLoading(true);
+    const history = JSON.parse(localStorage.getItem('arete_history') || '[]');
+    const lastWorkouts = history.slice(0, 3).map(h => ({
+      name: h.workoutName,
+      focus: h.focus,
+      date: h.date,
+      exerciseCount: Object.keys(h.exercises || {}).length,
+    }));
+    const recovery = (() => {
+      try {
+        const s = localStorage.getItem('arete_recovery');
+        if (s) {
+          const p = JSON.parse(s);
+          if (p.date === new Date().toDateString()) return p.readiness;
+        }
+      } catch (e) {}
+      return null;
+    })();
+
+    const systemPrompt = `Sen ARETE uygulamasının AI koçu Kahin'sin. Kısa, motive edici, kişisel bir günlük mesaj yaz. Türkçe. Maksimum 3 cümle. Emoji kullanabilirsin.`;
+    const userPrompt = `Bugünün tarihi: ${new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}. 
+Son 3 antrenman: ${JSON.stringify(lastWorkouts)}. 
+Bugünkü toparlanma skoru: ${recovery ? `${recovery}/100` : 'bilinmiyor'}.
+Mevcut antrenman modu: ${workout?.focus || 'seçilmedi'}.
+Buna göre günlük motivasyon ve öneri mesajı yaz.`;
+
+    const response = await callGemini(userPrompt, systemPrompt);
+    setMsg(response);
+    setLoading(false);
+    setGenerated(true);
+  };
+
+  if (!generated) {
+    return (
+      <button onClick={generate} disabled={loading}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '6px 12px', borderRadius: 20,
+          background: 'rgba(245,158,11,0.08)',
+          border: '1px solid rgba(245,158,11,0.2)',
+          color: '#f59e0b', fontSize: 11, fontWeight: 600,
+          cursor: 'pointer', marginTop: 8,
+        }}>
+        {loading
+          ? <RefreshCw size={11} className="animate-spin" />
+          : <Sparkles size={11} />}
+        {loading ? 'Kahin düşünüyor...' : "Kahin'den günlük mesaj al"}
+      </button>
+    );
+  }
+
+  return (
+    <div style={{
+      marginTop: 10, padding: '10px 12px', borderRadius: 10,
+      background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)',
+    }}>
+      <p style={{ fontSize: 11, color: '#f59e0b', fontWeight: 700, marginBottom: 4 }}>✨ Kahin</p>
+      <p style={{ fontSize: 12, color: darkMode ? '#94a3b8' : '#64748b', lineHeight: 1.6 }}>{msg}</p>
+      <button onClick={() => setGenerated(false)}
+        style={{ fontSize: 9, color: '#475569', marginTop: 6, background: 'none', border: 'none', cursor: 'pointer' }}>
+        Yenile
+      </button>
+    </div>
+  );
+};
+
 const Badge = ({ text, color = "bg-slate-700" }) => (
   <span className={`text-[10px] font-bold px-2 py-1 rounded border border-white/5 uppercase tracking-wider ${color} text-white ml-2 shadow-sm`}>{text}</span>
 );
@@ -3033,6 +3194,7 @@ export default function App() {
   const [dailyMeal, setDailyMeal] = useState(() => loadFromStorage('arete_dailyMeal', null));
   const { toasts, toast, removeToast } = useToast();
   const [confirmState, setConfirmState] = useState(null);
+  const [showSummary, setShowSummary] = useState(false);
 
   // Persist state changes to localStorage
   useEffect(() => { saveToStorage('arete_config', config); }, [config]);
@@ -3294,56 +3456,7 @@ export default function App() {
     return block;
   };
 
-  // MODÜL 4: construct_MetCon_Enhanced - Gelişmiş Metabolik Kondisyon
-  const construct_MetCon_Enhanced = () => {
-    const formats = ["AMRAP", "EMOM", "CHIPPER"];
-    const selectedFormat = formats[Math.floor(Math.random() * formats.length)];
 
-    const metconMoves = getRandomItems(EXERCISE_DB.metcon, 3);
-    const powerMove = getRandomItems(EXERCISE_DB.power, 1)[0];
-    const coreMove = getRandomItems(EXERCISE_DB.core, 1)[0];
-
-    let structure = "";
-    let exercises = [];
-    let coachNote = "";
-
-    if (selectedFormat === "CHIPPER") {
-      structure = "FOR TIME (Chipper) - Time Cap: 25 Min";
-      exercises = [
-        { ...metconMoves[0], reps: 50, note: "Başla, tempo tut" },
-        { ...metconMoves[1], reps: 40, note: "Parçala: 10-10-10-10" },
-        { ...powerMove, reps: 30, note: "Patlayıcı ama kontrollü" },
-        { ...metconMoves[2], reps: 20, note: "Neredeyse bitti!" },
-        { ...coreMove, reps: 10, note: "Son hamle, bitir!" }
-      ];
-      coachNote = "Parçala ve yönet. Hepsini bir kerede yapmaya çalışma. Örn: 50 = 5x10 veya 10-15-15-10.";
-    } else if (selectedFormat === "EMOM") {
-      structure = "EMOM x 20 Dakika (4 Hareket x 5 Tur)";
-      exercises = [
-        { ...metconMoves[0], reps: "12-15", note: "Dakika 1, 5, 9, 13, 17" },
-        { ...metconMoves[1], reps: "12-15", note: "Dakika 2, 6, 10, 14, 18" },
-        { ...powerMove, reps: "8-10", note: "Dakika 3, 7, 11, 15, 19" },
-        { ...coreMove, reps: "30sn", note: "Dakika 4, 8, 12, 16, 20" }
-      ];
-      coachNote = "Her dakikanın başında ilgili hareketi yap. Kalan süre dinlenme. 45sn'den fazla sürüyorsa tekrarı azalt.";
-    } else {
-      structure = "AMRAP x 20 Dakika";
-      exercises = [
-        { ...metconMoves[0], reps: 15, note: "Her turda" },
-        { ...metconMoves[1], reps: 12, note: "Her turda" },
-        { ...powerMove, reps: 9, note: "Her turda" },
-        { ...coreMove, reps: "20 tekrar veya 30sn", note: "Her turda" }
-      ];
-      coachNote = "Sabit tempo > hızlı başlayıp yavaşlamak. İlk 5dk'yı rahat geç, son 5dk'da gaza bas.";
-    }
-
-    return {
-      type: selectedFormat,
-      structure: structure,
-      exercises: exercises,
-      coachNote: coachNote
-    };
-  };
 
   // MODÜL 5: construct_Recovery - Aktif Onarım
   const construct_Recovery = (hasPool = true) => {
@@ -3527,149 +3640,315 @@ export default function App() {
     return block;
   };
 
-  const generateStrengthBlock = (focus) => {
-    let block = [];
+  // ── Moda göre kişiselleştirilmiş ısınma ──────────────────────
+  const getWarmupForFocus = (focus, count, isHanik) => {
+    if (isHanik) return getRandomItems(HANIK_DB.warmup, Math.min(count + 3, 7));
 
-    if (focus === 'hanik_push_legs') {
-      return construct_Hanik('push_legs');
-    } else if (focus === 'hanik_pull_core') {
-      return construct_Hanik('pull_core');
-    } else if (focus === 'gvt' || focus === 'gvt_legs') {
-      return construct_GVT('lower');
-    } else if (focus === 'gvt_push' || focus === 'gvt_pull') {
-      return construct_GVT('upper');
-    } else if (focus === 'ovt' || focus === 'ovt_push') {
-      return construct_OVT('upper');
-    } else if (focus === 'ovt_pull') {
-      return construct_OVT('lower');
+    const warmupDB = EXERCISE_DB.warmup;
 
-    } else if (focus === 'fbb') {
-      // Functional Bodybuilding
-      return construct_FBB();
+    // Kategori havuzları
+    const shoulderMoves = warmupDB.filter(m =>
+      /shoulder|scapula|banded|i.y.t/i.test(m.name));
+    const hipMoves = warmupDB.filter(m =>
+      /hip|lizard|squat|butterfly|90.90|glute/i.test(m.name));
+    const spineMoves = warmupDB.filter(m =>
+      /camel|cobra|bear|dead bug/i.test(m.name));
 
+    let pool = [];
+
+    if (['gvt', 'gvt_legs', 'ovt_pull'].includes(focus)) {
+      // Bacak günü → kalça + omurga odaklı
+      pool = [...hipMoves, ...spineMoves, ...warmupDB];
+    } else if (['gvt_push', 'gvt_pull', 'ovt', 'ovt_push'].includes(focus)) {
+      // Üst vücut günü → omuz + skapula odaklı
+      pool = [...shoulderMoves, ...spineMoves, ...warmupDB];
+    } else if (focus === 'engine' || focus === 'metcon') {
+      // MetCon günü → dinamik genel
+      pool = [...spineMoves, ...hipMoves, ...warmupDB];
     } else if (focus === 'recovery') {
-      // Recovery modülü
-      return construct_Recovery(true);
-
-    } else if (focus === 'engine') {
-      // MetCon odaklı gün
-      const powerMove = getRandomItems(EXERCISE_DB.power, 1)[0];
-      block.push({
-        type: "POWER PRIMER (Kısa)",
-        exercises: [{ ...powerMove, sets: 3, reps: 5, rest: "90sn", tempo: "X0X0", note: "Isınma amaçlı." }]
-      });
-
-
-    } else if (focus === 'aesthetics') {
-      const splitType = ["Push", "Pull", "Legs"][Math.floor(Math.random() * 3)];
-
-      let exercises = [];
-      if (splitType === "Push") {
-        exercises.push({ ...getRandomItems(EXERCISE_DB.strength.push.compound, 1)[0], sets: 4, reps: "8-10" });
-        exercises.push({ ...getRandomItems(EXERCISE_DB.strength.push.accessory, 1)[0], sets: 4, reps: "12-15" });
-        exercises.push({ ...getRandomItems(EXERCISE_DB.strength.push.accessory, 1)[0], sets: 3, reps: "15-20" });
-      } else if (splitType === "Pull") {
-        exercises.push({ ...getRandomItems(EXERCISE_DB.strength.pull.compound, 1)[0], sets: 4, reps: "8-10" });
-        exercises.push({ ...getRandomItems(EXERCISE_DB.strength.pull.accessory, 1)[0], sets: 4, reps: "12" });
-        exercises.push({ ...getRandomItems(EXERCISE_DB.strength.pull.accessory, 1)[0], sets: 3, reps: "15" });
-      } else {
-        exercises.push({ ...getRandomItems(EXERCISE_DB.strength.legs.compound, 1)[0], sets: 4, reps: "8-10" });
-        exercises.push({ ...getRandomItems(EXERCISE_DB.strength.legs.accessory, 1)[0], sets: 4, reps: "12" });
-      }
-
-      block.push({
-        type: `${splitType.toUpperCase()} HYPERTROPHY`,
-        exercises: exercises
-      });
-
-    } else if (focus === 'prime') {
-      // PRIME: HYBRID ATHLETE (Power + Strength + FBB) 
-      const powerMove = getRandomItems(EXERCISE_DB.power, 1)[0];
-      const mainCompound = getRandomItems([...EXERCISE_DB.strength.legs.compound, ...EXERCISE_DB.strength.push.compound, ...EXERCISE_DB.strength.pull.compound], 1)[0];
-      const fbbMove = getRandomItems(EXERCISE_DB.fbb, 1)[0];
-
-      block.push({
-        type: "A. NEURAL ACTIVATION (POWER)",
-        exercises: [{ ...powerMove, sets: 5, reps: 3, rest: "2dk", tempo: "X0X0", note: "Maksimum patlayıcılık." }]
-      });
-      block.push({
-        type: "B. MAIN STRENGTH (CLUSTER SETS)",
-        exercises: [{ ...mainCompound, sets: 4, reps: "2-2-2 (15sn ara)", rest: "3dk", tempo: "X0X0", note: "Cluster Set: 2 tekrar yap, 15sn dinlen, 2 yap, 15sn dinlen, 2 yap. Bu 1 set." }]
-      });
-      block.push({
-        type: "C. STRUCTURAL BALANCE (FBB)",
-        exercises: [{ ...fbbMove, sets: 3, reps: "8-10/side", rest: "90sn", tempo: "3010", note: "Kaliteye odaklan." }]
-      });
-
-    } else if (focus === 'hybrid') {
-      const main = getRandomItems([...EXERCISE_DB.strength.push.compound, ...EXERCISE_DB.strength.legs.compound], 1)[0];
-      const functional = getRandomItems(EXERCISE_DB.fbb, 2);
-
-      block.push({
-        type: "HYBRID POWER",
-        exercises: [{ ...main, sets: 5, reps: 5, rest: "2dk", tempo: "X0X0" }]
-      });
-      block.push({
-        type: "FUNCTIONAL FLOW",
-        exercises: functional.map(f => ({ ...f, sets: 3, reps: 12, rest: "60sn" }))
-      });
+      // Recovery → tam mobilite
+      pool = [...hipMoves, ...spineMoves, ...shoulderMoves, ...warmupDB];
     } else {
-      const main = getRandomItems([...EXERCISE_DB.strength.push.compound, ...EXERCISE_DB.strength.legs.compound, ...EXERCISE_DB.strength.pull.compound], 1)[0];
-      block.push({ type: "MAX EFFORT", exercises: [{ ...main, sets: 5, reps: 3, rest: "3dk", tempo: "X0X0" }] });
+      // Diğer (hybrid, prime, aesthetics, fbb)
+      pool = warmupDB;
     }
 
-    return block;
+    // Tekrar olmasın
+    const unique = [...new Map(pool.map(m => [m.name, m])).values()];
+    return getRandomItems(unique, Math.min(count, unique.length));
   };
 
-  const generateMetconBlock = (focus) => {
-    // Engine mode gets enhanced MetCon
-    if (focus === 'engine') {
-      return construct_MetCon_Enhanced();
+  // ── Güç blokunu süreye göre kırp ─────────────────────────────
+  const trimStrengthByDuration = (blocks, duration) => {
+    if (duration === 90) return blocks; // 90 dk → hepsi
+    if (duration === 60) {
+      // 60 dk → max 3 blok
+      return blocks.slice(0, 3);
     }
+    // 45 dk → max 2 blok, her blokta max 1 egzersiz (superset yok)
+    return blocks.slice(0, 2).map(block => ({
+      ...block,
+      exercises: block.exercises.slice(0, 1),
+    }));
+  };
 
-    // Prime mode gets a "Finisher" style MetCon 
-    if (focus === 'prime') {
-      const finisherMove = getRandomItems(EXERCISE_DB.metcon, 2);
+  // ── MetCon süreye göre ayarla ─────────────────────────────────
+  const getMetconDuration = (duration) => {
+    if (duration === 45) return null;   // 45 dk → MetCon yok
+    if (duration === 90) return 20;     // 90 dk → 20 dk MetCon
+    return 12;                           // 60 dk → 12 dk MetCon
+  };
+
+    const generateStrengthBlock = (focus) => {
+    // Strateji tablosu — if-else zinciri yerine
+    const STRATEGIES = {
+      hanik_push_legs: () => construct_Hanik('push_legs'),
+      hanik_pull_core: () => construct_Hanik('pull_core'),
+      gvt:             () => construct_GVT('lower'),
+      gvt_legs:        () => construct_GVT('lower'),
+      gvt_push:        () => construct_GVT('upper'),
+      gvt_pull:        () => construct_GVT('upper'),
+      ovt:             () => construct_OVT('upper'),
+      ovt_push:        () => construct_OVT('upper'),
+      ovt_pull:        () => construct_OVT('lower'),
+      fbb:             () => construct_FBB(),
+      recovery:        () => construct_Recovery(true),
+
+      engine: () => {
+        const powerMove = getRandomItems(EXERCISE_DB.power, 1)[0];
+        return [{
+          type: "POWER PRIMER (Kısa)",
+          exercises: [{ ...powerMove, sets: 3, reps: 5, rest: "90sn", tempo: "X0X0", note: "Isınma amaçlı." }]
+        }];
+      },
+
+      aesthetics: () => {
+        const splitType = ["Push", "Pull", "Legs"][Math.floor(Math.random() * 3)];
+        const pools = {
+          Push: [
+            { ...getRandomItems(EXERCISE_DB.strength.push.compound, 1)[0],  sets: 4, reps: "8-10"  },
+            { ...getRandomItems(EXERCISE_DB.strength.push.accessory, 1)[0], sets: 4, reps: "12-15" },
+            { ...getRandomItems(EXERCISE_DB.strength.push.accessory, 1)[0], sets: 3, reps: "15-20" },
+          ],
+          Pull: [
+            { ...getRandomItems(EXERCISE_DB.strength.pull.compound, 1)[0],  sets: 4, reps: "8-10" },
+            { ...getRandomItems(EXERCISE_DB.strength.pull.accessory, 1)[0], sets: 4, reps: "12"   },
+            { ...getRandomItems(EXERCISE_DB.strength.pull.accessory, 1)[0], sets: 3, reps: "15"   },
+          ],
+          Legs: [
+            { ...getRandomItems(EXERCISE_DB.strength.legs.compound, 1)[0],  sets: 4, reps: "8-10" },
+            { ...getRandomItems(EXERCISE_DB.strength.legs.accessory, 1)[0], sets: 4, reps: "12"   },
+          ],
+        };
+        return [{ type: `${splitType.toUpperCase()} HYPERTROPHY`, exercises: pools[splitType] }];
+      },
+
+      prime: () => {
+        const powerMove    = getRandomItems(EXERCISE_DB.power, 1)[0];
+        const mainCompound = getRandomItems([
+          ...EXERCISE_DB.strength.legs.compound,
+          ...EXERCISE_DB.strength.push.compound,
+          ...EXERCISE_DB.strength.pull.compound,
+        ], 1)[0];
+        const fbbMove = getRandomItems(EXERCISE_DB.fbb, 1)[0];
+        return [
+          { type: "A. NEURAL ACTIVATION (POWER)",    exercises: [{ ...powerMove,    sets: 5, reps: 3,              rest: "2dk",  tempo: "X0X0", note: "Maksimum patlayıcılık." }] },
+          { type: "B. MAIN STRENGTH (CLUSTER SETS)", exercises: [{ ...mainCompound, sets: 4, reps: "2-2-2 (15sn ara)", rest: "3dk", tempo: "X0X0", note: "Cluster Set: 2 tekrar yap, 15sn dinlen, 2 yap, 15sn dinlen, 2 yap. Bu 1 set." }] },
+          { type: "C. STRUCTURAL BALANCE (FBB)",     exercises: [{ ...fbbMove,      sets: 3, reps: "8-10/side",   rest: "90sn", tempo: "3010", note: "Kaliteye odaklan." }] },
+        ];
+      },
+
+      hybrid: () => {
+        const main       = getRandomItems([...EXERCISE_DB.strength.push.compound, ...EXERCISE_DB.strength.legs.compound], 1)[0];
+        const functional = getRandomItems(EXERCISE_DB.fbb, 2);
+        return [
+          { type: "HYBRID POWER",    exercises: [{ ...main, sets: 5, reps: 5, rest: "2dk", tempo: "X0X0" }] },
+          { type: "FUNCTIONAL FLOW", exercises: functional.map(f => ({ ...f, sets: 3, reps: 12, rest: "60sn" })) },
+        ];
+      },
+    };
+
+    // Strateji varsa çalıştır, yoksa default
+    const strategy = STRATEGIES[focus];
+    if (strategy) return strategy();
+
+    // Default — strength ve bilinmeyen modlar
+    const main = getRandomItems([
+      ...EXERCISE_DB.strength.push.compound,
+      ...EXERCISE_DB.strength.legs.compound,
+      ...EXERCISE_DB.strength.pull.compound,
+    ], 1)[0];
+    return [{ type: "MAX EFFORT", exercises: [{ ...main, sets: 5, reps: 3, rest: "3dk", tempo: "X0X0" }] }];
+  };
+
+  const generateMetconBlock = (focus, duration = 60) => {
+    // 45 dk'da MetCon yok
+    const metconDuration = getMetconDuration(duration);
+    if (!metconDuration) return null;
+
+    if (focus === 'engine') {
+      const formats = ["AMRAP", "EMOM", "CHIPPER"];
+      const fmt = formats[Math.floor(Math.random() * formats.length)];
+      const metconMoves = getRandomItems(EXERCISE_DB.metcon, 3);
+      const powerMove   = getRandomItems(EXERCISE_DB.power, 1)[0];
+      const coreMove    = getRandomItems(EXERCISE_DB.core, 1)[0];
+
+      if (fmt === "CHIPPER") return {
+        type: "CHIPPER",
+        structure: `FOR TIME (Chipper) - Time Cap: ${metconDuration === 20 ? 25 : 18} Min`,
+        coachNote: "Parçala ve yönet. Hepsini bir kerede yapmaya çalışma.",
+        exercises: [
+          { ...metconMoves[0], reps: metconDuration === 20 ? 50 : 30, note: "Başla, tempo tut" },
+          { ...metconMoves[1], reps: metconDuration === 20 ? 40 : 25, note: "Parçala" },
+          { ...powerMove,      reps: metconDuration === 20 ? 30 : 15, note: "Patlayıcı ama kontrollü" },
+          { ...metconMoves[2], reps: metconDuration === 20 ? 20 : 10, note: "Son hamle!" },
+          { ...coreMove,       reps: 10, note: "Bitir!" },
+        ],
+      };
+
+      if (fmt === "EMOM") return {
+        type: "EMOM",
+        structure: `EMOM x ${metconDuration} Dakika`,
+        coachNote: "Her dakikanın başında ilgili hareketi yap. Kalan süre dinlenme.",
+        exercises: [
+          { ...metconMoves[0], reps: "12-15", note: "Tek dakikalar" },
+          { ...metconMoves[1], reps: "12-15", note: "Çift dakikalar" },
+          { ...powerMove,      reps: "8-10",  note: "Her 3. dakika" },
+          { ...coreMove,       reps: "30sn",  note: "Her 4. dakika" },
+        ],
+      };
+
       return {
-        type: "THE ACID BATH (Finisher)",
-        structure: "3 Rounds For Time: 21-15-9 Reps",
-        exercises: finisherMove
+        type: "AMRAP",
+        structure: `AMRAP x ${metconDuration} Dakika`,
+        coachNote: "Sabit tempo > hızlı başlayıp yavaşlamak.",
+        exercises: [
+          { ...metconMoves[0], reps: 15, note: "Her turda" },
+          { ...metconMoves[1], reps: 12, note: "Her turda" },
+          { ...powerMove,      reps: 9,  note: "Her turda" },
+          { ...coreMove,       reps: "20 tekrar veya 30sn", note: "Her turda" },
+        ],
       };
     }
 
+    if (focus === 'prime') return {
+      type: "THE ACID BATH (Finisher)",
+      structure: "3 Rounds For Time: 21-15-9 Reps",
+      exercises: getRandomItems(EXERCISE_DB.metcon, 2),
+    };
+
+    // Standart
     const types = ["AMRAP", "EMOM", "FOR TIME", "TABATA"];
-    const selectedType = focus === 'metcon' ? (Math.random() > 0.5 ? "AMRAP" : "FOR TIME") : types[Math.floor(Math.random() * types.length)];
-    const duration = focus === 'metcon' ? "20 Dakika" : "12 Dakika";
-    const moves = getRandomItems(EXERCISE_DB.metcon, focus === 'metcon' ? 4 : 3);
-    let structure = "";
-    if (selectedType === "AMRAP") structure = `As Many Rounds As Possible in ${duration}`;
-    else if (selectedType === "EMOM") structure = `Every Minute on the Minute for ${duration}`;
-    else if (selectedType === "FOR TIME") structure = "5 Rounds For Time (Time Cap: 18 Min)";
-    else structure = "Tabata (20sn Work / 10sn Rest) x 8 Rounds";
-    return { type: selectedType, structure: structure, exercises: moves };
+    const selectedType = focus === 'metcon'
+      ? (Math.random() > 0.5 ? "AMRAP" : "FOR TIME")
+      : types[Math.floor(Math.random() * types.length)];
+
+    const structureMap = {
+      AMRAP:      `AMRAP x ${metconDuration} Dakika`,
+      EMOM:       `EMOM x ${metconDuration} Dakika`,
+      'FOR TIME': `${metconDuration === 20 ? 5 : 3} Rounds For Time (Time Cap: ${metconDuration + 5} Min)`,
+      TABATA:     "Tabata (20sn Work / 10sn Rest) x 8 Rounds",
+    };
+
+    return {
+      type:      selectedType,
+      structure: structureMap[selectedType],
+      exercises: getRandomItems(EXERCISE_DB.metcon, focus === 'metcon' ? 4 : 3),
+    };
+  };
+  // Son 7 günde hangi kas grupları kaç kez çalıştı
+  const getWeeklyMuscleFrequency = () => {
+    const history = JSON.parse(localStorage.getItem('arete_history') || '[]');
+    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const recentWorkouts = history.filter(h => h.timestamp > oneWeekAgo);
+
+    const freq = {
+      legs: 0, push: 0, pull: 0, core: 0, cardio: 0,
+    };
+
+    const focusMap = {
+      gvt:             'legs',
+      gvt_legs:        'legs',
+      gvt_push:        'push',
+      gvt_pull:        'pull',
+      ovt:             'push',
+      ovt_push:        'push',
+      ovt_pull:        'legs',
+      hanik_push_legs: 'push',
+      hanik_pull_core: 'pull',
+      aesthetics:      'push',
+      prime:           'push',
+      hybrid:          'push',
+      fbb:             'core',
+      engine:          'cardio',
+      metcon:          'cardio',
+      recovery:        'core',
+      strength:        'push',
+    };
+
+    recentWorkouts.forEach(w => {
+      const cat = focusMap[w.focus];
+      if (cat) freq[cat]++;
+    });
+
+    return freq;
   };
 
-  const generateWorkout = useCallback(() => {
+    const generateWorkout = useCallback(() => {
     setLoading(true);
     setLogs({});
-    const accessories = config.focus === 'aesthetics'
-      ? [...getRandomItems(EXERCISE_DB.strength.push.accessory, 1), ...getRandomItems(EXERCISE_DB.fbb, 2)]
-      : [];
-    const isHanik = config.focus.startsWith('hanik_');
-    const isGVT = config.focus.startsWith('gvt');
-    const isOVT = config.focus.startsWith('ovt');
-    const noMetcon = isHanik || isGVT || isOVT || config.focus === 'aesthetics' || config.focus === 'recovery';
+
+    const duration = parseInt(config.duration) || 60; // 45 | 60 | 90
+    const isHanik  = config.focus.startsWith('hanik_');
+    const isGVT    = config.focus.startsWith('gvt');
+    const isOVT    = config.focus.startsWith('ovt');
+    const noMetcon = isHanik || isGVT || isOVT ||
+                     config.focus === 'aesthetics' ||
+                     config.focus === 'recovery';
+
+    // ── Süreye göre ısınma miktarı ──
+    const warmupCount = duration === 45 ? 2 : duration === 90 ? 5 : 4;
+
+    // ── Süreye göre core miktarı ──
+    const coreCount = duration === 45 ? 0 : duration === 90 ? 4 : 3;
+
+    // ── Moda göre kişiselleştirilmiş ısınma ──
+    const warmup = getWarmupForFocus(config.focus, warmupCount, isHanik);
+
+    // ── Güç bloku — süreye göre kırpılır ──
+    const fullStrength = generateStrengthBlock(config.focus);
+    const strength = trimStrengthByDuration(fullStrength, duration);
+
+    // ── MetCon — süreye göre ayarlanır ──
+    const metcon = noMetcon ? null : generateMetconBlock(config.focus, duration);
+
+    // ── Aksesuar — sadece 90 dk'da ve aesthetics modunda ──
+    const accessories = config.focus === 'aesthetics' && duration >= 60
+      ? [...getRandomItems(EXERCISE_DB.strength.push.accessory, duration === 90 ? 2 : 1),
+         ...getRandomItems(EXERCISE_DB.fbb, 1)]
+      : null;
+
+    // ── Core — 45 dk'da yok ──
+    const core = (isHanik || coreCount === 0) ? [] : getRandomItems(EXERCISE_DB.core, coreCount);
+
+    // ── Havuz — sadece 90 dk'da ──
+    const swim = (config.poolAccess && !isHanik && duration === 90)
+      ? getRandomItems(EXERCISE_DB.swim, 1)[0]
+      : null;
+
     const newWorkout = {
-      name: generateName(config.focus),
-      quote: QUOTES[Math.floor(Math.random() * QUOTES.length)],
-      warmup: isHanik ? getRandomItems(HANIK_DB.warmup, 7) : getRandomItems(EXERCISE_DB.warmup, 4),
-      strength: generateStrengthBlock(config.focus),
-      metcon: noMetcon ? null : generateMetconBlock(config.focus),
-      accessories: config.focus === 'aesthetics' ? accessories : null,
-      core: isHanik ? [] : getRandomItems(EXERCISE_DB.core, 3),
-      swim: (config.poolAccess && !isHanik) ? getRandomItems(EXERCISE_DB.swim, 1)[0] : null,
-      focus: config.focus,
+      name:        generateName(config.focus),
+      quote:       QUOTES[Math.floor(Math.random() * QUOTES.length)],
+      warmup,
+      strength,
+      metcon,
+      accessories,
+      core,
+      swim,
+      focus:       config.focus,
+      duration,
     };
+
     setWorkout(newWorkout);
     setLoading(false);
     window.scrollTo(0, 0);
@@ -3703,8 +3982,8 @@ export default function App() {
   const handleStrengthComplete = useCallback((setLogs) => {
     console.log('Antrenman tamamlandı:', setLogs);
     setFocusMode(null);
-    toast.success('🏆 Güç Bloku Tamamlandı! Helal olsun!');
-  }, [toast]);
+    setShowSummary(true); // özet ekranını aç
+  }, []);
 
   const handleMetconComplete = useCallback((results) => {
     console.log('MetCon tamamlandı:', results);
@@ -3736,6 +4015,14 @@ export default function App() {
         <CalendarModal isOpen={showCalendar} onClose={() => setShowCalendar(false)} />
         <ChatModal isOpen={showChat} onClose={() => setShowChat(false)} workoutContext={workout} />
         <ConfirmModal state={confirmState} onClose={() => setConfirmState(null)} />
+        <WorkoutSummaryModal
+          isOpen={showSummary}
+          onClose={() => setShowSummary(false)}
+          workout={workout}
+          logs={logs}
+          toast={toast}
+          setConfirmState={setConfirmState}
+        />
         <ToastContainer toasts={toasts} onRemove={removeToast} />
 
         <header className={`border-b sticky top-0 z-50 shadow-xl ${darkMode ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-gray-200 shadow-gray-200/80'}`}>
@@ -3830,7 +4117,50 @@ export default function App() {
                         </button>
                       </div>
                     </div>
-                    <button onClick={generateWorkout} disabled={loading}
+                    {/* Haftalık denge önerisi */}
+                    {(() => {
+                      const freq = getWeeklyMuscleFrequency();
+                      const sorted = Object.entries(freq).sort((a, b) => a[1] - b[1]);
+                      const least = sorted[0]; // En az çalışılan
+                      const most  = sorted[sorted.length - 1]; // En çok çalışılan
+
+                      if (most[1] === 0) return null; // Hiç antrenman yoksa gösterme
+
+                      const suggestions = {
+                        legs:    { label: 'Bacak günü', focus: 'gvt',      emoji: '🦵' },
+                        push:    { label: 'İtiş günü',  focus: 'ovt',      emoji: '💪' },
+                        pull:    { label: 'Çekiş günü', focus: 'hanik_pull_core', emoji: '🏋️' },
+                        core:    { label: 'Fonksiyonel', focus: 'fbb',     emoji: '🎯' },
+                        cardio:  { label: 'Kondisyon',  focus: 'engine',   emoji: '🔥' },
+                      };
+
+                      const sug = suggestions[least[0]];
+                      if (!sug || least[1] >= 2) return null; // Zaten dengeli
+
+                      return (
+                        <div style={{
+                          marginBottom: 10, padding: '8px 12px', borderRadius: 8,
+                          background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)',
+                          display: 'flex', alignItems: 'center', gap: 8,
+                        }}>
+                          <span style={{ fontSize: 16 }}>{sug.emoji}</span>
+                          <div style={{ flex: 1 }}>
+                            <p style={{ fontSize: 10, color: '#f59e0b', fontWeight: 700 }}>Bu hafta öneri</p>
+                            <p style={{ fontSize: 11, color: '#64748b' }}>{sug.label} az çalıştı</p>
+                          </div>
+                          <button
+                            onClick={() => setConfig(prev => ({ ...prev, focus: sug.focus }))}
+                            style={{
+                              fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 6,
+                              background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)',
+                              color: '#f59e0b', cursor: 'pointer',
+                            }}>
+                            Uygula
+                          </button>
+                        </div>
+                      );
+                    })()}
+                                        <button onClick={generateWorkout} disabled={loading}
                       className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-2.5 rounded-lg shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm">
                       {loading ? <RefreshCw className="animate-spin" size={15} /> : <Flame size={15} />} ANTRENMAN OLUŞTUR
                     </button>
@@ -3861,6 +4191,7 @@ export default function App() {
                       <button onClick={() => setShowChat(true)} className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full text-[10px] text-amber-400 hover:bg-amber-500/20 transition-all">
                         <Sparkles size={9} /> Kahine Sor
                       </button>
+                      <ProactiveKahin workout={workout} darkMode={darkMode} />
                     </div>
                   </div>
 
@@ -3940,7 +4271,7 @@ export default function App() {
                         <Timer size={20} className="text-amber-500" />
                       </button>
                     )}
-                    <button onClick={handleSaveWorkout}
+                    <button id="arete-save-btn" onClick={handleSaveWorkout}
                       className="bg-green-600 hover:bg-green-500 text-white p-3 rounded-full shadow-xl shadow-green-900/40 transition-all">
                       <Save size={20} />
                     </button>
@@ -3973,7 +4304,36 @@ export default function App() {
           {/* ─── BESLENME TAB ─── */}
           {activeTab === 'nutrition' && (
             <div>
-              {/* Diyet Modu Butonları */}
+              {/* Mod bazlı beslenme stratejisi */}
+              {workout && (
+                <div style={{
+                  marginBottom: 12, padding: '10px 14px', borderRadius: 12,
+                  background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)',
+                }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+                    🍽️ Bugünkü Beslenme Stratejisi
+                  </p>
+                  <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.6 }}>
+                    {(() => {
+                      const f = workout.focus;
+                      if (['gvt', 'gvt_legs', 'gvt_push', 'gvt_pull'].includes(f))
+                        return '🍚 GVT günü: Yüksek karbonhidrat. Antrenman öncesi pirinç/makarna, sonrası protein + karbonhidrat kombinasyonu.';
+                      if (['ovt', 'ovt_push', 'ovt_pull'].includes(f))
+                        return '⚖️ OVT günü: Dengeli makro. Protein ağırlıklı, orta karbonhidrat, düşük yağ.';
+                      if (f === 'engine' || f === 'metcon')
+                        return '⚡ MetCon günü: Antrenman öncesi hızlı karbonhidrat (muz/hurma). Sonrası protein shake + karbonhidrat.';
+                      if (f === 'recovery')
+                        return '🥗 Recovery günü: Hafif ve besleyici. Anti-inflamatuar gıdalar (yaban mersini, zencefil, yeşil yapraklılar).';
+                      if (f === 'prime' || f === 'hybrid')
+                        return '💪 Güç günü: Yüksek protein + orta karbonhidrat. Kreatin varsa bugün al.';
+                      if (f === 'fbb')
+                        return '🎯 FBB günü: Dengeli makro. Protein her öğünde, karbonhidrat antrenman etrafında yoğunlaştır.';
+                      return '🍽️ Dengeli beslenme. Protein her öğünde, karbonhidrat aktiviteye göre ayarla.';
+                    })()}
+                  </p>
+                </div>
+              )}
+                            {/* Diyet Modu Butonları */}
               <div className="flex gap-2 mb-3">
                 <button
                   onClick={() => { setDietMode('normal'); setDailyMeal(null); }}
