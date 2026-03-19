@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Dumbbell, Timer, Flame, Waves, Activity, AlertCircle, RefreshCw, CheckCircle, ChevronDown, ChevronUp, Info, Eye, PlayCircle, BookOpen, X, BicepsFlexed, Landmark, Crown, MessageSquare, Utensils, Send, Sparkles, Save, Calendar, Trash2, Zap, BrainCircuit, Layout, Target, Heart } from 'lucide-react';
+import { Dumbbell, Timer, Flame, Waves, Activity, AlertCircle, RefreshCw, CheckCircle, ChevronDown, ChevronUp, Info, Eye, PlayCircle, BookOpen, X, BicepsFlexed, Landmark, Crown, MessageSquare, Utensils, Send, Sparkles, Save, Calendar, Trash2, Zap, BrainCircuit, Layout, Target, Heart, TrendingUp, Calculator } from 'lucide-react';
+import StatsTab from './components/StatsTab';
+import OneRMModal from './components/OneRMModal';
+import OnboardingModal from './components/OnboardingModal';
 import HANIK_DB from './hanikData';
 import { BESLENME_DB } from './beslenmeData';
 import { getExerciseImageUrl, getYouTubeSearchUrl } from './data/exerciseImages';
@@ -1238,10 +1241,97 @@ const TempoVisualizer = ({ tempoStr }) => {
     </div>
   );
 };
-const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog }) => {
+const MetconScoreLogger = ({ metcon, darkMode }) => {
+  const [rounds, setRounds] = useState('');
+  const [timeMin, setTimeMin] = useState('');
+  const [timeSec, setTimeSec] = useState('');
+  const [saved, setSaved] = useState(false);
+
+  const saveScore = () => {
+    if (!rounds && !timeMin) return;
+    const score = {
+      type: metcon.type,
+      structure: metcon.structure,
+      rounds: rounds || null,
+      time: timeMin ? `${timeMin}:${timeSec.padStart(2,'0')}` : null,
+      date: new Date().toLocaleDateString('tr-TR'),
+      timestamp: Date.now(),
+    };
+    const existing = JSON.parse(localStorage.getItem('arete_metcon_scores') || '[]');
+    localStorage.setItem('arete_metcon_scores', JSON.stringify([score, ...existing].slice(0, 100)));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const isAmrap = metcon.type === 'AMRAP';
+  const isForTime = metcon.type === 'FOR TIME' || metcon.type === 'CHIPPER';
+
+  return (
+    <div style={{
+      marginTop: 12, padding: '10px 14px', borderRadius: 10,
+      background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.2)',
+    }}>
+      <p style={{ fontSize: 10, color: '#60a5fa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
+        Skor Kaydet
+      </p>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        {(isAmrap || (!isAmrap && !isForTime)) && (
+          <input type="number" value={rounds} onChange={e => setRounds(e.target.value)}
+            placeholder="Tur"
+            style={{
+              flex: 1, padding: '8px 12px', borderRadius: 8, textAlign: 'center',
+              background: darkMode ? '#1e293b' : '#f8fafc',
+              border: '1px solid rgba(96,165,250,0.2)', color: darkMode ? '#e2e8f0' : '#1e293b',
+              fontSize: 14, fontWeight: 700, fontFamily: 'monospace', outline: 'none',
+            }} />
+        )}
+        {(isForTime || (!isAmrap && !isForTime)) && (
+          <>
+            <input type="number" value={timeMin} onChange={e => setTimeMin(e.target.value)}
+              placeholder="dk"
+              style={{
+                width: 56, padding: '8px 8px', borderRadius: 8, textAlign: 'center',
+                background: darkMode ? '#1e293b' : '#f8fafc',
+                border: '1px solid rgba(96,165,250,0.2)', color: darkMode ? '#e2e8f0' : '#1e293b',
+                fontSize: 14, fontWeight: 700, fontFamily: 'monospace', outline: 'none',
+              }} />
+            <span style={{ color: '#64748b' }}>:</span>
+            <input type="number" value={timeSec} onChange={e => setTimeSec(e.target.value)}
+              placeholder="sn" min="0" max="59"
+              style={{
+                width: 56, padding: '8px 8px', borderRadius: 8, textAlign: 'center',
+                background: darkMode ? '#1e293b' : '#f8fafc',
+                border: '1px solid rgba(96,165,250,0.2)', color: darkMode ? '#e2e8f0' : '#1e293b',
+                fontSize: 14, fontWeight: 700, fontFamily: 'monospace', outline: 'none',
+              }} />
+          </>
+        )}
+        <button onClick={saveScore}
+          style={{
+            padding: '8px 14px', borderRadius: 8, fontSize: 11, fontWeight: 700,
+            background: saved ? '#22c55e' : 'rgba(96,165,250,0.15)',
+            border: '1px solid rgba(96,165,250,0.3)',
+            color: saved ? '#fff' : '#60a5fa', cursor: 'pointer',
+          }}>
+          {saved ? '✓' : 'Kaydet'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog, onSwap }) => {
   const darkMode = React.useContext(ThemeContext);
   const [isOpen, setIsOpen] = useState(false);
   const [rpe, setRpe] = useState(currentLog?.rpe ? parseInt(currentLog.rpe) : 7);
+  const [restTimer, setRestTimer] = useState(null);
+  const [restActive, setRestActive] = useState(false);
+  useEffect(() => {
+    if (!restActive || restTimer === null) return;
+    if (restTimer <= 0) { setRestActive(false); setRestTimer(null); return; }
+    const t = setTimeout(() => setRestTimer(s => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [restTimer, restActive]);
   const setsReps = exercise.sets ? `${exercise.sets}×${exercise.reps}` : "";
   const tempo = exercise.tempo || "";
   const weightRx = exercise.weight_rx || "";
@@ -1259,6 +1349,14 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog }) =
           <span className="text-[10px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full shrink-0">{setsReps}</span>
         )}
         {weightRx && <span className="text-[9px] text-slate-400 shrink-0 hidden sm:inline">{weightRx}</span>}
+        {onSwap && (
+          <button onClick={e => { e.stopPropagation(); onSwap(); }}
+            title="Egzersizi degistir"
+            className="text-slate-600 hover:text-amber-500 transition-colors shrink-0"
+            style={{ fontSize: 11, padding: '2px 6px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.05)' }}>
+            ↻
+          </button>
+        )}
         {isOpen
           ? <ChevronUp size={14} className="text-amber-400 shrink-0" />
           : <ChevronDown size={14} className="text-slate-500 shrink-0" />}
@@ -1522,6 +1620,32 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog }) =
               </p>
             </div>
           )}
+          {/* Rest Timer */}
+          <div className="mt-2 flex items-center gap-2 flex-wrap">
+            {!restActive ? (
+              <>
+                {[60, 90, 120, 180].map(sec => (
+                  <button key={sec} onClick={() => { setRestTimer(sec); setRestActive(true); }}
+                    className="text-[9px] font-bold px-2 py-1 rounded-lg border transition-all"
+                    style={{ borderColor: 'rgba(245,158,11,0.3)', color: '#f59e0b', background: 'rgba(245,158,11,0.06)' }}>
+                    {sec < 60 ? `${sec}sn` : `${sec/60}dk`}
+                  </button>
+                ))}
+                <span className="text-[9px] text-slate-600">dinlenme</span>
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-black font-mono"
+                  style={{ color: restTimer <= 10 ? '#ef4444' : '#f59e0b' }}>
+                  {Math.floor(restTimer / 60)}:{String(restTimer % 60).padStart(2, '0')}
+                </div>
+                <button onClick={() => { setRestActive(false); setRestTimer(null); }}
+                  className="text-[9px] px-2 py-1 rounded-lg text-slate-500 border border-slate-700">
+                  Sifirla
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -3195,6 +3319,10 @@ export default function App() {
   const { toasts, toast, removeToast } = useToast();
   const [confirmState, setConfirmState] = useState(null);
   const [showSummary, setShowSummary] = useState(false);
+  const [showOneRM, setShowOneRM] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem('arete_onboarded');
+  });
 
   // Persist state changes to localStorage
   useEffect(() => { saveToStorage('arete_config', config); }, [config]);
@@ -3220,6 +3348,45 @@ export default function App() {
 
   const handleLogUpdate = (exerciseName, field, value) => {
     setLogs(prev => ({ ...prev, [exerciseName]: { ...prev[exerciseName], [field]: value } }));
+  };
+
+  const swapExercise = useCallback((blockIdx, exIdx) => {
+    if (!workout) return;
+    const allExercises = [
+      ...(EXERCISE_DB.strength?.push?.compound || []),
+      ...(EXERCISE_DB.strength?.push?.accessory || []),
+      ...(EXERCISE_DB.strength?.pull?.compound || []),
+      ...(EXERCISE_DB.strength?.pull?.accessory || []),
+      ...(EXERCISE_DB.strength?.legs?.compound || []),
+      ...(EXERCISE_DB.strength?.legs?.accessory || []),
+      ...(EXERCISE_DB.fbb || []),
+    ];
+    const updatedStrength = workout.strength.map((block, bi) => {
+      if (bi !== blockIdx) return block;
+      const updatedExercises = block.exercises.map((ex, ei) => {
+        if (ei !== exIdx) return ex;
+        const candidates = allExercises.filter(e => e.name !== ex.name);
+        if (!candidates.length) return ex;
+        const replacement = candidates[Math.floor(Math.random() * candidates.length)];
+        return { ...replacement, sets: ex.sets, reps: ex.reps, rest: ex.rest, tempo: ex.tempo, note: ex.note };
+      });
+      return { ...block, exercises: updatedExercises };
+    });
+    setWorkout(prev => ({ ...prev, strength: updatedStrength }));
+  }, [workout]);
+
+  const estimateDuration = (w) => {
+    if (!w) return null;
+    let minutes = 0;
+    minutes += (w.warmup?.length || 0) * 2;
+    w.strength?.forEach(block => {
+      const sets = parseInt(block.exercises?.[0]?.sets) || 3;
+      const exCount = block.exercises?.length || 1;
+      minutes += exCount * sets * 2;
+    });
+    if (w.metcon) minutes += 20;
+    minutes += (w.core?.length || 0) * 3;
+    return Math.round(minutes / 5) * 5;
   };
 
   const handleSaveWorkout = useCallback(() => {
@@ -4024,6 +4191,13 @@ export default function App() {
           setConfirmState={setConfirmState}
         />
         <ToastContainer toasts={toasts} onRemove={removeToast} />
+        <OneRMModal isOpen={showOneRM} onClose={() => setShowOneRM(false)} darkMode={darkMode} />
+        {showOnboarding && (
+          <OnboardingModal onClose={() => {
+            localStorage.setItem('arete_onboarded', '1');
+            setShowOnboarding(false);
+          }} />
+        )}
 
         <header className={`border-b sticky top-0 z-50 shadow-xl ${darkMode ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-gray-200 shadow-gray-200/80'}`}>
           <div className="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
@@ -4039,6 +4213,7 @@ export default function App() {
             </div>
             <div className="flex items-center gap-1">
               <button onClick={() => setShowHistory(true)} className={`p-2 rounded-full ${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`} title="Geçmiş"><Timer size={18} /></button>
+              <button onClick={() => setShowOneRM(true)} className={`p-2 rounded-full ${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`} title="1RM Hesaplayici"><Calculator size={18} /></button>
               <button onClick={() => setShowGuide(true)} className={`p-2 rounded-full ${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`}><BookOpen size={18} /></button>
             </div>
           </div>
@@ -4160,7 +4335,18 @@ export default function App() {
                         </div>
                       );
                     })()}
-                                        <button onClick={generateWorkout} disabled={loading}
+                                        <button onClick={() => {
+                        if (Object.keys(logs).length > 0) {
+                          setConfirmState({
+                            message: 'Devam eden antrenmanda kayıtlı veri var. Yeni antrenman oluşturulursa kayıtlar silinir.',
+                            variant: 'danger',
+                            confirmLabel: 'Yine de Oluştur',
+                            onConfirm: generateWorkout,
+                          });
+                        } else {
+                          generateWorkout();
+                        }
+                      }} disabled={loading}
                       className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-2.5 rounded-lg shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm">
                       {loading ? <RefreshCw className="animate-spin" size={15} /> : <Flame size={15} />} ANTRENMAN OLUŞTUR
                     </button>
@@ -4171,7 +4357,12 @@ export default function App() {
               {workout && (
                 <div className="space-y-1">
                   <div className="text-center mb-4 pt-1">
-                    <h2 className={`text-base font-black uppercase tracking-tight ${darkMode ? 'text-white' : 'text-gray-800'}`}>{workout.name}</h2>
+                    <h2 className={`text-base font-black uppercase tracking-tight ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      {workout.name}
+                      {estimateDuration(workout) && (
+                        <span className="text-xs text-slate-500 ml-2 font-normal normal-case">~{estimateDuration(workout)} dk</span>
+                      )}
+                    </h2>
                     <p className="text-[11px] text-amber-500/80 italic mt-1">"{workout.quote}"</p>
                     {(() => {
                       const todayKey = new Date().toISOString().split('T')[0];
@@ -4217,7 +4408,7 @@ export default function App() {
                           {block.type.includes("CLUSTER") && <Badge text="CLUSTER" color="bg-purple-900/40 text-purple-200" />}
                         </div>
                         {block.exercises.map((ex, eIdx) => (
-                          <ExerciseItem key={eIdx} exercise={ex} onLogUpdate={handleLogUpdate} currentLog={logs[ex.name]} />
+                          <ExerciseItem key={eIdx} exercise={ex} onLogUpdate={handleLogUpdate} currentLog={logs[ex.name]} onSwap={() => swapExercise(bIdx, eIdx)} />
                         ))}
                       </div>
                     ))}
@@ -4240,6 +4431,7 @@ export default function App() {
                       {workout.metcon.exercises.map((move, idx) => (
                         <ExerciseItem key={idx} exercise={move} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />
                       ))}
+                      <MetconScoreLogger metcon={workout.metcon} darkMode={darkMode} />
                     </SectionCard>
                   )}
 
@@ -4442,6 +4634,9 @@ export default function App() {
             <RecoveryCheckIn toast={toast} darkMode={darkMode} />
           )}
 
+          {/* ─── İSTATİSTİK TAB ─── */}
+          {activeTab === 'stats' && <StatsTab darkMode={darkMode} />}
+
           {/* ─── AYARLAR TAB ─── */}
           {activeTab === 'settings' && (
             <div className="space-y-3">
@@ -4569,13 +4764,13 @@ export default function App() {
               <span className="text-[9px] font-black tracking-widest text-amber-400 -mt-3 mb-0.5" style={{ letterSpacing: '0.18em' }}>KAHİN</span>
             </div>
 
-            {/* Takvim */}
+            {/* İstatistik */}
             <button
-              onClick={() => setShowCalendar(true)}
-              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
+              onClick={() => setActiveTab('stats')}
+              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'stats' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
-              <Calendar size={22} />
-              <span className="text-[10px] font-semibold tracking-wide">Takvim</span>
+              <TrendingUp size={22} />
+              <span className="text-[10px] font-semibold tracking-wide">İstatistik</span>
             </button>
 
             {/* Toparlanma */}
