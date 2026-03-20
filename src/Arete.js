@@ -4736,80 +4736,78 @@ export default function App() {
 
         {/* ─── COMPACT BOTTOM NAV ─── */}
         <nav className={`fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-md ${darkMode ? 'bg-slate-900/96 border-slate-800/60' : 'bg-white/96 border-gray-200'}`}>
-          <div className="max-w-3xl mx-auto flex items-end relative">
+          <div className="max-w-3xl mx-auto flex items-stretch relative">
 
             {/* Antrenman */}
             <button
               onClick={() => setActiveTab('workout')}
-              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'workout' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 flex flex-col items-center pt-2 pb-1 gap-0.5 h-14 justify-start transition-colors ${activeTab === 'workout' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <Activity size={22} />
-              {activeTab === 'workout' && <span className="text-[10px] font-semibold tracking-wide">Antrenman</span>}
+              {activeTab === 'workout' && <span className="text-[10px] font-semibold tracking-wide leading-none">Antrenman</span>}
             </button>
 
             {/* Beslenme */}
             <button
               onClick={() => setActiveTab('nutrition')}
-              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'nutrition' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 flex flex-col items-center pt-2 pb-1 gap-0.5 h-14 justify-start transition-colors ${activeTab === 'nutrition' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <Utensils size={22} />
-              {activeTab === 'nutrition' && <span className="text-[10px] font-semibold tracking-wide">Beslenme</span>}
+              {activeTab === 'nutrition' && <span className="text-[10px] font-semibold tracking-wide leading-none">Beslenme</span>}
             </button>
 
             {/* Calisthenics */}
             <button
               onClick={() => setActiveTab('calisthenics')}
-              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'calisthenics' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 flex flex-col items-center pt-2 pb-1 gap-0.5 h-14 justify-start transition-colors ${activeTab === 'calisthenics' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <BicepsFlexed size={22} />
-              {activeTab === 'calisthenics' && <span className="text-[10px] font-semibold tracking-wide">Calisthenics</span>}
+              {activeTab === 'calisthenics' && <span className="text-[10px] font-semibold tracking-wide leading-none">Calisthenics</span>}
             </button>
 
             {/* ── Futuristic AI Button (center floating) ── */}
-            <div className="relative flex flex-col items-center justify-end pb-1" style={{ width: '72px', flexShrink: 0 }}>
-              {/* Glow ring behind button */}
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-amber-500/20 blur-lg animate-pulse pointer-events-none" />
+            <div className="relative flex flex-col items-center justify-start pt-1 pb-1" style={{ width: '72px', flexShrink: 0 }}>
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-amber-500/20 blur-lg animate-pulse pointer-events-none" />
               <button
                 onClick={() => setShowChat(true)}
-                className="relative bottom-4 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all duration-150"
+                className="relative -top-4 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all duration-150"
                 style={{
                   background: 'linear-gradient(135deg, #92400e 0%, #d97706 40%, #fbbf24 70%, #f59e0b 100%)',
                   boxShadow: '0 0 0 3px rgba(245,158,11,0.25), 0 0 18px 4px rgba(217,119,6,0.45), 0 8px 24px rgba(0,0,0,0.5)',
                 }}
                 title="Kahin AI"
               >
-                {/* Inner shine ring */}
                 <div className="absolute inset-1 rounded-full border border-yellow-200/30 pointer-events-none" />
                 <Sparkles size={22} className="text-slate-900 drop-shadow" />
               </button>
-              <span className="text-[9px] font-black tracking-widest text-amber-400 -mt-3 mb-0.5" style={{ letterSpacing: '0.18em' }}>KAHİN</span>
+              <span className="text-[9px] font-black tracking-widest text-amber-400 -mt-5" style={{ letterSpacing: '0.18em' }}>KAHİN</span>
             </div>
 
             {/* İstatistik */}
             <button
               onClick={() => setActiveTab('stats')}
-              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'stats' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 flex flex-col items-center pt-2 pb-1 gap-0.5 h-14 justify-start transition-colors ${activeTab === 'stats' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <TrendingUp size={22} />
-              {activeTab === 'stats' && <span className="text-[10px] font-semibold tracking-wide">İstatistik</span>}
+              {activeTab === 'stats' && <span className="text-[10px] font-semibold tracking-wide leading-none">İstatistik</span>}
             </button>
 
             {/* Program */}
             <button
               onClick={() => setActiveTab('program')}
-              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'program' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 flex flex-col items-center pt-2 pb-1 gap-0.5 h-14 justify-start transition-colors ${activeTab === 'program' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <Calendar size={20} />
-              {activeTab === 'program' && <span className="text-[10px] font-semibold tracking-wide">Program</span>}
+              {activeTab === 'program' && <span className="text-[10px] font-semibold tracking-wide leading-none">Program</span>}
             </button>
 
             {/* Toparlanma */}
             <button
               onClick={() => setActiveTab('recovery')}
-              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'recovery' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 flex flex-col items-center pt-2 pb-1 gap-0.5 h-14 justify-start transition-colors ${activeTab === 'recovery' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <Heart size={22} />
-              {activeTab === 'recovery' && <span className="text-[10px] font-semibold tracking-wide">Toparlanma</span>}
+              {activeTab === 'recovery' && <span className="text-[10px] font-semibold tracking-wide leading-none">Toparlanma</span>}
             </button>
 
 
