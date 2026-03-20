@@ -1275,12 +1275,12 @@ const MetconScoreLogger = ({ metcon, darkMode }) => {
       <p style={{ fontSize: 10, color: '#60a5fa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
         Skor Kaydet
       </p>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         {(isAmrap || (!isAmrap && !isForTime)) && (
           <input type="number" value={rounds} onChange={e => setRounds(e.target.value)}
             placeholder="Tur"
             style={{
-              flex: 1, padding: '8px 12px', borderRadius: 8, textAlign: 'center',
+              flex: 1, minWidth: 60, padding: '8px 12px', borderRadius: 8, textAlign: 'center',
               background: darkMode ? '#1e293b' : '#f8fafc',
               border: '1px solid rgba(96,165,250,0.2)', color: darkMode ? '#e2e8f0' : '#1e293b',
               fontSize: 14, fontWeight: 700, fontFamily: 'monospace', outline: 'none',
@@ -1291,7 +1291,7 @@ const MetconScoreLogger = ({ metcon, darkMode }) => {
             <input type="number" value={timeMin} onChange={e => setTimeMin(e.target.value)}
               placeholder="dk"
               style={{
-                width: 56, padding: '8px 8px', borderRadius: 8, textAlign: 'center',
+                width: 52, padding: '8px 6px', borderRadius: 8, textAlign: 'center',
                 background: darkMode ? '#1e293b' : '#f8fafc',
                 border: '1px solid rgba(96,165,250,0.2)', color: darkMode ? '#e2e8f0' : '#1e293b',
                 fontSize: 14, fontWeight: 700, fontFamily: 'monospace', outline: 'none',
@@ -1300,7 +1300,7 @@ const MetconScoreLogger = ({ metcon, darkMode }) => {
             <input type="number" value={timeSec} onChange={e => setTimeSec(e.target.value)}
               placeholder="sn" min="0" max="59"
               style={{
-                width: 56, padding: '8px 8px', borderRadius: 8, textAlign: 'center',
+                width: 52, padding: '8px 6px', borderRadius: 8, textAlign: 'center',
                 background: darkMode ? '#1e293b' : '#f8fafc',
                 border: '1px solid rgba(96,165,250,0.2)', color: darkMode ? '#e2e8f0' : '#1e293b',
                 fontSize: 14, fontWeight: 700, fontFamily: 'monospace', outline: 'none',
@@ -1309,12 +1309,12 @@ const MetconScoreLogger = ({ metcon, darkMode }) => {
         )}
         <button onClick={saveScore}
           style={{
-            padding: '8px 14px', borderRadius: 8, fontSize: 11, fontWeight: 700,
+            flexShrink: 0, padding: '8px 16px', borderRadius: 8, fontSize: 12, fontWeight: 700,
             background: saved ? '#22c55e' : 'rgba(96,165,250,0.15)',
             border: '1px solid rgba(96,165,250,0.3)',
             color: saved ? '#fff' : '#60a5fa', cursor: 'pointer',
           }}>
-          {saved ? '✓' : 'Kaydet'}
+          {saved ? '✓ Kaydedildi' : 'Kaydet'}
         </button>
       </div>
     </div>
