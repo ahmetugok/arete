@@ -1655,19 +1655,26 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog, onS
 
 const SectionCard = ({ title, subTitle, icon: Icon, children, className = "", number }) => {
   const darkMode = React.useContext(ThemeContext);
+  const [open, setOpen] = useState(true);
   return (
     <div className={`${darkMode ? 'bg-slate-900/40' : 'bg-white/70 shadow-sm'} border-l-2 border-amber-500 rounded-r mb-3 overflow-hidden ${className}`}>
-      <div className={`${darkMode ? 'bg-slate-900/80 border-slate-800/50' : 'bg-gray-50 border-gray-200'} px-3 py-2 flex items-center gap-2 border-b`}>
+      <button
+        onClick={() => setOpen(p => !p)}
+        className={`w-full ${darkMode ? 'bg-slate-900/80 border-slate-800/50' : 'bg-gray-50 border-gray-200'} px-3 py-2 flex items-center gap-2 border-b text-left`}
+      >
         {number !== undefined && (
           <span className="text-[10px] font-black text-amber-500/60 font-mono w-5 shrink-0">{String(number).padStart(2, '0')}</span>
         )}
         <div className={`p-1.5 ${darkMode ? 'bg-slate-950' : 'bg-white'} rounded text-amber-500 shrink-0`}><Icon size={14} /></div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h3 className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-gray-800'} uppercase tracking-wide`}>{title}</h3>
           {subTitle && <p className="text-[9px] text-amber-500/70 uppercase truncate">{subTitle}</p>}
         </div>
-      </div>
-      <div className={`p-2 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>{children}</div>
+        <div className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-0' : '-rotate-90'}`}>
+          <ChevronDown size={14} className={darkMode ? 'text-slate-500' : 'text-gray-400'} />
+        </div>
+      </button>
+      {open && <div className={`p-2 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>{children}</div>}
     </div>
   );
 };
