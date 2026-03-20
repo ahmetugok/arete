@@ -4741,28 +4741,28 @@ export default function App() {
             {/* Antrenman */}
             <button
               onClick={() => setActiveTab('workout')}
-              className={`flex-1 flex flex-col items-center pt-2 pb-1 gap-0.5 h-14 justify-start transition-colors ${activeTab === 'workout' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 flex flex-col items-center pt-1 pb-2 gap-0.5 h-14 justify-end transition-colors ${activeTab === 'workout' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
-              <Activity size={22} />
               {activeTab === 'workout' && <span className="text-[10px] font-semibold tracking-wide leading-none">Antrenman</span>}
+              <Activity size={22} />
             </button>
 
             {/* Beslenme */}
             <button
               onClick={() => setActiveTab('nutrition')}
-              className={`flex-1 flex flex-col items-center pt-2 pb-1 gap-0.5 h-14 justify-start transition-colors ${activeTab === 'nutrition' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 flex flex-col items-center pt-1 pb-2 gap-0.5 h-14 justify-end transition-colors ${activeTab === 'nutrition' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
-              <Utensils size={22} />
               {activeTab === 'nutrition' && <span className="text-[10px] font-semibold tracking-wide leading-none">Beslenme</span>}
+              <Utensils size={22} />
             </button>
 
             {/* Calisthenics */}
             <button
               onClick={() => setActiveTab('calisthenics')}
-              className={`flex-1 flex flex-col items-center pt-2 pb-1 gap-0.5 h-14 justify-start transition-colors ${activeTab === 'calisthenics' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 flex flex-col items-center pt-1 pb-2 gap-0.5 h-14 justify-end transition-colors ${activeTab === 'calisthenics' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
-              <BicepsFlexed size={22} />
               {activeTab === 'calisthenics' && <span className="text-[10px] font-semibold tracking-wide leading-none">Calisthenics</span>}
+              <BicepsFlexed size={22} />
             </button>
 
             {/* ── Futuristic AI Button (center floating) ── */}
@@ -4786,28 +4786,28 @@ export default function App() {
             {/* İstatistik */}
             <button
               onClick={() => setActiveTab('stats')}
-              className={`flex-1 flex flex-col items-center pt-2 pb-1 gap-0.5 h-14 justify-start transition-colors ${activeTab === 'stats' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 flex flex-col items-center pt-1 pb-2 gap-0.5 h-14 justify-end transition-colors ${activeTab === 'stats' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
-              <TrendingUp size={22} />
               {activeTab === 'stats' && <span className="text-[10px] font-semibold tracking-wide leading-none">İstatistik</span>}
+              <TrendingUp size={22} />
             </button>
 
             {/* Program */}
             <button
               onClick={() => setActiveTab('program')}
-              className={`flex-1 flex flex-col items-center pt-2 pb-1 gap-0.5 h-14 justify-start transition-colors ${activeTab === 'program' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 flex flex-col items-center pt-1 pb-2 gap-0.5 h-14 justify-end transition-colors ${activeTab === 'program' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
-              <Calendar size={20} />
               {activeTab === 'program' && <span className="text-[10px] font-semibold tracking-wide leading-none">Program</span>}
+              <Calendar size={20} />
             </button>
 
             {/* Toparlanma */}
             <button
               onClick={() => setActiveTab('recovery')}
-              className={`flex-1 flex flex-col items-center pt-2 pb-1 gap-0.5 h-14 justify-start transition-colors ${activeTab === 'recovery' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 flex flex-col items-center pt-1 pb-2 gap-0.5 h-14 justify-end transition-colors ${activeTab === 'recovery' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
-              <Heart size={22} />
               {activeTab === 'recovery' && <span className="text-[10px] font-semibold tracking-wide leading-none">Toparlanma</span>}
+              <Heart size={22} />
             </button>
 
 
