@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Dumbbell, Timer, Flame, Waves, Activity, AlertCircle, RefreshCw, CheckCircle, ChevronDown, ChevronUp, Info, Eye, PlayCircle, BookOpen, X, BicepsFlexed, Landmark, Crown, MessageSquare, Utensils, Send, Sparkles, Save, Calendar, Trash2, Zap, BrainCircuit, Layout, Target, Heart, TrendingUp, Calculator } from 'lucide-react';
+import { Dumbbell, Timer, Flame, Waves, Activity, AlertCircle, RefreshCw, CheckCircle, ChevronDown, ChevronUp, Info, Eye, PlayCircle, BookOpen, X, BicepsFlexed, Landmark, Crown, MessageSquare, Utensils, Send, Sparkles, Save, Calendar, Trash2, Zap, BrainCircuit, Layout, Target, Heart, TrendingUp, Calculator, Settings } from 'lucide-react';
 import StatsTab from './components/StatsTab';
 import ProgramTab from './components/ProgramTab';
 import OneRMModal from './components/OneRMModal';
@@ -4219,6 +4219,7 @@ export default function App() {
               <button onClick={() => setShowHistory(true)} className={`p-2 rounded-full ${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`} title="Geçmiş"><Timer size={18} /></button>
               <button onClick={() => setShowOneRM(true)} className={`p-2 rounded-full ${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`} title="1RM Hesaplayici"><Calculator size={18} /></button>
               <button onClick={() => setShowGuide(true)} className={`p-2 rounded-full ${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`}><BookOpen size={18} /></button>
+              <button onClick={() => setActiveTab('settings')} className={`p-2 rounded-full ${activeTab === 'settings' ? 'text-amber-400' : darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`} title="Ayarlar"><Settings size={18} /></button>
             </div>
           </div>
         </header>
@@ -4808,15 +4809,6 @@ export default function App() {
               <span className="text-[10px] font-semibold tracking-wide">Toparlanma</span>
             </button>
 
-            {/* Ayarlar */}
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'settings' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
-                }`}
-            >
-              <Target size={22} />
-              <span className="text-[10px] font-semibold tracking-wide">Ayarlar</span>
-            </button>
 
           </div>
         </nav>
