@@ -4734,31 +4734,28 @@ export default function App() {
             {/* Antrenman */}
             <button
               onClick={() => setActiveTab('workout')}
-              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'workout' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
-                }`}
+              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'workout' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <Activity size={22} />
-              <span className="text-[10px] font-semibold tracking-wide">Antrenman</span>
+              {activeTab === 'workout' && <span className="text-[10px] font-semibold tracking-wide">Antrenman</span>}
             </button>
 
             {/* Beslenme */}
             <button
               onClick={() => setActiveTab('nutrition')}
-              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'nutrition' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
-                }`}
+              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'nutrition' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <Utensils size={22} />
-              <span className="text-[10px] font-semibold tracking-wide">Beslenme</span>
+              {activeTab === 'nutrition' && <span className="text-[10px] font-semibold tracking-wide">Beslenme</span>}
             </button>
 
             {/* Calisthenics */}
             <button
               onClick={() => setActiveTab('calisthenics')}
-              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'calisthenics' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
-                }`}
+              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'calisthenics' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <BicepsFlexed size={22} />
-              <span className="text-[10px] font-semibold tracking-wide">Calisthenics</span>
+              {activeTab === 'calisthenics' && <span className="text-[10px] font-semibold tracking-wide">Calisthenics</span>}
             </button>
 
             {/* ── Futuristic AI Button (center floating) ── */}
@@ -4787,7 +4784,7 @@ export default function App() {
               className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'stats' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <TrendingUp size={22} />
-              <span className="text-[10px] font-semibold tracking-wide">İstatistik</span>
+              {activeTab === 'stats' && <span className="text-[10px] font-semibold tracking-wide">İstatistik</span>}
             </button>
 
             {/* Program */}
@@ -4796,17 +4793,16 @@ export default function App() {
               className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'program' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <Calendar size={20} />
-              <span className="text-[10px] font-semibold tracking-wide">Program</span>
+              {activeTab === 'program' && <span className="text-[10px] font-semibold tracking-wide">Program</span>}
             </button>
 
             {/* Toparlanma */}
             <button
               onClick={() => setActiveTab('recovery')}
-              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'recovery' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'
-                }`}
+              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'recovery' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <Heart size={22} />
-              <span className="text-[10px] font-semibold tracking-wide">Toparlanma</span>
+              {activeTab === 'recovery' && <span className="text-[10px] font-semibold tracking-wide">Toparlanma</span>}
             </button>
 
 
