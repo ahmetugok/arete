@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Dumbbell, Timer, Flame, Waves, Activity, AlertCircle, RefreshCw, CheckCircle, ChevronDown, ChevronUp, Info, Eye, PlayCircle, BookOpen, X, BicepsFlexed, Landmark, Crown, MessageSquare, Utensils, Send, Sparkles, Save, Calendar, Trash2, Zap, BrainCircuit, Layout, Target, Heart, TrendingUp, Calculator } from 'lucide-react';
 import StatsTab from './components/StatsTab';
+import ProgramTab from './components/ProgramTab';
 import OneRMModal from './components/OneRMModal';
 import OnboardingModal from './components/OnboardingModal';
 import HANIK_DB from './hanikData';
@@ -3319,6 +3320,9 @@ export default function App() {
   const { toasts, toast, removeToast } = useToast();
   const [confirmState, setConfirmState] = useState(null);
   const [showSummary, setShowSummary] = useState(false);
+  const [program, setProgram] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('arete_program') || 'null'); } catch { return null; }
+  });
   const [showOneRM, setShowOneRM] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem('arete_onboarded');
@@ -4637,6 +4641,18 @@ export default function App() {
           {/* ─── İSTATİSTİK TAB ─── */}
           {activeTab === 'stats' && <StatsTab darkMode={darkMode} />}
 
+          {activeTab === 'program' && (
+            <ProgramTab
+              darkMode={darkMode}
+              program={program}
+              setProgram={setProgram}
+              setConfig={setConfig}
+              setActiveTab={setActiveTab}
+              toast={toast}
+              setConfirmState={setConfirmState}
+            />
+          )}
+
           {/* ─── AYARLAR TAB ─── */}
           {activeTab === 'settings' && (
             <div className="space-y-3">
@@ -4771,6 +4787,15 @@ export default function App() {
             >
               <TrendingUp size={22} />
               <span className="text-[10px] font-semibold tracking-wide">İstatistik</span>
+            </button>
+
+            {/* Program */}
+            <button
+              onClick={() => setActiveTab('program')}
+              className={`flex-1 flex flex-col items-center py-3 gap-1 transition-colors ${activeTab === 'program' ? 'text-amber-400' : darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              <Calendar size={20} />
+              <span className="text-[10px] font-semibold tracking-wide">Program</span>
             </button>
 
             {/* Toparlanma */}
