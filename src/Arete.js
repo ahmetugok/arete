@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Dumbbell, Timer, Flame, Waves, Activity, AlertCircle, RefreshCw, CheckCircle, ChevronDown, ChevronUp, Info, Eye, PlayCircle, BookOpen, X, BicepsFlexed, Landmark, Crown, MessageSquare, Utensils, Send, Sparkles, Save, Calendar, Trash2, Zap, BrainCircuit, Layout, Target, Heart, TrendingUp, Calculator, Settings } from 'lucide-react';
+import DashboardTab from './components/DashboardTab';
 import StatsTab from './components/StatsTab';
 import ProgramTab from './components/ProgramTab';
 import OneRMModal from './components/OneRMModal';
@@ -3318,7 +3319,7 @@ export default function App() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [logs, setLogs] = useState(() => loadFromStorage('arete_logs', {}));
   const [focusMode, setFocusMode] = useState(() => loadFromStorage('arete_focusMode', null)); // 'strength' | 'metcon' | null
-  const [activeTab, setActiveTab] = useState('workout');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [configOpen, setConfigOpen] = useState(true);
   const [darkMode, setDarkMode] = useState(() => loadFromStorage('arete_darkMode', true));
   const [workedOutToday, setWorkedOutToday] = useState(() => loadFromStorage('arete_workedOut', false));
@@ -4233,6 +4234,20 @@ export default function App() {
 
         <main className="max-w-3xl mx-auto px-4 py-4">
 
+          {/* ─── DASHBOARD TAB ─── */}
+          {activeTab === 'dashboard' && (
+            <DashboardTab
+              darkMode={darkMode}
+              workout={workout}
+              config={config}
+              setConfig={setConfig}
+              setActiveTab={setActiveTab}
+              workedOutToday={workedOutToday}
+              program={program}
+              generateWorkout={generateWorkout}
+            />
+          )}
+
           {/* ─── ANTRENMAN TAB ─── */}
           {activeTab === 'workout' && (
             <>
@@ -4737,6 +4752,13 @@ export default function App() {
         {/* ─── COMPACT BOTTOM NAV ─── */}
         <nav className={`fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-md ${darkMode ? 'bg-slate-900/96 border-slate-800/60' : 'bg-white/96 border-gray-200'}`}>
           <div className="max-w-3xl mx-auto flex items-stretch relative">
+
+            {/* Dashboard */}
+            <button onClick={() => setActiveTab('dashboard')}
+              className={`flex-1 flex flex-col items-center px-1 pt-2 pb-2 h-[68px] transition-colors ${activeTab === 'dashboard' ? 'justify-between text-amber-400' : 'justify-start'} ${darkMode ? (activeTab !== 'dashboard' ? 'text-slate-500 hover:text-slate-300' : '') : (activeTab !== 'dashboard' ? 'text-gray-400 hover:text-gray-600' : '')}`}>
+              {activeTab === 'dashboard' ? <span className="text-[10px] font-semibold tracking-wide leading-none">Ana Sayfa</span> : <Layout size={22} />}
+              {activeTab === 'dashboard' && <Layout size={22} />}
+            </button>
 
             {/* Antrenman */}
             <button onClick={() => setActiveTab('workout')}
