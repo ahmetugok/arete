@@ -582,6 +582,9 @@ const DashboardTab = ({
           ))}
         </div>
 
+        {/* ── SU TAKİBİ ── */}
+        <WaterTracker darkMode={darkMode} />
+
         {/* ── SON ANTRENMALAR ── */}
         {recentWorkouts.length > 0 && (
           <div style={card({ padding: '18px 20px' })}>
