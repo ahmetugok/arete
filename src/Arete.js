@@ -1343,10 +1343,17 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog, onS
     if (onLogUpdate) onLogUpdate(exercise.name, 'rpe', val);
   };
   return (
-    <div className={`${darkMode ? 'bg-slate-800/30 border-slate-700/30' : 'bg-white border-gray-200'} rounded-lg border overflow-hidden mb-1.5 hover:border-amber-500/30 transition-colors`}>
+    <div style={{
+      borderRadius: 12,
+      background: darkMode ? 'rgba(255,255,255,0.03)' : '#fff',
+      border: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : '#e2e8f0'}`,
+      overflow: 'hidden',
+      marginBottom: 6,
+      transition: 'border-color 0.15s',
+    }}>
       {/* Header row */}
-      <div className="px-3 py-2.5 flex items-center gap-2 cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
-        <span className={`${darkMode ? 'text-white' : 'text-gray-900'} text-sm font-semibold flex-1 truncate`}>{exercise.name}</span>
+      <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => setIsOpen(!isOpen)}>
+        <span style={{ fontSize: 13, fontWeight: 700, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: darkMode ? '#f1f5f9' : '#1e293b' }}>{exercise.name}</span>
         {!isMetcon && setsReps && (
           <span className="text-[10px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full shrink-0">{setsReps}</span>
         )}
@@ -1658,24 +1665,50 @@ const SectionCard = ({ title, subTitle, icon: Icon, children, className = "", nu
   const darkMode = React.useContext(ThemeContext);
   const [open, setOpen] = useState(true);
   return (
-    <div className={`${darkMode ? 'bg-slate-900/40' : 'bg-white/70 shadow-sm'} border-l-2 border-amber-500 rounded-r mb-3 overflow-hidden ${className}`}>
+    <div style={{
+      borderRadius: 16,
+      background: darkMode ? 'rgba(255,255,255,0.03)' : '#fff',
+      border: `1px solid ${darkMode ? 'rgba(255,255,255,0.07)' : '#e2e8f0'}`,
+      marginBottom: 10,
+      overflow: 'hidden',
+    }} className={className}>
       <button
         onClick={() => setOpen(p => !p)}
-        className={`w-full ${darkMode ? 'bg-slate-900/80 border-slate-800/50' : 'bg-gray-50 border-gray-200'} px-3 py-2 flex items-center gap-2 border-b text-left`}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+          padding: '12px 14px', textAlign: 'left', cursor: 'pointer',
+          background: 'transparent', border: 'none',
+          borderBottom: open ? `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : '#f1f5f9'}` : 'none',
+        }}
       >
         {number !== undefined && (
-          <span className="text-[10px] font-black text-amber-500/60 font-mono w-5 shrink-0">{String(number).padStart(2, '0')}</span>
+          <span style={{ fontSize: 10, fontWeight: 900, color: 'rgba(245,158,11,0.5)', fontFamily: 'monospace', minWidth: 18, flexShrink: 0 }}>
+            {String(number).padStart(2, '0')}
+          </span>
         )}
-        <div className={`p-1.5 ${darkMode ? 'bg-slate-950' : 'bg-white'} rounded text-amber-500 shrink-0`}><Icon size={14} /></div>
-        <div className="min-w-0 flex-1">
-          <h3 className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-gray-800'} uppercase tracking-wide`}>{title}</h3>
-          {subTitle && <p className="text-[9px] text-amber-500/70 uppercase truncate">{subTitle}</p>}
+        <div style={{
+          width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+          background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.2)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#f59e0b',
+        }}>
+          <Icon size={13} />
         </div>
-        <div className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-0' : '-rotate-90'}`}>
-          <ChevronDown size={14} className={darkMode ? 'text-slate-500' : 'text-gray-400'} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h3 style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: darkMode ? '#f1f5f9' : '#1e293b', lineHeight: 1 }}>{title}</h3>
+          {subTitle && (
+            <p style={{ fontSize: 9, color: '#f59e0b', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>
+              {subTitle}
+            </p>
+          )}
         </div>
+        <ChevronDown size={13} style={{ color: '#475569', flexShrink: 0, transform: open ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s' }} />
       </button>
-      {open && <div className={`p-2 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>{children}</div>}
+      {open && (
+        <div style={{ padding: '10px 10px 8px', color: darkMode ? '#cbd5e1' : '#475569' }}>
+          {children}
+        </div>
+      )}
     </div>
   );
 };
@@ -3328,6 +3361,7 @@ export default function App() {
   const { toasts, toast, removeToast } = useToast();
   const [confirmState, setConfirmState] = useState(null);
   const [showSummary, setShowSummary] = useState(false);
+  const [showDrawer, setShowDrawer] = useState(false);
   const [program, setProgram] = useState(() => {
     try { return JSON.parse(localStorage.getItem('arete_program') || 'null'); } catch { return null; }
   });
@@ -4181,9 +4215,100 @@ export default function App() {
   return (
     <ThemeContext.Provider value={darkMode}>
       <div
-        className={`min-h-screen font-sans selection:bg-amber-500 selection:text-slate-900 pb-24 relative ${darkMode ? 'bg-slate-950 text-slate-200' : 'bg-gray-100 text-gray-800'}`}
+        className={`min-h-screen font-sans selection:bg-amber-500 selection:text-slate-900 pb-24 relative ${darkMode ? 'text-slate-200' : 'bg-gray-50 text-gray-800'}`}
+        style={darkMode ? { background: '#0a0f1e' } : {}}
         data-theme={darkMode ? 'dark' : 'light'}
       >
+        {/* ─── SIDE DRAWER ─── */}
+        {showDrawer && (
+          <div
+            onClick={() => setShowDrawer(false)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 200,
+              background: 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+              display: 'flex', justifyContent: 'flex-end',
+            }}
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: 260, height: '100%',
+                background: darkMode ? '#0c1422' : '#fff',
+                borderLeft: `1px solid ${darkMode ? 'rgba(255,255,255,0.07)' : '#e2e8f0'}`,
+                display: 'flex', flexDirection: 'column',
+                animation: 'slideInRight 0.25s cubic-bezier(0.34,1.2,0.64,1)',
+              }}
+            >
+              <div style={{ padding: '20px 20px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : '#f1f5f9'}` }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: '#3d5470', textTransform: 'uppercase', letterSpacing: '0.14em' }}>Menü</p>
+              </div>
+
+              {[
+                { icon: BicepsFlexed, label: 'Calisthenics',     sub: '62 hareket · Rehber',    color: '#60a5fa', action: () => { setActiveTab('calisthenics'); setShowDrawer(false); } },
+                { icon: Calendar,     label: 'Program',          sub: 'Periodizasyon planı',     color: '#f59e0b', action: () => { setActiveTab('program');      setShowDrawer(false); } },
+                { icon: Heart,        label: 'Toparlanma',       sub: 'Günlük hazırlık skoru',   color: '#22c55e', action: () => { setActiveTab('recovery');     setShowDrawer(false); } },
+                { icon: Calendar,     label: 'Takvim',           sub: 'Antrenman geçmişi',       color: '#a78bfa', action: () => { setShowCalendar(true);        setShowDrawer(false); } },
+                { icon: BookOpen,     label: 'Rehber',           sub: 'Metodoloji & teknikler',  color: '#f59e0b', action: () => { setShowGuide(true);           setShowDrawer(false); } },
+                { icon: Calculator,   label: '1RM Hesaplayıcı',  sub: 'Kuvvet tahmini',          color: '#ef4444', action: () => { setShowOneRM(true);           setShowDrawer(false); } },
+                { icon: Timer,        label: 'Antrenman Geçmişi',sub: 'Kayıtlı antrenmanlar',    color: '#60a5fa', action: () => { setShowHistory(true);         setShowDrawer(false); } },
+              ].map(({ icon: Icon, label, sub, color, action }) => (
+                <button key={label} onClick={action} style={{
+                  display: 'flex', alignItems: 'center', gap: 13,
+                  padding: '13px 20px',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.03)' : '#f8fafc'}`,
+                  textAlign: 'left', width: '100%',
+                }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                    background: `${color}18`, border: `1px solid ${color}28`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color,
+                  }}>
+                    <Icon size={16} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: darkMode ? '#e2e8f0' : '#1e293b' }}>{label}</div>
+                    <div style={{ fontSize: 9, color: '#3d5470', marginTop: 2 }}>{sub}</div>
+                  </div>
+                  <span style={{ color: '#2a3a52', fontSize: 18 }}>›</span>
+                </button>
+              ))}
+
+              <div style={{ marginTop: 'auto', borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : '#f1f5f9'}` }}>
+                <button onClick={() => { setActiveTab('settings'); setShowDrawer(false); }} style={{
+                  display: 'flex', alignItems: 'center', gap: 13,
+                  padding: '13px 20px', background: 'none', border: 'none', cursor: 'pointer',
+                  width: '100%', textAlign: 'left',
+                }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                    background: darkMode ? 'rgba(255,255,255,0.04)' : '#f8fafc',
+                    border: `1px solid ${darkMode ? 'rgba(255,255,255,0.07)' : '#e2e8f0'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: darkMode ? '#475569' : '#9ca3af',
+                  }}>
+                    <Target size={16} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: darkMode ? '#e2e8f0' : '#1e293b' }}>Ayarlar</div>
+                    <div style={{ fontSize: 9, color: '#3d5470', marginTop: 2 }}>Tema & tercihler</div>
+                  </div>
+                  <span style={{ color: '#2a3a52', fontSize: 18 }}>›</span>
+                </button>
+              </div>
+            </div>
+
+            <style>{`
+              @keyframes slideInRight {
+                from { opacity: 0; transform: translateX(40px); }
+                to   { opacity: 1; transform: translateX(0); }
+              }
+            `}</style>
+          </div>
+        )}
+
         <GuideModal isOpen={showGuide} onClose={() => setShowGuide(false)} />
         <HistoryModal
           isOpen={showHistory}
@@ -4211,24 +4336,37 @@ export default function App() {
           }} />
         )}
 
-        <header className={`border-b sticky top-0 z-50 shadow-xl ${darkMode ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-gray-200 shadow-gray-200/80'}`}>
-          <div className="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div className="flex items-center gap-2.5">
-              <div className="relative shrink-0">
-                <div className="absolute inset-0 bg-amber-500 rounded-full blur-md opacity-20"></div>
-                <AreteLogo size={38} />
+        <header style={{
+          position: 'sticky', top: 0, zIndex: 50,
+          background: darkMode ? 'rgba(10,15,30,0.96)' : 'rgba(255,255,255,0.96)',
+          borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : '#e2e8f0'}`,
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+        }}>
+          <div style={{ maxWidth: 720, margin: '0 auto', padding: '10px 22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <div style={{ position: 'absolute', inset: -4, background: 'radial-gradient(circle, rgba(245,158,11,0.25), transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
+                <AreteLogo size={34} />
               </div>
               <div>
-                <h1 className={`text-xl font-black tracking-tighter ${darkMode ? 'text-white' : 'text-gray-900'} font-serif leading-none`}>ARETE</h1>
-                <p className="text-[8px] gradient-text font-bold tracking-[0.2em] uppercase">Philosophy of Strength</p>
+                <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: '-0.04em', color: darkMode ? '#f1f5f9' : '#0f172a', lineHeight: 1 }}>ARETE</div>
+                <div style={{ fontSize: 7, fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#f59e0b', marginTop: 3, opacity: 0.8 }}>Philosophy of Strength</div>
               </div>
             </div>
-            <div className="flex items-center gap-1">
-              <button onClick={() => setShowHistory(true)} className={`p-2 rounded-full ${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`} title="Geçmiş"><Timer size={18} /></button>
-              <button onClick={() => setShowOneRM(true)} className={`p-2 rounded-full ${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`} title="1RM Hesaplayici"><Calculator size={18} /></button>
-              <button onClick={() => setShowGuide(true)} className={`p-2 rounded-full ${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`}><BookOpen size={18} /></button>
-              <button onClick={() => setActiveTab('settings')} className={`p-2 rounded-full ${activeTab === 'settings' ? 'text-amber-400' : darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`} title="Ayarlar"><Settings size={18} /></button>
-            </div>
+            <button
+              onClick={() => setShowDrawer(true)}
+              style={{
+                width: 36, height: 36, borderRadius: 12,
+                background: darkMode ? 'rgba(255,255,255,0.04)' : '#f8fafc',
+                border: `1px solid ${darkMode ? 'rgba(255,255,255,0.07)' : '#e2e8f0'}`,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5,
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ width: 14, height: 1.5, background: darkMode ? '#3d5470' : '#94a3b8', borderRadius: 1 }} />
+              <div style={{ width: 9, height: 1.5, background: darkMode ? '#3d5470' : '#94a3b8', borderRadius: 1, alignSelf: 'flex-start', marginLeft: 10 }} />
+            </button>
           </div>
         </header>
 
@@ -4683,6 +4821,47 @@ export default function App() {
                 <Target className="text-amber-500" size={14} /> Ayarlar
               </h2>
 
+              {/* Hızlı Erişim Araçları */}
+              <div style={{
+                borderRadius: 16, overflow: 'hidden', marginBottom: 12,
+                background: darkMode ? 'rgba(255,255,255,0.03)' : '#fff',
+                border: `1px solid ${darkMode ? 'rgba(255,255,255,0.07)' : '#e2e8f0'}`,
+              }}>
+                <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : '#f1f5f9'}` }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                    Araçlar
+                  </p>
+                </div>
+                {[
+                  { icon: Timer, label: 'Antrenman Geçmişi', sub: 'Kaydedilen antrenmanlar', action: () => setShowHistory(true), color: '#60a5fa' },
+                  { icon: Calculator, label: '1RM Hesaplayıcı', sub: 'Maksimum tekrar tahmini', action: () => setShowOneRM(true), color: '#a78bfa' },
+                  { icon: BookOpen, label: 'Antrenman Rehberi', sub: 'Metodoloji & açıklamalar', action: () => setShowGuide(true), color: '#f59e0b' },
+                  { icon: Calendar, label: 'Takvim', sub: 'Antrenman takvimi', action: () => setShowCalendar(true), color: '#22c55e' },
+                ].map(({ icon: Icon, label, sub, action, color }) => (
+                  <button key={label} onClick={action} style={{
+                    width: '100%', padding: '12px 16px',
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : '#f8fafc'}`,
+                    textAlign: 'left', transition: 'background 0.15s',
+                  }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                      background: `${color}18`, border: `1px solid ${color}30`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color,
+                    }}>
+                      <Icon size={15} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: darkMode ? '#f1f5f9' : '#1e293b', marginBottom: 1 }}>{label}</p>
+                      <p style={{ fontSize: 10, color: '#64748b' }}>{sub}</p>
+                    </div>
+                    <ChevronDown size={14} style={{ color: '#334155', transform: 'rotate(-90deg)', flexShrink: 0 }} />
+                  </button>
+                ))}
+              </div>
+
               {/* Görünüm toggle */}
               <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
                 <div className="flex items-center justify-between">
@@ -4698,48 +4877,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Geçmiş */}
-              <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Antrenman Geçmişi</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Kaydedilen antrenmanlar</p>
-                  </div>
-                  <button onClick={() => setShowHistory(true)}
-                    className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition-colors">
-                    Görüntüle
-                  </button>
-                </div>
-              </div>
-
-              {/* Rehber */}
-              <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Antrenman Rehberi</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Metodoloji & açıklamalar</p>
-                  </div>
-                  <button onClick={() => setShowGuide(true)}
-                    className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition-colors">
-                    Aç
-                  </button>
-                </div>
-              </div>
-
-              {/* Sohbet / Kahin */}
-              <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Kahin – AI Koç</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Antrenman sorularını sor</p>
-                  </div>
-                  <button onClick={() => setShowChat(true)}
-                    className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition-colors">
-                    Aç
-                  </button>
-                </div>
-              </div>
-
               <div className={`p-3 rounded-xl border text-center ${darkMode ? 'bg-slate-900/30 border-slate-800/30' : 'bg-gray-50 border-gray-200'}`}>
                 <p className="text-[10px] font-black text-amber-500">ARETE v2.5</p>
                 <p className="text-[9px] text-slate-500 mt-0.5">Philosophy of Strength · Excellence is a Habit</p>
@@ -4749,77 +4886,90 @@ export default function App() {
 
         </main>
 
-        {/* ─── COMPACT BOTTOM NAV ─── */}
-        <nav className={`fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-md ${darkMode ? 'bg-slate-900/96 border-slate-800/60' : 'bg-white/96 border-gray-200'}`}>
-          <div className="max-w-3xl mx-auto flex items-stretch relative">
+        {/* ─── PULSE BOTTOM NAV ─── */}
+        <nav style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+          background: darkMode ? 'rgba(6,10,20,0.98)' : 'rgba(255,255,255,0.98)',
+          borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : '#e2e8f0'}`,
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}>
+          <div style={{ maxWidth: 720, margin: '0 auto', display: 'flex', alignItems: 'stretch', height: 70 }}>
 
-            {/* Dashboard */}
-            <button onClick={() => setActiveTab('dashboard')}
-              className={`flex-1 flex flex-col items-center px-1 pt-2 pb-2 h-[68px] transition-colors ${activeTab === 'dashboard' ? 'justify-between text-amber-400' : 'justify-start'} ${darkMode ? (activeTab !== 'dashboard' ? 'text-slate-500 hover:text-slate-300' : '') : (activeTab !== 'dashboard' ? 'text-gray-400 hover:text-gray-600' : '')}`}>
-              {activeTab === 'dashboard' ? <span className="text-[10px] font-semibold tracking-wide leading-none">Ana Sayfa</span> : <Layout size={22} />}
-              {activeTab === 'dashboard' && <Layout size={22} />}
-            </button>
+            {[
+              { id: 'dashboard', Icon: Layout,   label: 'Ana Sayfa' },
+              { id: 'workout',   Icon: Activity, label: 'Antrenman' },
+            ].map(({ id, Icon, label }) => {
+              const isActive = activeTab === id;
+              return (
+                <button key={id} onClick={() => setActiveTab(id)} style={{
+                  flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  justifyContent: 'center', gap: 5,
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: isActive ? '#f59e0b' : darkMode ? '#253447' : '#94a3b8',
+                  position: 'relative', transition: 'color 0.2s',
+                }}>
+                  {isActive && (
+                    <div style={{
+                      position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+                      width: 22, height: 2.5, borderRadius: '0 0 3px 3px', background: '#f59e0b',
+                    }} />
+                  )}
+                  <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
+                  <span style={{ fontSize: 9.5, fontWeight: isActive ? 700 : 500, letterSpacing: '0.02em', lineHeight: 1 }}>
+                    {label}
+                  </span>
+                </button>
+              );
+            })}
 
-            {/* Antrenman */}
-            <button onClick={() => setActiveTab('workout')}
-              className={`flex-1 flex flex-col items-center px-1 pt-2 pb-2 h-[68px] transition-colors ${activeTab === 'workout' ? 'justify-between text-amber-400' : 'justify-start'} ${darkMode ? (activeTab !== 'workout' ? 'text-slate-500 hover:text-slate-300' : '') : (activeTab !== 'workout' ? 'text-gray-400 hover:text-gray-600' : '')}`}>
-              {activeTab === 'workout' ? <span className="text-[10px] font-semibold tracking-wide leading-none">Antrenman</span> : <Activity size={22} />}
-              {activeTab === 'workout' && <Activity size={22} />}
-            </button>
-
-            {/* Beslenme */}
-            <button onClick={() => setActiveTab('nutrition')}
-              className={`flex-1 flex flex-col items-center px-1 pt-2 pb-2 h-[68px] transition-colors ${activeTab === 'nutrition' ? 'justify-between text-amber-400' : 'justify-start'} ${darkMode ? (activeTab !== 'nutrition' ? 'text-slate-500 hover:text-slate-300' : '') : (activeTab !== 'nutrition' ? 'text-gray-400 hover:text-gray-600' : '')}`}>
-              {activeTab === 'nutrition' ? <span className="text-[10px] font-semibold tracking-wide leading-none">Beslenme</span> : <Utensils size={22} />}
-              {activeTab === 'nutrition' && <Utensils size={22} />}
-            </button>
-
-            {/* Calisthenics */}
-            <button onClick={() => setActiveTab('calisthenics')}
-              className={`flex-1 flex flex-col items-center px-1 pt-2 pb-2 h-[68px] transition-colors ${activeTab === 'calisthenics' ? 'justify-between text-amber-400' : 'justify-start'} ${darkMode ? (activeTab !== 'calisthenics' ? 'text-slate-500 hover:text-slate-300' : '') : (activeTab !== 'calisthenics' ? 'text-gray-400 hover:text-gray-600' : '')}`}>
-              {activeTab === 'calisthenics' ? <span className="text-[10px] font-semibold tracking-wide leading-none">Calisthenics</span> : <BicepsFlexed size={22} />}
-              {activeTab === 'calisthenics' && <BicepsFlexed size={22} />}
-            </button>
-
-            {/* ── Futuristic AI Button (center floating) ── */}
-            <div className="relative flex flex-col items-center justify-start pt-1 pb-1" style={{ width: '72px', flexShrink: 0 }}>
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-amber-500/20 blur-lg animate-pulse pointer-events-none" />
+            {/* Kahin FAB */}
+            <div style={{ width: 74, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 10, position: 'relative' }}>
+              <div style={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)', width: 54, height: 54, borderRadius: '50%', background: 'rgba(245,158,11,0.2)', filter: 'blur(18px)', pointerEvents: 'none' }} />
               <button
                 onClick={() => setShowChat(true)}
-                className="relative -top-4 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all duration-150"
                 style={{
-                  background: 'linear-gradient(135deg, #92400e 0%, #d97706 40%, #fbbf24 70%, #f59e0b 100%)',
-                  boxShadow: '0 0 0 3px rgba(245,158,11,0.25), 0 0 18px 4px rgba(217,119,6,0.45), 0 8px 24px rgba(0,0,0,0.5)',
+                  width: 52, height: 52, borderRadius: '50%', border: 'none',
+                  background: 'linear-gradient(145deg, #7c2d12 0%, #c2610c 45%, #fbbf24 100%)',
+                  boxShadow: '0 0 0 2.5px rgba(245,158,11,0.22), 0 8px 26px rgba(100,40,8,0.65)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  position: 'relative', bottom: 9, cursor: 'pointer', transition: 'transform 0.15s',
                 }}
                 title="Kahin AI"
               >
-                <div className="absolute inset-1 rounded-full border border-yellow-200/30 pointer-events-none" />
-                <Sparkles size={22} className="text-slate-900 drop-shadow" />
+                <div style={{ position: 'absolute', inset: 3, borderRadius: '50%', border: '1px solid rgba(255,220,100,0.22)', pointerEvents: 'none' }} />
+                <Sparkles size={21} style={{ color: '#0a0f1e' }} />
               </button>
-              <span className="text-[9px] font-black tracking-widest text-amber-400 -mt-5" style={{ letterSpacing: '0.18em' }}>KAHİN</span>
+              <span style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.18em', color: '#f59e0b', marginTop: -5, position: 'relative', bottom: 3 }}>KAHİN</span>
             </div>
 
-            {/* İstatistik */}
-            <button onClick={() => setActiveTab('stats')}
-              className={`flex-1 flex flex-col items-center px-1 pt-2 pb-2 h-[68px] transition-colors ${activeTab === 'stats' ? 'justify-between text-amber-400' : 'justify-start'} ${darkMode ? (activeTab !== 'stats' ? 'text-slate-500 hover:text-slate-300' : '') : (activeTab !== 'stats' ? 'text-gray-400 hover:text-gray-600' : '')}`}>
-              {activeTab === 'stats' ? <span className="text-[10px] font-semibold tracking-wide leading-none">İstatistik</span> : <TrendingUp size={22} />}
-              {activeTab === 'stats' && <TrendingUp size={22} />}
-            </button>
-
-            {/* Program */}
-            <button onClick={() => setActiveTab('program')}
-              className={`flex-1 flex flex-col items-center px-1 pt-2 pb-2 h-[68px] transition-colors ${activeTab === 'program' ? 'justify-between text-amber-400' : 'justify-start'} ${darkMode ? (activeTab !== 'program' ? 'text-slate-500 hover:text-slate-300' : '') : (activeTab !== 'program' ? 'text-gray-400 hover:text-gray-600' : '')}`}>
-              {activeTab === 'program' ? <span className="text-[10px] font-semibold tracking-wide leading-none">Program</span> : <Calendar size={22} />}
-              {activeTab === 'program' && <Calendar size={22} />}
-            </button>
-
-            {/* Toparlanma */}
-            <button onClick={() => setActiveTab('recovery')}
-              className={`flex-1 flex flex-col items-center px-1 pt-2 pb-2 h-[68px] transition-colors ${activeTab === 'recovery' ? 'justify-between text-amber-400' : 'justify-start'} ${darkMode ? (activeTab !== 'recovery' ? 'text-slate-500 hover:text-slate-300' : '') : (activeTab !== 'recovery' ? 'text-gray-400 hover:text-gray-600' : '')}`}>
-              {activeTab === 'recovery' ? <span className="text-[10px] font-semibold tracking-wide leading-none">Toparlanma</span> : <Heart size={22} />}
-              {activeTab === 'recovery' && <Heart size={22} />}
-            </button>
-
+            {[
+              { id: 'nutrition', Icon: Utensils,   label: 'Beslenme'   },
+              { id: 'stats',     Icon: TrendingUp, label: 'İstatistik' },
+            ].map(({ id, Icon, label }) => {
+              const isActive = activeTab === id;
+              return (
+                <button key={id} onClick={() => setActiveTab(id)} style={{
+                  flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  justifyContent: 'center', gap: 5,
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: isActive ? '#f59e0b' : darkMode ? '#253447' : '#94a3b8',
+                  position: 'relative', transition: 'color 0.2s',
+                }}>
+                  {isActive && (
+                    <div style={{
+                      position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+                      width: 22, height: 2.5, borderRadius: '0 0 3px 3px', background: '#f59e0b',
+                    }} />
+                  )}
+                  <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
+                  <span style={{ fontSize: 9.5, fontWeight: isActive ? 700 : 500, letterSpacing: '0.02em', lineHeight: 1 }}>
+                    {label}
+                  </span>
+                </button>
+              );
+            })}
 
           </div>
         </nav>

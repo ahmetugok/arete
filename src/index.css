@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ARETE — Global Design Tokens */
+:root {
+  --bg-primary: #0a0f1e;
+  --bg-card: rgba(255,255,255,0.03);
+  --border-subtle: rgba(255,255,255,0.07);
+  --accent: #f59e0b;
+  --accent-dark: #92400e;
+}
+
+/* Scrollbar gizle — mobil hissini artırır */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+body { overscroll-behavior: none; }
+
+/* Bottom nav safe area (iPhone notch) */
+nav {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
