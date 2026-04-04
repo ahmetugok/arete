@@ -4311,8 +4311,11 @@ export default function App() {
   return (
     <ThemeContext.Provider value={darkMode}>
       <div
-        className={`min-h-screen font-sans selection:bg-amber-500 selection:text-slate-900 pb-24 relative ${darkMode ? 'text-slate-200' : 'bg-gray-50 text-gray-800'}`}
-        style={darkMode ? { background: '#0a0f1e' } : {}}
+        className={`min-h-screen font-sans selection:bg-lime-200 selection:text-slate-900 pb-24 relative`}
+        style={darkMode
+          ? { background: '#0a0f1e', color: '#F9F9FD' }
+          : { background: '#F4F5F0', color: '#1A1D1F' }
+        }
         data-theme={darkMode ? 'dark' : 'light'}
       >
         {/* ─── SIDE DRAWER ─── */}

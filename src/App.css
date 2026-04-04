@@ -1,39 +1,121 @@
-.App {
-  text-align: center;
+/* ─── ARETE — GLOBAL RESET ────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+/* ─── DARK MODE TOKENS (default) ──────────────────────────────────────── */
+:root {
+  --bg-base:      #0a0f1e;
+  --bg-surface:   #161A1D;
+  --bg-surface-lo:#111417;
+  --bg-surface-hi:#1E2226;
+  --accent:       #D1FF26;
+  --accent-dim:   rgba(209,255,38,0.12);
+  --accent-border:rgba(209,255,38,0.22);
+  --outline:      rgba(255,255,255,0.06);
+  --text-primary: #F9F9FD;
+  --text-muted:   #7A7C80;
+  --text-subtle:  #4A4D52;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* ─── LIGHT MODE TOKENS ────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-base:      #F4F5F0;          /* Sıcak off-white (kirli değil, havadar) */
+  --bg-surface:   #FFFFFF;
+  --bg-surface-lo:#F8F9F5;
+  --bg-surface-hi:#EDEEE9;
+  --accent:       #5A7A00;          /* Koyu zeytin yeşili — lime'ın light mode karşılığı */
+  --accent-dim:   rgba(90,122,0,0.1);
+  --accent-border:rgba(90,122,0,0.2);
+  --outline:      rgba(0,0,0,0.07);
+  --text-primary: #1A1D1F;          /* Neredeyse siyah ama sert değil */
+  --text-muted:   #5A6070;
+  --text-subtle:  #9099A8;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* ─── GLOBAL BODY — LIGHT ──────────────────────────────────────────────── */
+[data-theme="light"] {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+/* ─── BOTTOM NAV — LIGHT ────────────────────────────────────────────────── */
+[data-theme="light"] nav,
+[data-theme="light"] footer {
+  background: rgba(255,255,255,0.95) !important;
+  border-color: rgba(0,0,0,0.06) !important;
 }
 
-.App-link {
-  color: #61dafb;
+/* ─── SECTION BAŞLIKLARI — LIGHT ────────────────────────────────────────── */
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3 {
+  color: var(--text-primary);
+}
+
+/* ─── INPUT / TEXTAREA — LIGHT ──────────────────────────────────────────── */
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+  background: #FFFFFF !important;
+  color: #1A1D1F !important;
+  border-color: rgba(0,0,0,0.12) !important;
+}
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #9099A8 !important;
+}
+
+/* ─── CARD / SURFACE OVERRIDE — LIGHT ──────────────────────────────────── */
+/* bg-slate-800/*, bg-slate-900/* Tailwind sınıfları light'ta override */
+[data-theme="light"] .bg-slate-800\/30,
+[data-theme="light"] .bg-slate-900\/50,
+[data-theme="light"] .bg-slate-900\/60 {
+  background-color: #FFFFFF !important;
+}
+
+/* ─── BORDER OVERRIDE — LIGHT ───────────────────────────────────────────── */
+[data-theme="light"] .border-slate-700\/30,
+[data-theme="light"] .border-slate-800\/50 {
+  border-color: rgba(0,0,0,0.08) !important;
+}
+
+/* ─── TEXT OVERRIDE — LIGHT ─────────────────────────────────────────────── */
+[data-theme="light"] .text-slate-400 { color: #5A6070 !important; }
+[data-theme="light"] .text-slate-500 { color: #7A8490 !important; }
+[data-theme="light"] .text-slate-300 { color: #2D3340 !important; }
+[data-theme="light"] .text-white     { color: #1A1D1F !important; }
+[data-theme="light"] .text-slate-200 { color: #2D3340 !important; }
+
+/* ─── SCROLL BAR — LIGHT ────────────────────────────────────────────────── */
+[data-theme="light"] ::-webkit-scrollbar { width: 4px; }
+[data-theme="light"] ::-webkit-scrollbar-track { background: transparent; }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 2px; }
+
+/* ─── DashboardTab CARD OLARAK KULLANILAN DIV'LER ──────────────────────── */
+/* DashboardTab inline style ile background: T.surface (#161A1D) veriyor;
+   [data-theme="light"] override ile beyaza çekiyoruz */
+[data-theme="light"] [style*="#161A1D"],
+[data-theme="light"] [style*="161A1D"] {
+  background-color: #FFFFFF !important;
+  border-color: rgba(0,0,0,0.07) !important;
+  color: #1A1D1F !important;
+}
+
+/* ─── RECHARTS — LIGHT ──────────────────────────────────────────────────── */
+[data-theme="light"] .recharts-text { fill: #5A6070 !important; }
+[data-theme="light"] .recharts-cartesian-axis-line { stroke: transparent !important; }
+
+/* ─── ANİMATIONS (shared) ───────────────────────────────────────────────── */
+@keyframes animate-fade-in-scale {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
