@@ -1344,35 +1344,36 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog, onS
   };
   return (
     <div style={{
-      borderRadius: 12,
-      background: darkMode ? 'rgba(255,255,255,0.03)' : '#fff',
-      border: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : '#e2e8f0'}`,
+      borderRadius: 16,
+      background: darkMode ? '#171A1D' : '#fff',
+      border: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : '#e2e8f0'}`,
       overflow: 'hidden',
       marginBottom: 6,
-      transition: 'border-color 0.15s',
-    }}>
+      transition: 'transform 0.15s, border-color 0.15s',
+    }}
+    onTouchStart={e => e.currentTarget.style.transform = 'scale(0.98)'}
+    onTouchEnd={e => e.currentTarget.style.transform = 'scale(1)'}>
       {/* Header row */}
-      <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => setIsOpen(!isOpen)}>
-        <span style={{ fontSize: 13, fontWeight: 700, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: darkMode ? '#f1f5f9' : '#1e293b' }}>{exercise.name}</span>
+      <div style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => setIsOpen(!isOpen)}>
+        <span style={{ fontSize: 13, fontWeight: 800, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: darkMode ? '#F9F9FD' : '#1e293b', fontFamily: 'Lexend, sans-serif', letterSpacing: '-0.02em' }}>{exercise.name}</span>
         {!isMetcon && setsReps && (
-          <span className="text-[10px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full shrink-0">{setsReps}</span>
+          <span style={{ fontSize: 10, fontWeight: 800, color: '#D1FF26', background: 'rgba(209,255,38,0.10)', border: '1px solid rgba(209,255,38,0.20)', padding: '2px 8px', borderRadius: 99, flexShrink: 0, fontFamily: 'Lexend, sans-serif' }}>{setsReps}</span>
         )}
         {weightRx && <span className="text-[9px] text-slate-400 shrink-0 hidden sm:inline">{weightRx}</span>}
         {onSwap && (
           <button onClick={e => { e.stopPropagation(); onSwap(); }}
             title="Egzersizi degistir"
-            className="text-slate-600 hover:text-amber-500 transition-colors shrink-0"
-            style={{ fontSize: 11, padding: '2px 6px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.05)' }}>
+            style={{ fontSize: 11, padding: '2px 6px', borderRadius: 6, border: '1px solid rgba(209,255,38,0.15)', color: '#D1FF26', background: 'transparent', cursor: 'pointer', transition: 'opacity 0.15s', flexShrink: 0 }}>
             ↻
           </button>
         )}
         {isOpen
-          ? <ChevronUp size={14} className="text-amber-400 shrink-0" />
+          ? <ChevronUp size={14} style={{ color: '#D1FF26', flexShrink: 0 }} />
           : <ChevronDown size={14} className="text-slate-500 shrink-0" />}
       </div>
       {/* Expanded body */}
       {isOpen && (
-        <div className={`${darkMode ? 'bg-slate-900/60 border-slate-700/30' : 'bg-gray-50 border-gray-200'} border-t p-3`}>
+        <div className={`${darkMode ? 'border-white/5' : 'bg-gray-50 border-gray-200'} border-t p-3`} style={darkMode ? { background: '#111417' } : {}}>
           {/* ÖN / ARKA kas diyagramları */}
           <div className="flex gap-2 mb-3">
             <div className="flex flex-col items-center gap-0.5">
@@ -1387,7 +1388,7 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog, onS
               {/* Demo + kas etiketleri */}
               <div className="flex flex-wrap gap-1">
                 <a href={getGifSearchUrl(exercise.name)} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[9px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-full hover:bg-amber-500/20 transition-colors">
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9, fontWeight: 700, color: '#D1FF26', background: 'rgba(209,255,38,0.08)', border: '1px solid rgba(209,255,38,0.18)', padding: '3px 8px', borderRadius: 99, transition: 'background 0.15s', textDecoration: 'none' }}>
                   <PlayCircle size={10} /> Demo
                 </a>
                 {getMuscleGroups(exercise).primary.filter(m => m !== 'full').map(m => (
@@ -1400,7 +1401,7 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog, onS
               <p className={`${darkMode ? 'text-slate-400' : 'text-gray-500'} text-[11px] leading-relaxed line-clamp-3`}>{exercise.description}</p>
               {/* Not */}
               {exercise.note && (
-                <p className="text-[10px] text-amber-400 bg-amber-500/8 border border-amber-500/15 px-2 py-1 rounded">
+                <p style={{ fontSize: 10, color: '#D1FF26', background: 'rgba(209,255,38,0.07)', border: '1px solid rgba(209,255,38,0.15)', padding: '4px 8px', borderRadius: 6 }}>
                   💡 {exercise.note}
                 </p>
               )}
@@ -1435,8 +1436,8 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog, onS
                     const pct = isPrimary
                       ? (primaryPcts[primaryMuscles.indexOf(key)] ?? 40)
                       : (secondaryPcts[secondaryMuscles.indexOf(key)] ?? 20);
-                    const barColor = isPrimary ? '#f59e0b' : '#78350f';
-                    const textColor = isPrimary ? '#fbbf24' : '#92400e';
+                    const barColor = isPrimary ? '#D1FF26' : '#7A9900';
+                    const textColor = isPrimary ? '#D1FF26' : '#8db300';
                     const label = MUSCLE_LABELS[key] || key;
                     return (
                       <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1464,7 +1465,7 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog, onS
                             width: `${pct}%`,
                             height: '100%',
                             background: isPrimary
-                              ? `linear-gradient(90deg, #92400e, ${barColor})`
+                              ? `linear-gradient(90deg, #4a6500, ${barColor})`
                               : barColor,
                             borderRadius: 3,
                             transition: 'width 0.6s cubic-bezier(0.34,1.56,0.64,1)',
@@ -1636,7 +1637,7 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog, onS
                 {[60, 90, 120, 180].map(sec => (
                   <button key={sec} onClick={() => { setRestTimer(sec); setRestActive(true); }}
                     className="text-[9px] font-bold px-2 py-1 rounded-lg border transition-all"
-                    style={{ borderColor: 'rgba(245,158,11,0.3)', color: '#f59e0b', background: 'rgba(245,158,11,0.06)' }}>
+                    style={{ borderColor: 'rgba(209,255,38,0.25)', color: '#D1FF26', background: 'rgba(209,255,38,0.06)' }}>
                     {sec < 60 ? `${sec}sn` : `${sec/60}dk`}
                   </button>
                 ))}
@@ -1645,7 +1646,7 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog, onS
             ) : (
               <div className="flex items-center gap-2">
                 <div className="text-sm font-black font-mono"
-                  style={{ color: restTimer <= 10 ? '#ef4444' : '#f59e0b' }}>
+                  style={{ color: restTimer <= 10 ? '#ef4444' : '#D1FF26' }}>
                   {Math.floor(restTimer / 60)}:{String(restTimer % 60).padStart(2, '0')}
                 </div>
                 <button onClick={() => { setRestActive(false); setRestTimer(null); }}
@@ -1682,22 +1683,22 @@ const SectionCard = ({ title, subTitle, icon: Icon, children, className = "", nu
         }}
       >
         {number !== undefined && (
-          <span style={{ fontSize: 10, fontWeight: 900, color: 'rgba(245,158,11,0.5)', fontFamily: 'monospace', minWidth: 18, flexShrink: 0 }}>
+          <span style={{ fontSize: 10, fontWeight: 900, color: 'rgba(209,255,38,0.45)', fontFamily: 'monospace', minWidth: 18, flexShrink: 0 }}>
             {String(number).padStart(2, '0')}
           </span>
         )}
         <div style={{
           width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-          background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.2)',
+          background: 'rgba(209,255,38,0.10)', border: '1px solid rgba(209,255,38,0.18)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#f59e0b',
+          color: '#D1FF26',
         }}>
           <Icon size={13} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <h3 style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: darkMode ? '#f1f5f9' : '#1e293b', lineHeight: 1 }}>{title}</h3>
           {subTitle && (
-            <p style={{ fontSize: 9, color: '#f59e0b', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>
+            <p style={{ fontSize: 9, color: '#D1FF26', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>
               {subTitle}
             </p>
           )}
@@ -4564,11 +4565,12 @@ export default function App() {
                     number={2}
                   >
                     {workout.strength.map((block, bIdx) => (
-                      <div key={bIdx} className="mb-2 last:mb-0">
-                        <div className={`flex items-center gap-2 py-1 px-2 rounded-t border-b ${darkMode ? 'bg-slate-800/50 border-slate-700/30' : 'bg-gray-100 border-gray-200'}`}>
-                          <span className="text-amber-500 font-bold text-[10px] font-mono">{String.fromCharCode(65 + bIdx)}</span>
-                          <h4 className="text-slate-400 text-[10px] uppercase flex-1">{block.type}</h4>
-                          {block.exercises.length > 1 && <Badge text="SUPERSET" color="bg-amber-900/40 text-amber-300" />}
+                      <div key={bIdx} className="mb-2 last:mb-0" style={block.exercises.length > 1 && darkMode ? { border: '1px solid rgba(209,255,38,0.15)', borderRadius: 14, overflow: 'hidden' } : {}}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: darkMode ? 'rgba(209,255,38,0.04)' : '#f3f4f6', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : '#e5e7eb'}` }}>
+                          {block.exercises.length > 1 && <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#D1FF26', flexShrink: 0 }} />}
+                          <span style={{ fontSize: 10, fontWeight: 900, color: '#D1FF26', fontFamily: 'monospace', flexShrink: 0 }}>{String.fromCharCode(65 + bIdx)}</span>
+                          <h4 style={{ fontSize: 10, color: '#7A7C80', textTransform: 'uppercase', letterSpacing: '0.06em', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{block.type}</h4>
+                          {block.exercises.length > 1 && <span style={{ fontSize: 9, fontWeight: 700, color: '#D1FF26', background: 'rgba(209,255,38,0.1)', border: '1px solid rgba(209,255,38,0.2)', padding: '1px 6px', borderRadius: 99, letterSpacing: '0.08em', flexShrink: 0 }}>SUPERSET</span>}
                           {block.type.includes("10x10") && <Badge text="10×10" color="bg-red-900/40 text-red-200" />}
                           {block.type.includes("CLUSTER") && <Badge text="CLUSTER" color="bg-purple-900/40 text-purple-200" />}
                         </div>
@@ -4589,8 +4591,8 @@ export default function App() {
 
                   {workout.metcon && workout.metcon.exercises && (
                     <SectionCard title="Kondisyon" subTitle={workout.metcon.structure || 'MetCon'} icon={Timer} number={workout.accessories ? 4 : 3}>
-                      <div className="mb-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg flex justify-between items-center">
-                        <span className="text-amber-400 font-bold text-xs">{workout.metcon.structure}</span>
+                      <div style={{ marginBottom: 8, padding: '8px 12px', borderRadius: 10, background: 'linear-gradient(135deg, rgba(19,22,0,0.8), rgba(23,26,29,0.8))', border: '1px solid rgba(209,255,38,0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: '#D1FF26', fontFamily: 'Lexend, sans-serif', letterSpacing: '0.06em' }}>{workout.metcon.structure}</span>
                         <span className="text-slate-400 text-xs">{workout.metcon.rounds ? `${workout.metcon.rounds} Tur` : ''}{workout.metcon.time ? ` • ${workout.metcon.time} dk` : ''}</span>
                       </div>
                       {workout.metcon.exercises.map((move, idx) => (

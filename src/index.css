@@ -1,6 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@700;800;900&family=Manrope:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 
 /* ARETE — Global Design Tokens */
 :root {
@@ -20,7 +23,21 @@
   width: 0px;
   background: transparent;
 }
-body { overscroll-behavior: none; }
+body {
+  overscroll-behavior: none;
+  font-family: 'Manrope', sans-serif;
+}
+h1, h2, h3, h4,
+.font-bold, .font-black, .font-extrabold, .font-headline {
+  font-family: 'Lexend', sans-serif;
+}
+
+/* Glassmorphism utility */
+.glass-card {
+  background: rgba(23, 26, 29, 0.55);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
 
 /* Bottom nav safe area (iPhone notch) */
 nav {
@@ -35,6 +52,7 @@ nav {
   body {
     @apply antialiased;
   }
+
   
   /* Custom scrollbar */
   ::-webkit-scrollbar {
