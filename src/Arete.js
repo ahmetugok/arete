@@ -982,161 +982,238 @@ const getMuscleGroups = (exercise) => {
   return groups;
 };
 
-// Kompakt insan silüeti SVG diyagramı — aktif kaslar vurgulanır
+// ── KAS SİLÜETİ — ÖN GÖRÜŞ (Anterior) — Lime Design ───────────────────────────────
 const MuscleDiagram = ({ exercise }) => {
-  const muscles = getMuscleGroups(exercise);
-  const all = [...muscles.primary, ...muscles.secondary];
-  const isPrimary = (m) => muscles.primary.includes(m);
-  const isActive = (m) => all.includes(m) || all.includes('full');
+  const muscles  = getMuscleGroups(exercise);
+  const all      = [...muscles.primary, ...muscles.secondary];
+  const isFullBody = all.includes('full');
+  const isPrim   = (m) => muscles.primary.includes(m) || isFullBody;
+  const isSec    = (m) => muscles.secondary.includes(m) || isFullBody;
+  const isActive = (m) => all.includes(m) || isFullBody;
 
-  const fill = (m) => {
-    if (all.includes('full')) return '#92400e'; // full body = dim amber for all
-    if (!isActive(m)) return '#1e293b';
-    return isPrimary(m) ? '#f59e0b' : '#92400e';
+  const fillM = (m) => {
+    if (!isActive(m)) return 'rgba(255,255,255,0.04)';
+    return isPrim(m) ? 'rgba(209,255,38,0.82)' : 'rgba(209,255,38,0.25)';
   };
+  const strokeM = (m) => isActive(m) && isPrim(m) ? '#D1FF26' : 'rgba(255,255,255,0.1)';
+  const bodyFill = '#1A1D20';
+  const outline = 'rgba(255,255,255,0.1)';
 
-  const stroke = '#334155'; // slate-700
+  const activeLabels = [
+    ...muscles.primary.filter(m => m !== 'full'),
+    ...muscles.secondary.filter(m => m !== 'full'),
+  ];
 
   return (
-    <svg viewBox="0 0 120 200" className="w-16 h-28 shrink-0" fill="none">
-      {/* HEAD */}
-      <ellipse cx="60" cy="16" rx="11" ry="13" fill="#334155" stroke={stroke} strokeWidth="1" />
-      {/* NECK */}
-      <rect x="55" y="27" width="10" height="8" rx="2" fill="#334155" />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+      <svg viewBox="0 0 100 210" style={{ width: 72, height: 152 }} fill="none">
+        {/* === BODY SILHOUETTE === */}
+        {/* Head */}
+        <ellipse cx="50" cy="14" rx="13" ry="14" fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        {/* Neck */}
+        <path d="M44 26 L56 26 L57 34 L43 34 Z" fill={bodyFill} stroke={outline} strokeWidth="0.5"/>
+        {/* Torso outline */}
+        <path d="M28 34 Q20 38 20 50 L20 100 Q20 106 28 108 L72 108 Q80 106 80 100 L80 50 Q80 38 72 34 Z"
+          fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        {/* Left arm */}
+        <path d="M20 50 Q12 55 10 70 Q9 82 12 94 L18 94 Q16 82 16 70 Q17 58 24 52 Z"
+          fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        {/* Right arm */}
+        <path d="M80 50 Q88 55 90 70 Q91 82 88 94 L82 94 Q84 82 84 70 Q83 58 76 52 Z"
+          fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        {/* Forearms */}
+        <path d="M12 94 Q10 110 11 124 L17 124 Q16 110 18 94 Z" fill={bodyFill} stroke={outline} strokeWidth="0.8"/>
+        <path d="M88 94 Q90 110 89 124 L83 124 Q84 110 82 94 Z" fill={bodyFill} stroke={outline} strokeWidth="0.8"/>
+        {/* Hips */}
+        <path d="M28 108 L72 108 Q78 110 76 120 L64 122 L56 120 L44 120 L36 122 L24 120 Q22 110 28 108 Z"
+          fill={bodyFill} stroke={outline} strokeWidth="0.8"/>
+        {/* Legs */}
+        <path d="M24 120 Q20 136 22 160 L38 160 Q38 136 36 122 Z" fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        <path d="M76 120 Q80 136 78 160 L62 160 Q62 136 64 122 Z" fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        {/* Calves */}
+        <path d="M22 160 Q20 176 22 192 L38 192 Q39 176 38 160 Z" fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        <path d="M78 160 Q80 176 78 192 L62 192 Q61 176 62 160 Z" fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        {/* Feet */}
+        <ellipse cx="30" cy="196" rx="9" ry="5" fill="#111417" stroke={outline} strokeWidth="0.8"/>
+        <ellipse cx="70" cy="196" rx="9" ry="5" fill="#111417" stroke={outline} strokeWidth="0.8"/>
 
-      {/* === FRONT TORSO === */}
-      {/* CHEST */}
-      <path d="M42 36 Q50 33 60 34 Q70 33 78 36 L76 58 Q68 62 60 62 Q52 62 44 58 Z"
-        fill={fill('chest')} stroke={stroke} strokeWidth="0.8" />
-      {/* ABS */}
-      <path d="M44 58 Q52 62 60 62 Q68 62 76 58 L74 90 Q66 94 60 94 Q54 94 46 90 Z"
-        fill={fill('abs')} stroke={stroke} strokeWidth="0.8" />
+        {/* === MUSCLE ZONES === */}
+        {/* CHEST — two pec blocks */}
+        <path d="M30 40 Q40 38 50 39 L50 62 Q40 66 30 62 Z"
+          fill={fillM('chest')} stroke={strokeM('chest')} strokeWidth="0.8"/>
+        <path d="M70 40 Q60 38 50 39 L50 62 Q60 66 70 62 Z"
+          fill={fillM('chest')} stroke={strokeM('chest')} strokeWidth="0.8"/>
 
-      {/* SHOULDERS */}
-      <ellipse cx="35" cy="42" rx="10" ry="11" fill={fill('shoulder')} stroke={stroke} strokeWidth="0.8" />
-      <ellipse cx="85" cy="42" rx="10" ry="11" fill={fill('shoulder')} stroke={stroke} strokeWidth="0.8" />
+        {/* SHOULDERS (anterior delt) */}
+        <ellipse cx="23" cy="46" rx="9" ry="10" fill={fillM('shoulder')} stroke={strokeM('shoulder')} strokeWidth="0.8"/>
+        <ellipse cx="77" cy="46" rx="9" ry="10" fill={fillM('shoulder')} stroke={strokeM('shoulder')} strokeWidth="0.8"/>
 
-      {/* BICEPS (upper arms front) */}
-      <path d="M26 50 Q22 58 23 68 L30 68 Q31 60 33 52 Z"
-        fill={fill('biceps')} stroke={stroke} strokeWidth="0.8" />
-      <path d="M94 50 Q98 58 97 68 L90 68 Q89 60 87 52 Z"
-        fill={fill('biceps')} stroke={stroke} strokeWidth="0.8" />
+        {/* BICEPS */}
+        <path d="M11 56 Q9 68 11 80 L16 80 Q15 68 14 58 Z"
+          fill={fillM('biceps')} stroke={strokeM('biceps')} strokeWidth="0.8"/>
+        <path d="M89 56 Q91 68 89 80 L84 80 Q85 68 86 58 Z"
+          fill={fillM('biceps')} stroke={strokeM('biceps')} strokeWidth="0.8"/>
 
-      {/* TRICEPS (upper arms back, shown on sides) */}
-      <path d="M22 50 Q18 60 20 70 L26 70 Q23 60 26 50 Z"
-        fill={fill('triceps')} stroke={stroke} strokeWidth="0.8" />
-      <path d="M98 50 Q102 60 100 70 L94 70 Q97 60 94 50 Z"
-        fill={fill('triceps')} stroke={stroke} strokeWidth="0.8" />
+        {/* TRICEPS (visible on sides from front) */}
+        <path d="M10 56 Q8 70 10 82 L14 82 Q12 70 13 58 Z"
+          fill={fillM('triceps')} stroke={strokeM('triceps')} strokeWidth="0.8" opacity="0.7"/>
+        <path d="M90 56 Q92 70 90 82 L86 82 Q88 70 87 58 Z"
+          fill={fillM('triceps')} stroke={strokeM('triceps')} strokeWidth="0.8" opacity="0.7"/>
 
-      {/* FOREARMS */}
-      <path d="M23 70 Q21 80 23 90 L29 90 Q28 80 30 70 Z"
-        fill="#334155" stroke={stroke} strokeWidth="0.8" />
-      <path d="M97 70 Q99 80 97 90 L91 90 Q92 80 90 70 Z"
-        fill="#334155" stroke={stroke} strokeWidth="0.8" />
+        {/* ABS — rectus blocks */}
+        <rect x="40" y="64" width="8" height="8" rx="2" fill={fillM('abs')} stroke={strokeM('abs')} strokeWidth="0.7"/>
+        <rect x="52" y="64" width="8" height="8" rx="2" fill={fillM('abs')} stroke={strokeM('abs')} strokeWidth="0.7"/>
+        <rect x="40" y="74" width="8" height="8" rx="2" fill={fillM('abs')} stroke={strokeM('abs')} strokeWidth="0.7"/>
+        <rect x="52" y="74" width="8" height="8" rx="2" fill={fillM('abs')} stroke={strokeM('abs')} strokeWidth="0.7"/>
+        <rect x="40" y="84" width="8" height="8" rx="2" fill={fillM('abs')} stroke={strokeM('abs')} strokeWidth="0.7"/>
+        <rect x="52" y="84" width="8" height="8" rx="2" fill={fillM('abs')} stroke={strokeM('abs')} strokeWidth="0.7"/>
 
-      {/* BACK */}
-      <path d="M42 36 L78 36 L76 58 Q68 55 60 55 Q52 55 44 58 Z"
-        fill={fill('back')} stroke={stroke} strokeWidth="0.5" opacity="0.4" />
+        {/* LOWER BACK — visible from front as strip */}
+        <rect x="38" y="96" width="24" height="10" rx="3"
+          fill={fillM('lowerback')} stroke={strokeM('lowerback')} strokeWidth="0.7"/>
 
-      {/* LOWER BACK strip behind abs */}
-      <rect x="46" y="80" width="28" height="12" rx="2"
-        fill={fill('lowerback')} stroke={stroke} strokeWidth="0.6" />
+        {/* GLUTES */}
+        <ellipse cx="37" cy="114" rx="10" ry="8" fill={fillM('glutes')} stroke={strokeM('glutes')} strokeWidth="0.8"/>
+        <ellipse cx="63" cy="114" rx="10" ry="8" fill={fillM('glutes')} stroke={strokeM('glutes')} strokeWidth="0.8"/>
 
-      {/* HIP / PELVIS */}
-      <path d="M46 94 Q39 96 36 104 L84 104 Q81 96 74 94 Z"
-        fill="#334155" stroke={stroke} strokeWidth="0.8" />
+        {/* QUADS */}
+        <path d="M24 122 Q22 138 24 158 L36 158 Q36 138 36 122 Z"
+          fill={fillM('quads')} stroke={strokeM('quads')} strokeWidth="0.8"/>
+        <path d="M76 122 Q78 138 76 158 L64 158 Q64 138 64 122 Z"
+          fill={fillM('quads')} stroke={strokeM('quads')} strokeWidth="0.8"/>
 
-      {/* GLUTES (shown around hips) */}
-      <ellipse cx="44" cy="102" rx="9" ry="8" fill={fill('glutes')} stroke={stroke} strokeWidth="0.8" />
-      <ellipse cx="76" cy="102" rx="9" ry="8" fill={fill('glutes')} stroke={stroke} strokeWidth="0.8" />
+        {/* HAMSTRINGS (behind quads, partial) */}
+        <path d="M24 124 Q22 140 24 158 L36 158 Q36 142 36 124 Z"
+          fill={fillM('hamstrings')} stroke={strokeM('hamstrings')} strokeWidth="0.5" opacity="0.4"/>
+        <path d="M76 124 Q78 140 76 158 L64 158 Q64 142 64 124 Z"
+          fill={fillM('hamstrings')} stroke={strokeM('hamstrings')} strokeWidth="0.5" opacity="0.4"/>
 
-      {/* QUADS (thighs front) */}
-      <path d="M38 104 Q34 120 36 140 L52 140 Q50 122 50 104 Z"
-        fill={fill('quads')} stroke={stroke} strokeWidth="0.8" />
-      <path d="M82 104 Q86 120 84 140 L68 140 Q70 122 70 104 Z"
-        fill={fill('quads')} stroke={stroke} strokeWidth="0.8" />
+        {/* BACK (lats visible from front, sides) */}
+        <path d="M22 52 Q26 70 28 86 L32 86 Q30 70 26 54 Z"
+          fill={fillM('back')} stroke={strokeM('back')} strokeWidth="0.5" opacity="0.5"/>
+        <path d="M78 52 Q74 70 72 86 L68 86 Q70 70 74 54 Z"
+          fill={fillM('back')} stroke={strokeM('back')} strokeWidth="0.5" opacity="0.5"/>
 
-      {/* HAMSTRINGS (thighs back — show slightly darker) */}
-      <path d="M38 106 Q34 122 36 140 L52 140 Q50 124 50 106 Z"
-        fill={fill('hamstrings')} stroke={stroke} strokeWidth="0.5" opacity="0.5" />
-      <path d="M82 106 Q86 122 84 140 L68 140 Q70 124 70 106 Z"
-        fill={fill('hamstrings')} stroke={stroke} strokeWidth="0.5" opacity="0.5" />
+        {/* SVG LABELS for active muscles */}
+        {isActive('chest') && <text x="50" y="58" textAnchor="middle" fontSize="6" fill={isPrim('chest') ? 'rgba(0,0,0,0.85)' : '#D1FF26'} fontWeight="900">GÖĞÜS</text>}
+        {isActive('abs') && <text x="50" y="100" textAnchor="middle" fontSize="5.5" fill={isPrim('abs') ? 'rgba(0,0,0,0.85)' : '#D1FF26'} fontWeight="800">KARIN</text>}
+        {isActive('quads') && <text x="30" y="142" textAnchor="middle" fontSize="5" fill={isPrim('quads') ? 'rgba(0,0,0,0.85)' : '#D1FF26'} fontWeight="800">QUAD</text>}
+        {isActive('shoulder') && <text x="23" y="52" textAnchor="middle" fontSize="4.5" fill="rgba(0,0,0,0.85)" fontWeight="800">DEL</text>}
+        {isActive('biceps') && <text x="11.5" y="72" textAnchor="middle" fontSize="4.5" fill={isPrim('biceps') ? 'rgba(0,0,0,0.85)' : '#D1FF26'} fontWeight="800">BİS</text>}
+      </svg>
 
-      {/* CALVES */}
-      <path d="M36 140 Q34 155 37 170 L50 170 Q52 155 52 140 Z"
-        fill="#334155" stroke={stroke} strokeWidth="0.8" />
-      <path d="M84 140 Q86 155 83 170 L70 170 Q68 155 68 140 Z"
-        fill="#334155" stroke={stroke} strokeWidth="0.8" />
-
-      {/* FEET */}
-      <ellipse cx="43" cy="174" rx="9" ry="5" fill="#1e293b" stroke={stroke} strokeWidth="0.8" />
-      <ellipse cx="77" cy="174" rx="9" ry="5" fill="#1e293b" stroke={stroke} strokeWidth="0.8" />
-    </svg>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', maxWidth: 90 }}>
+        {activeLabels.slice(0, 4).map(m => (
+          <span key={m} style={{
+            fontSize: 7, fontWeight: 700, padding: '1px 5px', borderRadius: 4,
+            background: muscles.primary.includes(m) ? 'rgba(209,255,38,0.15)' : 'rgba(255,255,255,0.05)',
+            color: muscles.primary.includes(m) ? '#D1FF26' : '#7A7C80',
+            border: `1px solid ${muscles.primary.includes(m) ? 'rgba(209,255,38,0.25)' : 'rgba(255,255,255,0.06)'}`,
+          }}>{MUSCLE_LABELS[m] || m}</span>
+        ))}
+      </div>
+    </div>
   );
 };
 
-// ─── ARKA GÖRÜNÜM ───
+// ── KAS SİLÜETİ — ARKA GÖRÜŞ (Posterior) — Lime Design ──────────────────────────────
 const MuscleDiagramBack = ({ exercise }) => {
-  const muscles = getMuscleGroups(exercise);
-  const all = [...muscles.primary, ...muscles.secondary];
-  const isPrimary = (m) => muscles.primary.includes(m);
-  const isActive = (m) => all.includes(m) || all.includes('full');
-  const fill = (m) => {
-    if (all.includes('full')) return '#92400e'; // full body = dim amber for all
-    if (!isActive(m)) return '#1e293b';
-    return isPrimary(m) ? '#f59e0b' : '#92400e';
+  const muscles  = getMuscleGroups(exercise);
+  const all      = [...muscles.primary, ...muscles.secondary];
+  const isFullBody = all.includes('full');
+  const isPrim   = (m) => muscles.primary.includes(m) || isFullBody;
+  const isActive = (m) => all.includes(m) || isFullBody;
+  const fillM = (m) => {
+    if (!isActive(m)) return 'rgba(255,255,255,0.04)';
+    return isPrim(m) ? 'rgba(209,255,38,0.82)' : 'rgba(209,255,38,0.25)';
   };
-  const stroke = '#334155';
+  const strokeM = (m) => isActive(m) && isPrim(m) ? '#D1FF26' : 'rgba(255,255,255,0.1)';
+  const bodyFill = '#1A1D20';
+  const outline  = 'rgba(255,255,255,0.1)';
+  const backMuscles = ['back','shoulder','triceps','lowerback','glutes','hamstrings'];
   return (
-    <svg viewBox="0 0 120 200" className="w-16 h-28 shrink-0" fill="none">
-      {/* HEAD */}
-      <ellipse cx="60" cy="16" rx="11" ry="13" fill="#334155" stroke={stroke} strokeWidth="1" />
-      <rect x="55" y="27" width="10" height="8" rx="2" fill="#334155" />
-      {/* TRAPEZIUS */}
-      <path d="M42 36 Q50 30 60 30 Q70 30 78 36 L80 46 Q70 40 60 40 Q50 40 40 46 Z"
-        fill={fill('back')} stroke={stroke} strokeWidth="0.8" />
-      {/* REAR DELTOIDS */}
-      <ellipse cx="34" cy="43" rx="10" ry="11" fill={fill('shoulder')} stroke={stroke} strokeWidth="0.8" />
-      <ellipse cx="86" cy="43" rx="10" ry="11" fill={fill('shoulder')} stroke={stroke} strokeWidth="0.8" />
-      {/* TRICEPS */}
-      <path d="M25 50 Q21 60 23 70 L30 70 Q29 60 32 52 Z"
-        fill={fill('triceps')} stroke={stroke} strokeWidth="0.8" />
-      <path d="M95 50 Q99 60 97 70 L90 70 Q91 60 88 52 Z"
-        fill={fill('triceps')} stroke={stroke} strokeWidth="0.8" />
-      {/* FOREARMS */}
-      <path d="M22 71 Q20 81 22 90 L29 90 Q28 81 29 71 Z"
-        fill="#334155" stroke={stroke} strokeWidth="0.8" />
-      <path d="M98 71 Q100 81 98 90 L91 90 Q92 81 91 71 Z"
-        fill="#334155" stroke={stroke} strokeWidth="0.8" />
-      {/* LATS */}
-      <path d="M40 46 Q35 60 37 80 L52 80 Q54 64 56 50 Z"
-        fill={fill('back')} stroke={stroke} strokeWidth="0.8" />
-      <path d="M80 46 Q85 60 83 80 L68 80 Q66 64 64 50 Z"
-        fill={fill('back')} stroke={stroke} strokeWidth="0.8" />
-      {/* LOWER BACK */}
-      <path d="M44 80 Q52 84 60 84 Q68 84 76 80 L74 96 Q66 100 60 100 Q54 100 46 96 Z"
-        fill={fill('lowerback')} stroke={stroke} strokeWidth="0.8" />
-      {/* GLUTES */}
-      <path d="M46 96 Q38 98 35 108 Q46 114 60 114 Q74 114 85 108 Q82 98 74 96 Z"
-        fill={fill('glutes')} stroke={stroke} strokeWidth="0.8" />
-      {/* HAMSTRINGS */}
-      <path d="M37 107 Q33 123 35 142 L51 142 Q50 124 50 107 Z"
-        fill={fill('hamstrings')} stroke={stroke} strokeWidth="0.8" />
-      <path d="M83 107 Q87 123 85 142 L69 142 Q70 124 70 107 Z"
-        fill={fill('hamstrings')} stroke={stroke} strokeWidth="0.8" />
-      {/* CALVES BACK */}
-      <path d="M35 142 Q33 157 36 172 L50 172 Q52 157 51 142 Z"
-        fill="#2d3748" stroke={stroke} strokeWidth="0.8" />
-      <path d="M85 142 Q87 157 84 172 L70 172 Q69 157 69 142 Z"
-        fill="#2d3748" stroke={stroke} strokeWidth="0.8" />
-      {/* FEET */}
-      <ellipse cx="43" cy="176" rx="9" ry="5" fill="#1e293b" stroke={stroke} strokeWidth="0.8" />
-      <ellipse cx="77" cy="176" rx="9" ry="5" fill="#1e293b" stroke={stroke} strokeWidth="0.8" />
-    </svg>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+      <svg viewBox="0 0 100 210" style={{ width: 72, height: 152 }} fill="none">
+        {/* BODY SILHOUETTE */}
+        <ellipse cx="50" cy="14" rx="13" ry="14" fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        <path d="M44 26 L56 26 L57 34 L43 34 Z" fill={bodyFill} stroke={outline} strokeWidth="0.5"/>
+        <path d="M28 34 Q20 38 20 50 L20 100 Q20 106 28 108 L72 108 Q80 106 80 100 L80 50 Q80 38 72 34 Z" fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        <path d="M20 50 Q12 55 10 70 Q9 82 12 94 L18 94 Q16 82 16 70 Q17 58 24 52 Z" fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        <path d="M80 50 Q88 55 90 70 Q91 82 88 94 L82 94 Q84 82 84 70 Q83 58 76 52 Z" fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        <path d="M12 94 Q10 110 11 124 L17 124 Q16 110 18 94 Z" fill={bodyFill} stroke={outline} strokeWidth="0.8"/>
+        <path d="M88 94 Q90 110 89 124 L83 124 Q84 110 82 94 Z" fill={bodyFill} stroke={outline} strokeWidth="0.8"/>
+        <path d="M28 108 L72 108 Q78 110 76 120 L64 122 L56 120 L44 120 L36 122 L24 120 Q22 110 28 108 Z" fill={bodyFill} stroke={outline} strokeWidth="0.8"/>
+        <path d="M24 120 Q20 136 22 160 L38 160 Q38 136 36 122 Z" fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        <path d="M76 120 Q80 136 78 160 L62 160 Q62 136 64 122 Z" fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        <path d="M22 160 Q20 176 22 192 L38 192 Q39 176 38 160 Z" fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        <path d="M78 160 Q80 176 78 192 L62 192 Q61 176 62 160 Z" fill={bodyFill} stroke={outline} strokeWidth="1"/>
+        <ellipse cx="30" cy="196" rx="9" ry="5" fill="#111417" stroke={outline} strokeWidth="0.8"/>
+        <ellipse cx="70" cy="196" rx="9" ry="5" fill="#111417" stroke={outline} strokeWidth="0.8"/>
+        {/* POSTERIOR MUSCLES */}
+        {/* TRAPEZIUS */}
+        <path d="M34 36 Q50 30 66 36 L64 52 L50 58 L36 52 Z" fill={fillM('back')} stroke={strokeM('back')} strokeWidth="0.8"/>
+        {/* REAR DELT */}
+        <ellipse cx="22" cy="46" rx="9" ry="10" fill={fillM('shoulder')} stroke={strokeM('shoulder')} strokeWidth="0.8"/>
+        <ellipse cx="78" cy="46" rx="9" ry="10" fill={fillM('shoulder')} stroke={strokeM('shoulder')} strokeWidth="0.8"/>
+        {/* TRICEPS */}
+        <path d="M11 54 Q9 68 11 82 L17 80 Q15 66 14 56 Z" fill={fillM('triceps')} stroke={strokeM('triceps')} strokeWidth="0.8"/>
+        <path d="M89 54 Q91 68 89 82 L83 80 Q85 66 86 56 Z" fill={fillM('triceps')} stroke={strokeM('triceps')} strokeWidth="0.8"/>
+        {/* LATS */}
+        <path d="M30 52 Q24 64 26 82 L38 80 Q36 68 36 54 Z" fill={fillM('back')} stroke={strokeM('back')} strokeWidth="0.8"/>
+        <path d="M70 52 Q76 64 74 82 L62 80 Q64 68 64 54 Z" fill={fillM('back')} stroke={strokeM('back')} strokeWidth="0.8"/>
+        {/* LOWER BACK */}
+        <path d="M36 80 Q42 86 50 87 Q58 86 64 80 L62 100 Q56 104 50 104 Q44 104 38 100 Z" fill={fillM('lowerback')} stroke={strokeM('lowerback')} strokeWidth="0.8"/>
+        {/* GLUTES */}
+        <ellipse cx="38" cy="116" rx="12" ry="10" fill={fillM('glutes')} stroke={strokeM('glutes')} strokeWidth="0.8"/>
+        <ellipse cx="62" cy="116" rx="12" ry="10" fill={fillM('glutes')} stroke={strokeM('glutes')} strokeWidth="0.8"/>
+        {/* HAMSTRINGS */}
+        <path d="M24 124 Q22 140 24 158 L36 157 Q36 140 36 124 Z" fill={fillM('hamstrings')} stroke={strokeM('hamstrings')} strokeWidth="0.8"/>
+        <path d="M76 124 Q78 140 76 158 L64 157 Q64 140 64 124 Z" fill={fillM('hamstrings')} stroke={strokeM('hamstrings')} strokeWidth="0.8"/>
+        {/* LABELS */}
+        {isActive('back') && <text x="50" y="48" textAnchor="middle" fontSize="5.5" fill={isPrim('back') ? 'rgba(0,0,0,0.85)' : '#D1FF26'} fontWeight="900">SIRT</text>}
+        {isActive('glutes') && <text x="38" y="119" textAnchor="middle" fontSize="5" fill={isPrim('glutes') ? 'rgba(0,0,0,0.85)' : '#D1FF26'} fontWeight="800">GLUT</text>}
+        {isActive('hamstrings') && <text x="30" y="143" textAnchor="middle" fontSize="5" fill={isPrim('hamstrings') ? 'rgba(0,0,0,0.85)' : '#D1FF26'} fontWeight="800">HAM</text>}
+        {isActive('triceps') && <text x="13" y="70" textAnchor="middle" fontSize="4.5" fill={isPrim('triceps') ? 'rgba(0,0,0,0.85)' : '#D1FF26'} fontWeight="800">TRİ</text>}
+        {isActive('lowerback') && <text x="50" y="93" textAnchor="middle" fontSize="5" fill={isPrim('lowerback') ? 'rgba(0,0,0,0.85)' : '#D1FF26'} fontWeight="800">LB</text>}
+      </svg>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', maxWidth: 90 }}>
+        {backMuscles.filter(m => all.includes(m)).slice(0,4).map(m => (
+          <span key={m} style={{
+            fontSize: 7, fontWeight: 700, padding: '1px 5px', borderRadius: 4,
+            background: muscles.primary.includes(m) ? 'rgba(209,255,38,0.15)' : 'rgba(255,255,255,0.05)',
+            color: muscles.primary.includes(m) ? '#D1FF26' : '#7A7C80',
+            border: `1px solid ${muscles.primary.includes(m) ? 'rgba(209,255,38,0.25)' : 'rgba(255,255,255,0.06)'}`,
+          }}>{MUSCLE_LABELS[m] || m}</span>
+        ))}
+      </div>
+    </div>
   );
 };
 
 const MUSCLE_LABELS = { chest: 'Göğüs', shoulder: 'Omuz', triceps: 'Triseps', back: 'Sırt', biceps: 'Biseps', quads: 'Quads', hamstrings: 'Hamstring', glutes: 'Glut', abs: 'Karın', lowerback: 'Alt Sırt' };
+
+// ── SPOTIFY PLAYLIST MAP ────────────────────────────────────────────
+const SPOTIFY_PLAYLISTS = {
+  gvt:             { name: 'Beast Mode', url: 'https://open.spotify.com/playlist/37i9dQZF1DX76Wlfdnj7AP' },
+  gvt_push:        { name: 'Power Workout', url: 'https://open.spotify.com/playlist/37i9dQZF1DXdxcBWuJkbcy' },
+  gvt_legs:        { name: 'Heavy Metal Workout', url: 'https://open.spotify.com/playlist/37i9dQZF1DX9qNs32fujYe' },
+  gvt_pull:        { name: 'Beast Mode', url: 'https://open.spotify.com/playlist/37i9dQZF1DX76Wlfdnj7AP' },
+  ovt:             { name: 'Power Workout', url: 'https://open.spotify.com/playlist/37i9dQZF1DXdxcBWuJkbcy' },
+  ovt_push:        { name: 'Power Workout', url: 'https://open.spotify.com/playlist/37i9dQZF1DXdxcBWuJkbcy' },
+  ovt_pull:        { name: 'Workout Twerkout', url: 'https://open.spotify.com/playlist/37i9dQZF1DX76Wlfdnj7AP' },
+  hanik_push_legs: { name: 'Hip Hop Workout', url: 'https://open.spotify.com/playlist/37i9dQZF1DX186v583rmzp' },
+  hanik_pull_core: { name: 'Hip Hop Workout', url: 'https://open.spotify.com/playlist/37i9dQZF1DX186v583rmzp' },
+  engine:          { name: 'Running BPM', url: 'https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgRdKQ' },
+  metcon:          { name: 'Running BPM', url: 'https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgRdKQ' },
+  prime:           { name: 'Motivation Mix', url: 'https://open.spotify.com/playlist/37i9dQZF1DX3rxVfibe1L0' },
+  hybrid:          { name: 'Workout Mix', url: 'https://open.spotify.com/playlist/37i9dQZF1DX76Wlfdnj7AP' },
+  aesthetics:      { name: 'Aesthetic Vibes', url: 'https://open.spotify.com/playlist/37i9dQZF1DX186v583rmzp' },
+  fbb:             { name: 'Pump Workout', url: 'https://open.spotify.com/playlist/37i9dQZF1DX76Wlfdnj7AP' },
+  recovery:        { name: 'Calm Focus', url: 'https://open.spotify.com/playlist/37i9dQZF1DX4sWSpwq3LiO' },
+  strength:        { name: 'Power Workout', url: 'https://open.spotify.com/playlist/37i9dQZF1DXdxcBWuJkbcy' },
+  default:         { name: 'Beast Mode', url: 'https://open.spotify.com/playlist/37i9dQZF1DX76Wlfdnj7AP' },
+};
+
 
 const RPE_CONFIG = {
   6: { label: 'Çok Kolay', color: '#60a5fa', bg: 'rgba(96,165,250,0.12)', border: 'rgba(96,165,250,0.3)' },
@@ -4558,10 +4635,25 @@ export default function App() {
                         </div>
                       );
                     })()}
-                    <div className="mt-2">
+                    <div className="mt-2" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
                       <button onClick={() => setShowChat(true)} className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full text-[10px] text-amber-400 hover:bg-amber-500/20 transition-all">
                         <Sparkles size={9} /> Kahine Sor
                       </button>
+                      {(() => {
+                        const pl = SPOTIFY_PLAYLISTS[workout.focus] || SPOTIFY_PLAYLISTS.default;
+                        return (
+                          <a href={pl.url} target="_blank" rel="noopener noreferrer"
+                            style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 4,
+                              fontSize: 10, fontWeight: 700, color: '#1DB954',
+                              background: 'rgba(29,185,84,0.1)', border: '1px solid rgba(29,185,84,0.25)',
+                              padding: '4px 10px', borderRadius: 99,
+                              textDecoration: 'none', transition: 'background 0.15s',
+                            }}>
+                            🎵 {pl.name}
+                          </a>
+                        );
+                      })()}
                       <ProactiveKahin workout={workout} darkMode={darkMode} />
                     </div>
                   </div>

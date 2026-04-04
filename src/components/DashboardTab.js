@@ -86,6 +86,43 @@ const focusLabelMap = {
   hybrid: 'Hybrid', prime: 'Prime Athlete', recovery: 'Aktif Onarım', metcon: 'MetCon',
 };
 
+const getMuscleFreq = (history) => {
+  const focusMap = {
+    gvt: 'legs', gvt_legs: 'legs', gvt_push: 'push', gvt_pull: 'pull',
+    ovt: 'push', ovt_push: 'push', ovt_pull: 'legs',
+    hanik_push_legs: 'push', hanik_pull_core: 'pull',
+    aesthetics: 'push', prime: 'push', hybrid: 'push',
+    fbb: 'core', engine: 'cardio', metcon: 'cardio', recovery: 'core', strength: 'push',
+  };
+  const freq = { push: 0, pull: 0, legs: 0, core: 0, cardio: 0 };
+  const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  history.filter(h => h.timestamp > oneWeekAgo).forEach(w => {
+    const cat = focusMap[w.focus];
+    if (cat) freq[cat]++;
+  });
+  return freq;
+};
+
+const getPRCount = (history) => {
+  const prs = {};
+  [...history].reverse().forEach(entry => {
+    Object.entries(entry.exercises || {}).forEach(([name, log]) => {
+      const w = parseFloat(log.weight) || 0;
+      if (w > 0 && (!prs[name] || w > prs[name])) prs[name] = w;
+    });
+  });
+  return Object.keys(prs).length;
+};
+
+const MUSCLE_META = [
+  { key: 'push',   label: 'İtiş',     emoji: '💪' },
+  { key: 'pull',   label: 'Çekiş',    emoji: '🏋️' },
+  { key: 'legs',   label: 'Bacak',    emoji: '🦵' },
+  { key: 'core',   label: 'Core',     emoji: '⚡' },
+  { key: 'cardio', label: 'Kondisyon',emoji: '🔥' },
+];
+
+
 // ── Su Takibi ─────────────────────────────────────────────────────────────────
 const WaterTracker = ({ darkMode }) => {
   const GOAL = 2500;
@@ -258,6 +295,11 @@ const DashboardTab = ({
   const recentWorkouts = history.slice(0, 3);
   const todaySlot   = (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
   const todayProgram = program?.schedule?.find(s => s.weekdaySlot === todaySlot);
+  const muscleFreq  = getMuscleFreq(history);
+  const prCount     = getPRCount(history);
+  const totalVol    = history.filter(h => h.timestamp > Date.now() - 7 * 24 * 60 * 60 * 1000)
+    .reduce((sum, entry) => sum + Object.values(entry.exercises || {}).reduce((a, l) => a + (parseFloat(l.weight)||0)*(parseInt(l.reps)||0), 0), 0);
+  const maxFreq     = Math.max(...Object.values(muscleFreq), 1);
 
   return (
     <div style={{ paddingBottom: 96 }}>
@@ -462,8 +504,76 @@ const DashboardTab = ({
           </div>
         </div>
 
-        {/* ── SU TAKİBİ ── */}
-        <WaterTracker darkMode={darkMode} />
+        {/* ── KAS DENGESİ ── */}
+        <div style={card({ padding: '18px 20px' })}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 800, color: T.text, fontFamily: 'Lexend, sans-serif' }}>Kas Dengesi</p>
+              <p style={{ fontSize: 10, color: T.muted, marginTop: 2 }}>Bu hafta · kas grubu frekansı</p>
+            </div>
+            <span style={{ fontSize: 9, color: T.muted, background: T.surfaceHi, padding: '3px 8px', borderRadius: 99 }}>Haftalık</span>
+          </div>
+          {Object.values(muscleFreq).every(v => v === 0) ? (
+            <p style={{ fontSize: 11, color: T.muted, textAlign: 'center', padding: '12px 0' }}>Bu hafta antrenman kaydı yok</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {MUSCLE_META.map(({ key, label, emoji }) => {
+                const freq = muscleFreq[key];
+                const pct  = (freq / maxFreq) * 100;
+                const isLow = freq <= 1 && maxFreq > 1;
+                const barColor = isLow ? '#ef4444' : T.accent;
+                return (
+                  <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 14, width: 20, flexShrink: 0 }}>{emoji}</span>
+                    <span style={{
+                      fontSize: 10, fontWeight: 700, color: isLow ? '#ef4444' : T.text,
+                      width: 56, flexShrink: 0,
+                    }}>{label}</span>
+                    <div style={{ flex: 1, height: 6, background: T.surfaceHi, borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%', borderRadius: 3,
+                        width: freq === 0 ? '2px' : `${pct}%`,
+                        background: freq === 0 ? T.surfaceHi : barColor,
+                        transition: 'width 0.5s',
+                      }} />
+                    </div>
+                    <span style={{
+                      fontSize: 11, fontWeight: 800,
+                      color: freq === 0 ? T.muted : isLow ? '#ef4444' : T.accent,
+                      fontFamily: 'Lexend, sans-serif', width: 22, textAlign: 'right',
+                    }}>{freq}×</span>
+                    {isLow && (
+                      <span style={{ fontSize: 9, color: '#ef4444', fontWeight: 700 }}>↑</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ── PERFORMANS ÖZETİ — STATS'A BAĞLI ── */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {[
+            { label: 'Toplam PR', value: prCount, unit: 'rekor', color: T.accent },
+            { label: 'Toplam Antrenman', value: history.length, unit: 'seans', color: '#60a5fa' },
+            { label: 'Haftalık Hacim', value: totalVol >= 1000 ? `${(totalVol/1000).toFixed(1)}t` : `${Math.round(totalVol)}kg`, unit: '', color: '#f97316' },
+          ].map(stat => (
+            <button key={stat.label} onClick={() => setActiveTab('stats')}
+              style={{
+                flex: 1, ...card({ padding: '12px 8px', textAlign: 'center', cursor: 'pointer', border: `1px solid ${T.outline}` }),
+                background: T.surfaceLo, transition: 'all 0.15s',
+              }}>
+              <div style={{ fontSize: 18, fontWeight: 900, color: stat.color, fontFamily: 'Lexend, sans-serif', lineHeight: 1 }}>
+                {stat.value}
+              </div>
+              {stat.unit && <div style={{ fontSize: 8, color: T.muted, marginTop: 3 }}>{stat.unit}</div>}
+              <div style={{ fontSize: 8, color: T.muted, marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.06em', lineHeight: 1.2 }}>
+                {stat.label}
+              </div>
+            </button>
+          ))}
+        </div>
 
         {/* ── SON ANTRENMALAR ── */}
         {recentWorkouts.length > 0 && (
