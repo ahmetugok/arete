@@ -2011,190 +2011,207 @@ const StrengthFocusScreen = ({ workout, onComplete, onExit }) => {
   if (!cur) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex flex-col" style={{ backgroundColor: '#0D1B2A' }}>
+    <div className="fixed inset-0 z-[200] flex flex-col" style={{ backgroundColor: '#050507' }}>
       {showSyllabus && <SyllabusOverlay />}
 
-      {/* Header */}
-      <div className="px-5 py-4 flex items-center justify-between flex-shrink-0" style={{ borderBottom: '1px solid #1E3A5F' }}>
-        <button onClick={onExit} className="text-slate-400"><X size={22} /></button>
+      {/* ─── HEADER (TEKNİK VE KESKİN) ─── */}
+      <div className="px-5 py-4 flex items-center justify-between flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: '#0C0E11' }}>
+        <button onClick={onExit} className="text-slate-500 hover:text-white transition-colors"><X size={22} /></button>
         <div className="text-center">
-          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#E09F3E' }}>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: '#D1FF26', fontFamily: 'Lexend, sans-serif' }}>
             {cur.blockLabel?.split(' – ')[0] || 'GÜÇ BLOKU'}
           </p>
-          <p className="text-xs text-slate-500 mt-0.5">Hareket {currentExIdx + 1} / {totalEx}</p>
+          <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">
+            Hareket <span className="text-slate-300">{currentExIdx + 1}</span> // {totalEx}
+          </p>
         </div>
-        <button onClick={() => setShowSyllabus(true)} className="text-slate-400"><Layout size={22} /></button>
+        <button onClick={() => setShowSyllabus(true)} className="text-slate-500 hover:text-white transition-colors"><Layout size={20} /></button>
       </div>
 
-      {/* Progress bar */}
-      <div style={{ height: 3, background: '#1E3A5F', flexShrink: 0 }}>
-        <div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #E09F3E, #C8861E)', transition: 'width 0.5s ease' }} />
+      {/* ─── PROGRESS BAR (NEON LASER) ─── */}
+      <div style={{ height: 2, background: 'rgba(255,255,255,0.05)', flexShrink: 0 }}>
+        <div style={{
+          width: `${progress}%`, height: '100%',
+          background: '#D1FF26',
+          boxShadow: '0 0 10px rgba(209,255,38,0.5)',
+          transition: 'width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
+        }} />
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto flex flex-col px-5 py-6">
 
-        {/* ─── DİNLENME ZAMANLAYICISI ─── */}
+        {/* ─── DİNLENME ZAMANLAYICISI (HİPER-ODAKLI) ─── */}
         {phase === 'rest' && (
           <div className="flex-1 flex flex-col items-center justify-center animate-fade-in-scale">
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-8">DİNLENME</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 mb-8" style={{ fontFamily: 'Lexend, sans-serif' }}>
+              DİNLENME FAZI
+            </p>
 
-            <div className={`relative mb-8 ${alarmActive ? 'animate-alarm-flash' : ''}`}
-              style={{ width: 200, height: 200, borderRadius: '50%', border: `4px solid ${alarmActive ? '#E09F3E' : '#1E3A5F'}`, transition: 'border-color 0.3s' }}>
+            <div className="relative mb-10"
+              style={{
+                width: 220, height: 220, borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(209,255,38,0.03) 0%, transparent 70%)',
+                boxShadow: alarmActive ? '0 0 40px rgba(209,255,38,0.15)' : 'none',
+                transition: 'box-shadow 0.3s'
+              }}>
               <svg className="absolute inset-0 w-full h-full -rotate-90">
-                <circle cx="100" cy="100" r="92" stroke="#1E3A5F" strokeWidth="8" fill="none" />
-                <circle cx="100" cy="100" r="92"
-                  stroke="#E09F3E" strokeWidth="8" fill="none"
-                  strokeDasharray={578}
-                  strokeDashoffset={578 - (578 * Math.max(0, restTime) / maxRestTime)}
+                <circle cx="110" cy="110" r="100" stroke="rgba(255,255,255,0.03)" strokeWidth="6" fill="none" />
+                <circle cx="110" cy="110" r="100"
+                  stroke="#D1FF26" strokeWidth="6" fill="none"
+                  strokeDasharray={628}
+                  strokeDashoffset={628 - (628 * Math.max(0, restTime) / maxRestTime)}
                   strokeLinecap="round"
-                  style={{ transition: 'stroke-dashoffset 1s linear' }}
+                  style={{
+                    transition: 'stroke-dashoffset 1s linear',
+                    filter: 'drop-shadow(0 0 8px rgba(209,255,38,0.4))'
+                  }}
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="font-black tabular-nums" style={{ fontSize: 52, color: alarmActive ? '#E09F3E' : '#f1f5f9', lineHeight: 1, transition: 'color 0.3s' }}>
+                <span className="font-black tabular-nums tracking-tighter"
+                  style={{
+                    fontSize: 64, color: alarmActive ? '#D1FF26' : '#F9F9FD',
+                    fontFamily: 'Lexend, sans-serif', lineHeight: 1,
+                    textShadow: alarmActive ? '0 0 20px rgba(209,255,38,0.4)' : 'none',
+                    transition: 'color 0.3s'
+                  }}>
                   {restTime <= 0 ? '✓' : formatTime(restTime)}
                 </span>
-                {restTime > 0 && <span className="text-xs text-slate-500 mt-1">Sonraki: Set {currentSet} / {targetSets}</span>}
+                {restTime > 0 && <span className="text-[10px] font-bold text-slate-500 mt-2 uppercase tracking-widest">Sonraki: Set {currentSet}</span>}
               </div>
             </div>
 
-            <div className="flex gap-3 mb-6">
+            <div className="flex gap-3 mb-8 w-full max-w-xs">
               <button onClick={() => addTime(30)}
-                className="px-5 py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">
-                +30 sn
+                className="flex-1 py-3.5 rounded-xl text-slate-300 font-bold text-xs uppercase tracking-wider transition-all active:scale-95"
+                style={{ background: '#161A1D', border: '1px solid rgba(255,255,255,0.08)' }}>
+                +30 SN
               </button>
               <button onClick={skipRest}
-                className="px-5 py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">
-                Atla →
+                className="flex-1 py-3.5 rounded-xl text-slate-300 font-bold text-xs uppercase tracking-wider transition-all active:scale-95"
+                style={{ background: '#161A1D', border: '1px solid rgba(255,255,255,0.08)' }}>
+                ATLA ⚡
               </button>
             </div>
 
             {restTime <= 0 && (
               <button onClick={startNextAfterRest}
-                className="w-full max-w-xs py-5 rounded-2xl font-bold text-lg tracking-wide active:scale-[0.98] animate-fade-in-scale"
-                style={{ backgroundColor: '#E09F3E', color: '#0D1B2A' }}>
-                DEVAM ET →
+                className="w-full max-w-xs py-5 rounded-2xl font-black text-lg tracking-widest active:scale-[0.98] animate-fade-in-scale"
+                style={{
+                  backgroundColor: '#D1FF26', color: '#0C0E11', fontFamily: 'Lexend, sans-serif',
+                  boxShadow: '0 0 24px rgba(209,255,38,0.25), inset 0 1px 1px rgba(255,255,255,0.6)'
+                }}>
+                DEVAM ET
               </button>
             )}
           </div>
         )}
 
-        {/* ─── SÜPERSET GEÇİŞİ ─── */}
+        {/* ─── SÜPERSET GEÇİŞİ (HIZLI VE AGRESİF) ─── */}
         {phase === 'superset_prompt' && nextInBlock && (
           <div className="flex-1 flex flex-col items-center justify-center animate-fade-in-scale">
-            <div className="px-4 py-1.5 rounded-full mb-8" style={{ background: 'rgba(224,159,62,0.12)', border: '1px solid rgba(224,159,62,0.35)' }}>
-              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#E09F3E' }}>SÜPERSET GEÇİŞİ</span>
+            <div className="px-5 py-2 rounded-full mb-8" style={{ background: 'rgba(209,255,38,0.1)', border: '1px solid rgba(209,255,38,0.3)' }}>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: '#D1FF26', fontFamily: 'Lexend, sans-serif' }}>SUPERSET</span>
             </div>
 
-            {/* Akış görselleştirici: cur = tamamlanan (A), sonraki = B */}
-            <div className="flex items-center gap-3 mb-10">
-              {Array.from({ length: cur.blockExCount }).map((_, i) => (
-                <React.Fragment key={i}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: '50%',
-                    border: `2px solid ${i <= cur.posInBlock ? '#E09F3E' : '#1E3A5F'}`,
-                    background: i < cur.posInBlock ? '#22c55e' : i === cur.posInBlock ? 'rgba(224,159,62,0.25)' : 'transparent',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                  }}>
-                    {i < cur.posInBlock
-                      ? <CheckCircle size={16} color="#fff" />
-                      : i === cur.posInBlock
-                        ? <CheckCircle size={16} color="#E09F3E" />
-                        : <span style={{ fontSize: 13, fontWeight: 700, color: '#64748b' }}>{String.fromCharCode(65 + i)}</span>}
-                  </div>
-                  {i < cur.blockExCount - 1 && (
-                    <div style={{ width: 24, height: 2, background: i < cur.posInBlock ? '#22c55e' : '#1E3A5F' }} />
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-
-            <p className="text-sm text-slate-400 mb-2">Sıradaki hareket:</p>
-            <h2 className="text-3xl font-black text-white text-center mb-2 tracking-tight">{nextInBlock.name}</h2>
-            <p className="text-sm mb-10" style={{ color: '#E09F3E' }}>Set {currentSet} / {nextInBlock.sets}</p>
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3">Sıradaki Hareket</p>
+            <h2 className="text-3xl font-black text-white text-center mb-3 tracking-tighter" style={{ fontFamily: 'Lexend, sans-serif' }}>{nextInBlock.name}</h2>
+            <p className="text-[11px] font-bold mb-10 uppercase tracking-widest" style={{ color: '#D1FF26' }}>Set {currentSet} // {nextInBlock.sets}</p>
 
             <button onClick={startSupersetB}
-              className="w-full max-w-xs py-5 rounded-2xl font-bold text-lg tracking-wide active:scale-[0.98]"
-              style={{ backgroundColor: '#E09F3E', color: '#0D1B2A' }}>
-              ⚡ {String.fromCharCode(65 + nextInBlock.posInBlock)}'Yİ BAŞLAT
+              className="w-full max-w-xs py-5 rounded-2xl font-black text-lg tracking-widest active:scale-[0.98]"
+              style={{
+                backgroundColor: '#D1FF26', color: '#0C0E11', fontFamily: 'Lexend, sans-serif',
+                boxShadow: '0 0 24px rgba(209,255,38,0.25), inset 0 1px 1px rgba(255,255,255,0.6)'
+              }}>
+              BAŞLAT ⚡
             </button>
             <button onClick={() => { const rt = 90; setMaxRestTime(rt); setRestTime(rt); setPhase('rest'); }}
-              className="mt-4 text-sm text-slate-500 underline">
+              className="mt-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
               Önce dinlen (90sn)
             </button>
           </div>
         )}
 
-        {/* ─── AKTİF SET ─── */}
+        {/* ─── AKTİF SET (PERFORMANS EKRANI) ─── */}
         {phase === 'set' && (
-          <div className="animate-fade-in-scale w-full">
-            {/* Blok etiketi */}
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#E09F3E' }}>{cur.blockLabel}</p>
+          <div className="animate-fade-in-scale w-full flex flex-col flex-1">
 
-            {/* Hareket adı */}
-            <h2 className="text-3xl font-black text-white tracking-tight leading-tight mb-1">{cur.name}</h2>
-            <p className="text-sm mb-5" style={{ color: '#E09F3E' }}>
-              Hedef: {targetSets} set × {targetReps} tekrar
-              {cur.weight_rx && <span className="text-slate-500 ml-2">({cur.weight_rx})</span>}
-            </p>
+            <div className="mb-auto">
+              {/* Hareket Adı */}
+              <h2 className="text-4xl font-black text-white tracking-tighter leading-none mb-3" style={{ fontFamily: 'Lexend, sans-serif' }}>
+                {cur.name}
+              </h2>
 
-            {/* Kas haritası + demo */}
-            <div className="flex gap-4 mb-5 p-4 rounded-2xl" style={{ background: 'rgba(30,58,92,0.5)', border: '1px solid #1E3A5F' }}>
-              <MuscleDiagram exercise={cur} />
-              <div className="flex-1 flex flex-col justify-between">
-                <div>
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {getMuscleGroups(cur).primary.filter(m => m !== 'full').map(m => (
-                      <span key={m} className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
-                        style={{ background: 'rgba(224,159,62,0.12)', border: '1px solid rgba(224,159,62,0.35)', color: '#E09F3E' }}>
-                        {({ chest: 'Göğüs', shoulder: 'Omuz', triceps: 'Triseps', back: 'Sırt', biceps: 'Biseps', quads: 'Quads', hamstrings: 'Hamstring', glutes: 'Glut', abs: 'Karın', lowerback: 'Alt Sırt' })[m] || m}
-                      </span>
-                    ))}
-                  </div>
-                  <p className="text-xs text-slate-400 leading-relaxed">{cur.description}</p>
-                  {cur.note && <p className="text-xs mt-2 px-2 py-1 rounded-lg" style={{ color: '#E09F3E', background: 'rgba(224,159,62,0.08)' }}>💡 {cur.note}</p>}
-                </div>
-                <a href={getGifSearchUrl(cur.name)} target="_blank" rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
-                  style={{ color: '#E09F3E', background: 'rgba(224,159,62,0.12)', border: '1px solid rgba(224,159,62,0.35)' }}>
-                  <PlayCircle size={13} /> Demo İzle
-                </a>
+              <div className="flex items-center gap-3 mb-6">
+                <span className="text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-widest" style={{ background: 'rgba(209,255,38,0.1)', color: '#D1FF26', border: '1px solid rgba(209,255,38,0.2)' }}>
+                  {targetSets} × {targetReps}
+                </span>
+                {cur.weight_rx && <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{cur.weight_rx}</span>}
               </div>
-            </div>
 
-            {/* Set daireleri */}
-            <div className="flex items-center justify-center gap-2 mb-6">
-              {Array.from({ length: targetSets }).map((_, i) => {
-                const done = completedSets.includes(`${currentExIdx}-${i + 1}`);
-                const active = i + 1 === currentSet;
-                return (
-                  <div key={i} style={{
-                    width: 36, height: 36, borderRadius: '50%',
-                    background: done ? '#22c55e' : active ? 'rgba(224,159,62,0.12)' : '#1E3A5F',
-                    border: `2px solid ${done ? '#22c55e' : active ? '#E09F3E' : '#1E3A5F'}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 13, fontWeight: 700,
-                    color: done ? '#fff' : active ? '#E09F3E' : '#64748b',
-                    transition: 'all 0.2s ease'
-                  }}>
-                    {done ? '✓' : i + 1}
+              {/* Kas haritası + demo */}
+              <div className="flex gap-4 mb-5 p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <MuscleDiagram exercise={cur} />
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {getMuscleGroups(cur).primary.filter(m => m !== 'full').map(m => (
+                        <span key={m} className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
+                          style={{ background: 'rgba(209,255,38,0.1)', border: '1px solid rgba(209,255,38,0.2)', color: '#D1FF26' }}>
+                          {MUSCLE_LABELS[m] || m}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-xs text-slate-500 leading-relaxed line-clamp-3">{cur.description}</p>
+                    {cur.note && <p className="text-[10px] mt-2 px-2 py-1 rounded-lg" style={{ color: '#D1FF26', background: 'rgba(209,255,38,0.07)', border: '1px solid rgba(209,255,38,0.12)' }}>💡 {cur.note}</p>}
                   </div>
-                );
-              })}
-            </div>
+                  <a href={getGifSearchUrl(cur.name)} target="_blank" rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full"
+                    style={{ color: '#D1FF26', background: 'rgba(209,255,38,0.08)', border: '1px solid rgba(209,255,38,0.18)', textDecoration: 'none' }}>
+                    <PlayCircle size={13} /> Demo İzle
+                  </a>
+                </div>
+              </div>
 
-            {/* Stepper'lar */}
-            <div className="flex justify-center gap-6 py-6 px-4 rounded-2xl mb-6 bg-slate-800/50 border border-slate-700/50">
-              <Stepper value={weight} onChange={setWeight} step={2.5} label="Ağırlık" unit="KG" />
-              <div className="w-px bg-slate-700" />
-              <Stepper value={reps} onChange={setReps} step={1} label="Tekrar" unit="REPS" />
+              {/* Set Göstergeleri (Bar/Teknik Görünüm) */}
+              <div className="flex items-center gap-2 mb-6">
+                {Array.from({ length: targetSets }).map((_, i) => {
+                  const done = completedSets.includes(`${currentExIdx}-${i + 1}`);
+                  const active = i + 1 === currentSet;
+                  return (
+                    <div key={i} style={{
+                      flex: 1, height: 6, borderRadius: 3,
+                      background: done ? '#D1FF26' : active ? 'rgba(209,255,38,0.3)' : '#161A1D',
+                      border: `1px solid ${done ? '#D1FF26' : active ? 'rgba(209,255,38,0.5)' : 'rgba(255,255,255,0.05)'}`,
+                      transition: 'all 0.3s ease',
+                      boxShadow: done ? '0 0 8px rgba(209,255,38,0.4)' : 'none'
+                    }} />
+                  );
+                })}
+              </div>
+
+              {/* Stepper'lar (Ağırlık ve Tekrar) */}
+              <div className="flex justify-center gap-8 py-8 px-4 rounded-3xl mb-6"
+                style={{
+                  background: '#0C0E11',
+                  border: '1px solid rgba(255,255,255,0.04)',
+                  boxShadow: 'inset 0 4px 20px rgba(0,0,0,0.5)'
+                }}>
+                <Stepper value={weight} onChange={setWeight} step={2.5} label="AĞIRLIK" unit="KG" />
+                <div className="w-[1px] bg-slate-800" />
+                <Stepper value={reps} onChange={setReps} step={1} label="TEKRAR" unit="REPS" />
+              </div>
             </div>
 
             {/* Tamamla butonu */}
             <button onClick={handleCompleteSet}
-              className="w-full py-5 rounded-2xl font-bold text-lg tracking-wide active:scale-[0.98]"
-              style={{ backgroundColor: '#E09F3E', color: '#0D1B2A' }}>
+              className="w-full py-5 rounded-2xl font-black text-xl tracking-widest active:scale-[0.98] mt-4"
+              style={{
+                backgroundColor: '#D1FF26', color: '#0C0E11', fontFamily: 'Lexend, sans-serif',
+                boxShadow: '0 0 30px rgba(209,255,38,0.2), inset 0 2px 2px rgba(255,255,255,0.8)'
+              }}>
               SETİ TAMAMLA
             </button>
           </div>
@@ -2203,6 +2220,7 @@ const StrengthFocusScreen = ({ workout, onComplete, onExit }) => {
     </div>
   );
 };
+
 
 // Kondisyon / MetCon Odak Modu
 const MetconFocusScreen = ({ workout, onComplete, onExit }) => {
