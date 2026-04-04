@@ -1,10 +1,29 @@
 // src/components/DashboardTab.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { Sparkles, RefreshCw, Play, Droplets, Plus, Minus, TrendingUp, Calendar, Zap, Flame, ChevronRight } from 'lucide-react';
-import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { Sparkles, RefreshCw, Play, Droplets, Plus, Minus, TrendingUp, Zap, Flame, ChevronRight } from 'lucide-react';
+import { BarChart, Bar, XAxis, ResponsiveContainer, Cell, Tooltip } from 'recharts';
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Design tokens ─────────────────────────────────────────────────────────────
+const T = {
+  surface:    '#161A1D',
+  surfaceLo:  '#111417',
+  surfaceHi:  '#1E2226',
+  accent:     '#D1FF26',
+  accentDim:  'rgba(209,255,38,0.12)',
+  accentBorder:'rgba(209,255,38,0.22)',
+  outline:    'rgba(255,255,255,0.06)',
+  muted:      '#7A7C80',
+  text:       '#F9F9FD',
+};
 
+const card = (extra = {}) => ({
+  borderRadius: 20,
+  background: T.surface,
+  border: `1px solid ${T.outline}`,
+  ...extra,
+});
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 const getHistory = () => JSON.parse(localStorage.getItem('arete_history') || '[]');
 
 const getWeeklyVolumeData = (history) => {
@@ -13,7 +32,7 @@ const getWeeklyVolumeData = (history) => {
   const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   history.filter(h => h.timestamp > oneWeekAgo).forEach(entry => {
     const d = new Date(entry.timestamp);
-    const idx = d.getDay(); // 0=Sun
+    const idx = d.getDay();
     const v = Object.values(entry.exercises || {}).reduce((acc, log) => {
       return acc + (parseFloat(log.weight) || 0) * (parseInt(log.reps) || 0);
     }, 0);
@@ -28,9 +47,7 @@ const getWeeklyVolumeData = (history) => {
 const getStreak = (history) => {
   if (!history.length) return 0;
   const workoutDays = new Set(history.map(h => {
-    const d = new Date(h.timestamp);
-    d.setHours(0, 0, 0, 0);
-    return d.getTime();
+    const d = new Date(h.timestamp); d.setHours(0, 0, 0, 0); return d.getTime();
   }));
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const todayTs = today.getTime();
@@ -38,10 +55,7 @@ const getStreak = (history) => {
   if (!workoutDays.has(todayTs) && !workoutDays.has(yesterdayTs)) return 0;
   let streak = 0;
   let current = new Date(workoutDays.has(todayTs) ? todayTs : yesterdayTs);
-  while (workoutDays.has(current.getTime())) {
-    streak++;
-    current = new Date(current.getTime() - 86400000);
-  }
+  while (workoutDays.has(current.getTime())) { streak++; current = new Date(current.getTime() - 86400000); }
   return streak;
 };
 
@@ -59,10 +73,7 @@ const getUserName = () => {
 const getRecovery = () => {
   try {
     const s = localStorage.getItem('arete_recovery');
-    if (s) {
-      const p = JSON.parse(s);
-      if (p.date === new Date().toDateString()) return p.readiness;
-    }
+    if (s) { const p = JSON.parse(s); if (p.date === new Date().toDateString()) return p.readiness; }
   } catch (e) {}
   return null;
 };
@@ -79,76 +90,69 @@ const focusLabelMap = {
 const WaterTracker = ({ darkMode }) => {
   const GOAL = 2500;
   const STEP = 250;
-
   const [amount, setAmount] = useState(() => {
     try {
       const s = localStorage.getItem('arete_water');
-      if (s) {
-        const p = JSON.parse(s);
-        if (p.date === new Date().toDateString()) return p.amount;
-      }
+      if (s) { const p = JSON.parse(s); if (p.date === new Date().toDateString()) return p.amount; }
     } catch (e) {}
     return 0;
   });
-
-  const save = useCallback((newAmount) => {
-    localStorage.setItem('arete_water', JSON.stringify({ date: new Date().toDateString(), amount: newAmount }));
+  const save = useCallback((n) => {
+    localStorage.setItem('arete_water', JSON.stringify({ date: new Date().toDateString(), amount: n }));
   }, []);
-
   const add = () => { const n = Math.min(amount + STEP, GOAL + STEP); setAmount(n); save(n); };
   const sub = () => { const n = Math.max(amount - STEP, 0); setAmount(n); save(n); };
-
   const pct = Math.min((amount / GOAL) * 100, 100);
-  const glasses = Math.round(amount / 250);
-  const color = pct >= 100 ? '#22c55e' : pct >= 60 ? '#60a5fa' : '#94a3b8';
 
   return (
-    <div style={{
-      borderRadius: 20, padding: '16px 18px',
-      background: darkMode ? 'rgba(255,255,255,0.03)' : '#fff',
-      border: `1px solid ${darkMode ? 'rgba(255,255,255,0.07)' : '#e2e8f0'}`,
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+    <div style={card({ padding: '18px 20px' })}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Droplets size={16} style={{ color }} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: darkMode ? '#f1f5f9' : '#1e293b' }}>Günlük Su</span>
+          <Droplets size={16} style={{ color: '#60a5fa' }} />
+          <span style={{ fontSize: 14, fontWeight: 800, color: T.text, fontFamily: 'Lexend, sans-serif' }}>
+            Daily Hydration
+          </span>
         </div>
-        <span style={{ fontSize: 11, color: '#64748b' }}>Hedef: {GOAL / 1000}L</span>
+        <span style={{ fontSize: 11, color: T.muted, fontWeight: 600 }}>GOAL: {GOAL / 1000}L</span>
       </div>
 
-      <div style={{ height: 8, background: darkMode ? '#1e293b' : '#f1f5f9', borderRadius: 4, overflow: 'hidden', marginBottom: 12 }}>
+      {/* Big value */}
+      <div style={{ marginBottom: 12 }}>
+        <span style={{ fontSize: 40, fontWeight: 900, color: T.accent, fontFamily: 'Lexend, sans-serif', lineHeight: 1 }}>
+          {amount >= 1000 ? `${(amount / 1000).toFixed(1)}` : `${amount}`}
+        </span>
+        <span style={{ fontSize: 20, fontWeight: 700, color: T.accent, marginLeft: 3 }}>
+          {amount >= 1000 ? 'L' : 'ml'}
+        </span>
+        <div style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>{Math.round(pct)}% COMPLETED</div>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ height: 6, background: T.surfaceHi, borderRadius: 3, overflow: 'hidden', marginBottom: 14 }}>
         <div style={{
-          height: '100%', borderRadius: 4,
-          width: `${pct}%`,
-          background: `linear-gradient(90deg, #3b82f6, ${color})`,
+          height: '100%', borderRadius: 3, width: `${pct}%`,
+          background: `linear-gradient(90deg, #3b82f6, ${T.accent})`,
           transition: 'width 0.4s ease',
         }} />
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <span style={{ fontSize: 24, fontWeight: 900, color, fontFamily: 'monospace' }}>
-            {amount >= 1000 ? `${(amount / 1000).toFixed(1)}L` : `${amount}ml`}
-          </span>
-          <span style={{ fontSize: 10, color: '#64748b', marginLeft: 6 }}>{glasses} bardak</span>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={sub} style={{
-            width: 32, height: 32, borderRadius: 10, border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
-            background: 'transparent', color: '#64748b', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Minus size={14} />
-          </button>
-          <button onClick={add} style={{
-            width: 32, height: 32, borderRadius: 10,
-            background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)',
-            color: '#60a5fa', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Plus size={14} />
-          </button>
-        </div>
+      {/* Controls */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        <button onClick={sub} style={{
+          width: 36, height: 36, borderRadius: 10,
+          border: `1px solid ${T.outline}`, background: 'transparent',
+          color: T.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Minus size={14} />
+        </button>
+        <button onClick={add} style={{
+          width: 36, height: 36, borderRadius: 10,
+          background: T.accentDim, border: `1px solid ${T.accentBorder}`,
+          color: T.accent, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Plus size={14} />
+        </button>
       </div>
     </div>
   );
@@ -158,8 +162,7 @@ const WaterTracker = ({ darkMode }) => {
 const callGemini = async (prompt, system) => {
   try {
     const res = await fetch('/api/gemini', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt, systemInstruction: system || '' }),
     });
     const data = await res.json();
@@ -176,8 +179,7 @@ const KahinInsight = ({ workout, darkMode }) => {
     try {
       const cached = JSON.parse(localStorage.getItem('arete_kahin_insight') || 'null');
       if (cached?.date === new Date().toDateString() && cached?.text) {
-        setMsg(cached.text);
-        setGenerated(true);
+        setMsg(cached.text); setGenerated(true);
       }
     } catch (e) {}
   }, []);
@@ -190,18 +192,11 @@ const KahinInsight = ({ workout, darkMode }) => {
     }));
     const recovery = getRecovery();
     const streak = getStreak(getHistory());
-
     const system = `Sen ARETE'nin AI koçu Kahin'sin. Türkçe, kısa (2-3 cümle), motive edici ve kişisel bir günlük insight yaz. Emoji kullanabilirsin.`;
-    const userPrompt = `Bugün: ${new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}.
-Streak: ${streak} gün. Toparlanma: ${recovery ? `${recovery}/100` : 'bilinmiyor'}.
-Son antrenmalar: ${JSON.stringify(history)}.
-Aktif mod: ${workout?.focus ? focusLabelMap[workout.focus] || workout.focus : 'seçilmemiş'}.
-Kısa bir insight yaz.`;
-
+    const userPrompt = `Bugün: ${new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}.\nStreak: ${streak} gün. Toparlanma: ${recovery ? `${recovery}/100` : 'bilinmiyor'}.\nSon antrenmalar: ${JSON.stringify(history)}.\nAktif mod: ${workout?.focus ? focusLabelMap[workout.focus] || workout.focus : 'seçilmemiş'}.\nKısa bir insight yaz.`;
     const response = await callGemini(userPrompt, system);
     if (response) {
-      setMsg(response);
-      setGenerated(true);
+      setMsg(response); setGenerated(true);
       localStorage.setItem('arete_kahin_insight', JSON.stringify({ date: new Date().toDateString(), text: response }));
     }
     setLoading(false);
@@ -209,31 +204,35 @@ Kısa bir insight yaz.`;
 
   return (
     <div style={{
-      borderRadius: 20, padding: '14px 16px',
-      background: 'linear-gradient(135deg, rgba(146,64,14,0.2), rgba(245,158,11,0.08))',
-      border: '1px solid rgba(245,158,11,0.2)',
+      borderRadius: 20, padding: '16px 18px',
+      background: 'linear-gradient(135deg, rgba(209,255,38,0.07), rgba(209,255,38,0.03))',
+      border: `1px solid ${T.accentBorder}`,
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-        <Sparkles size={14} style={{ color: '#f59e0b' }} />
-        <span style={{ fontSize: 10, fontWeight: 800, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-          Kahin Insight
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+        <div style={{
+          width: 22, height: 22, borderRadius: 6, background: T.accentDim,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Sparkles size={11} style={{ color: T.accent }} />
+        </div>
+        <span style={{ fontSize: 10, fontWeight: 800, color: T.accent, textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: 'Lexend, sans-serif' }}>
+          AI Pulse Insight
         </span>
         {generated && (
           <button onClick={() => { setGenerated(false); setMsg(null); generate(); }}
-            style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#475569' }}>
+            style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: T.muted }}>
             <RefreshCw size={11} />
           </button>
         )}
       </div>
       {generated && msg ? (
-        <p style={{ fontSize: 13, color: darkMode ? '#cbd5e1' : '#475569', lineHeight: 1.65 }}>{msg}</p>
+        <p style={{ fontSize: 13, color: darkMode ? '#cbd5e1' : '#475569', lineHeight: 1.7 }}>{msg}</p>
       ) : (
-        <button onClick={generate} disabled={loading}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 12, color: '#f59e0b', fontWeight: 600, padding: 0,
-          }}>
+        <button onClick={generate} disabled={loading} style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontSize: 12, color: T.accent, fontWeight: 600, padding: 0,
+        }}>
           {loading ? <RefreshCw size={13} className="animate-spin" /> : <Sparkles size={13} />}
           {loading ? 'Kahin düşünüyor...' : 'Günlük insight al'}
         </button>
@@ -244,56 +243,40 @@ Kısa bir insight yaz.`;
 
 // ── Ana DashboardTab ──────────────────────────────────────────────────────────
 const DashboardTab = ({
-  darkMode,
-  workout,
-  config,
-  setConfig,
-  setActiveTab,
-  workedOutToday,
-  program,
-  generateWorkout,
+  darkMode, workout, config, setConfig,
+  setActiveTab, workedOutToday, program, generateWorkout,
 }) => {
   const [history, setHistory] = useState([]);
+  useEffect(() => { setHistory(getHistory()); }, []);
 
-  useEffect(() => {
-    setHistory(getHistory());
-  }, []);
-
-  const greeting = getTodayGreeting();
-  const userName = getUserName();
-  const streak = getStreak(history);
-  const thisWeek = history.filter(h => h.timestamp > Date.now() - 7 * 24 * 60 * 60 * 1000).length;
-  const weeklyData = getWeeklyVolumeData(history);
-  const recovery = getRecovery();
+  const greeting    = getTodayGreeting();
+  const userName    = getUserName();
+  const streak      = getStreak(history);
+  const thisWeek    = history.filter(h => h.timestamp > Date.now() - 7 * 24 * 60 * 60 * 1000).length;
+  const weeklyData  = getWeeklyVolumeData(history);
+  const recovery    = getRecovery();
   const recentWorkouts = history.slice(0, 3);
-
-  const todaySlot = (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
+  const todaySlot   = (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
   const todayProgram = program?.schedule?.find(s => s.weekdaySlot === todaySlot);
-
-  const card = {
-    borderRadius: 20,
-    background: darkMode ? 'rgba(255,255,255,0.03)' : '#fff',
-    border: `1px solid ${darkMode ? 'rgba(255,255,255,0.07)' : '#e2e8f0'}`,
-    padding: '16px 18px',
-  };
 
   return (
     <div style={{ paddingBottom: 96 }}>
 
       {/* ── HEADER ── */}
-      <div style={{ padding: '20px 20px 12px' }}>
-        <p style={{ fontSize: 12, color: '#64748b', fontWeight: 600, marginBottom: 2 }}>
+      <div style={{ padding: '24px 20px 8px' }}>
+        <p style={{ fontSize: 12, color: T.muted, fontWeight: 600, marginBottom: 4, letterSpacing: '0.04em' }}>
           {greeting}
         </p>
         <h1 style={{
-          fontSize: 28, fontWeight: 900,
-          color: darkMode ? '#f1f5f9' : '#0f172a',
-          letterSpacing: '-0.02em', lineHeight: 1.1,
-          marginBottom: 4,
+          fontSize: 32, fontWeight: 900,
+          color: T.text,
+          fontFamily: 'Lexend, sans-serif',
+          letterSpacing: '-0.03em', lineHeight: 1.1,
+          marginBottom: 6,
         }}>
-          {userName ? `${userName}! 👋` : 'ARETE'}
+          {userName ? `Merhaba, ${userName}!` : 'ARETE'}
         </h1>
-        <p style={{ fontSize: 12, color: '#64748b' }}>
+        <p style={{ fontSize: 12, color: T.muted }}>
           {new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>
       </div>
@@ -303,20 +286,19 @@ const DashboardTab = ({
         {/* ── STAT CHIPS ── */}
         <div style={{ display: 'flex', gap: 8 }}>
           {[
-            { icon: Flame, value: streak, label: 'Gün seri', color: streak >= 7 ? '#ef4444' : '#f59e0b' },
-            { icon: Zap, value: thisWeek, label: 'Bu hafta', color: '#60a5fa' },
-            { icon: TrendingUp, value: recovery ? `${recovery}%` : '—', label: 'Hazırlık', color: recovery >= 70 ? '#22c55e' : recovery >= 40 ? '#f59e0b' : '#ef4444' },
+            { label: 'GÜN SERİ', value: streak, color: streak >= 7 ? '#ef4444' : T.accent, icon: Flame },
+            { label: 'BU HAFTA', value: thisWeek, color: '#60a5fa', icon: Zap },
+            { label: 'HAZIRLIK', value: recovery ? `${recovery}%` : '—', color: recovery >= 70 ? '#22c55e' : recovery >= 40 ? T.accent : '#ef4444', icon: TrendingUp },
           ].map(stat => (
             <div key={stat.label} style={{
-              flex: 1, borderRadius: 16, padding: '12px 10px', textAlign: 'center',
-              background: darkMode ? 'rgba(255,255,255,0.03)' : '#fff',
-              border: `1px solid ${darkMode ? 'rgba(255,255,255,0.07)' : '#e2e8f0'}`,
+              flex: 1, borderRadius: 18, padding: '14px 10px', textAlign: 'center',
+              background: T.surface, border: `1px solid ${T.outline}`,
             }}>
-              <stat.icon size={14} style={{ color: stat.color, margin: '0 auto 4px' }} />
-              <div style={{ fontSize: 20, fontWeight: 900, color: stat.color, fontFamily: 'monospace', lineHeight: 1 }}>
+              <stat.icon size={14} style={{ color: stat.color, margin: '0 auto 6px' }} />
+              <div style={{ fontSize: 22, fontWeight: 900, color: stat.color, fontFamily: 'Lexend, sans-serif', lineHeight: 1 }}>
                 {stat.value}
               </div>
-              <div style={{ fontSize: 9, color: '#64748b', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <div style={{ fontSize: 8, color: T.muted, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 {stat.label}
               </div>
             </div>
@@ -328,79 +310,95 @@ const DashboardTab = ({
 
         {/* ── BUGÜNKÜ ANTRENMAN ── */}
         {workedOutToday ? (
-          <div style={{
-            ...card,
-            background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(34,197,94,0.04))',
+          <div style={card({
+            padding: '18px 20px',
+            background: 'linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.04))',
             border: '1px solid rgba(34,197,94,0.2)',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 24 }}>✅</span>
+          })}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{
+                width: 42, height: 42, borderRadius: 12,
+                background: 'rgba(34,197,94,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{ fontSize: 20 }}>✅</span>
+              </div>
               <div>
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#22c55e' }}>Bugün tamamlandı!</p>
-                <p style={{ fontSize: 11, color: '#64748b' }}>Harika iş. Dinlenme zamanı.</p>
+                <p style={{ fontSize: 14, fontWeight: 800, color: '#22c55e', fontFamily: 'Lexend, sans-serif' }}>Bugün tamamlandı!</p>
+                <p style={{ fontSize: 11, color: T.muted }}>Harika iş. Dinlenme zamanı.</p>
               </div>
             </div>
           </div>
         ) : (
           <div style={{
-            borderRadius: 20, overflow: 'hidden',
-            background: 'linear-gradient(135deg, rgba(146,64,14,0.3) 0%, rgba(245,158,11,0.15) 50%, rgba(15,23,42,0.8) 100%)',
-            border: '1px solid rgba(245,158,11,0.25)',
-            padding: '18px 18px',
+            borderRadius: 22, overflow: 'hidden',
+            background: 'linear-gradient(140deg, #1A1F14 0%, #161A1D 60%, #0C0E11 100%)',
+            border: '1px solid rgba(209,255,38,0.18)',
+            padding: '20px',
+            position: 'relative',
           }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
-              <div>
-                <p style={{ fontSize: 10, color: '#f59e0b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 4 }}>
-                  {todayProgram ? 'Program Günü' : 'Bugünün Antrenmanı'}
-                </p>
-                <h2 style={{ fontSize: 18, fontWeight: 900, color: '#f1f5f9', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
-                  {workout
-                    ? workout.name.split('//').pop()?.trim() || workout.name
-                    : todayProgram
-                      ? todayProgram.label
-                      : 'Antrenman Oluştur'}
-                </h2>
-                {workout && (
-                  <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
-                    {workout.duration} dk · {focusLabelMap[workout.focus] || workout.focus}
-                  </p>
-                )}
-              </div>
+            {/* Decorative text */}
+            <div style={{
+              position: 'absolute', top: 10, right: 16,
+              fontSize: 52, fontWeight: 900, fontFamily: 'Lexend, sans-serif',
+              color: 'rgba(209,255,38,0.06)', letterSpacing: '-0.04em', lineHeight: 1,
+              userSelect: 'none', pointerEvents: 'none',
+            }}>
+              {(focusLabelMap[workout?.focus] || 'FOCUS').toUpperCase().split(' ')[0]}
             </div>
+
+            <div style={{ marginBottom: 14 }}>
+              <p style={{ fontSize: 9, color: T.accent, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.16em', marginBottom: 8, fontFamily: 'Lexend, sans-serif' }}>
+                {todayProgram ? 'PROGRAM GÜNÜ' : 'BUGÜNKÜ ODAK'}
+              </p>
+              <h2 style={{
+                fontSize: 28, fontWeight: 900, color: T.text,
+                fontFamily: 'Lexend, sans-serif',
+                letterSpacing: '-0.02em', lineHeight: 1.15,
+                marginBottom: workout ? 6 : 0,
+              }}>
+                {workout
+                  ? workout.name.split('//').pop()?.trim() || workout.name
+                  : todayProgram
+                    ? todayProgram.label
+                    : 'Antrenman Oluştur'}
+              </h2>
+              {workout && (
+                <p style={{ fontSize: 11, color: T.muted }}>
+                  {workout.duration} Dakika · {focusLabelMap[workout.focus] || workout.focus}
+                </p>
+              )}
+            </div>
+
             <div style={{ display: 'flex', gap: 8 }}>
               {workout ? (
                 <button onClick={() => setActiveTab('workout')}
                   style={{
-                    flex: 1, padding: '11px 0', borderRadius: 12,
-                    background: 'linear-gradient(135deg, #92400e, #f59e0b)',
-                    color: '#0f172a', fontWeight: 800, fontSize: 13,
+                    flex: 1, padding: '13px 0', borderRadius: 14,
+                    background: T.accent, color: '#0C0E11',
+                    fontWeight: 900, fontSize: 13, fontFamily: 'Lexend, sans-serif',
                     border: 'none', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                   }}>
-                  <Play size={14} /> Antrenmana Git
+                  <Play size={14} fill="#0C0E11" /> Antrenmana Git
                 </button>
               ) : (
-                <button onClick={() => {
-                  if (todayProgram) setConfig(prev => ({ ...prev, focus: todayProgram.focus }));
-                  generateWorkout();
-                  setActiveTab('workout');
-                }}
+                <button onClick={() => { if (todayProgram) setConfig(prev => ({ ...prev, focus: todayProgram.focus })); generateWorkout(); setActiveTab('workout'); }}
                   style={{
-                    flex: 1, padding: '11px 0', borderRadius: 12,
-                    background: 'linear-gradient(135deg, #92400e, #f59e0b)',
-                    color: '#0f172a', fontWeight: 800, fontSize: 13,
+                    flex: 1, padding: '13px 0', borderRadius: 14,
+                    background: T.accent, color: '#0C0E11',
+                    fontWeight: 900, fontSize: 13, fontFamily: 'Lexend, sans-serif',
                     border: 'none', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                   }}>
-                  <Zap size={14} /> {todayProgram ? `${todayProgram.label} Başlat` : 'Antrenman Oluştur'}
+                  <Zap size={14} /> {todayProgram ? `${todayProgram.label} Başlat` : 'Antrenmanı Başlat'}
                 </button>
               )}
               {workout && (
                 <button onClick={() => generateWorkout()}
                   style={{
-                    padding: '11px 14px', borderRadius: 12,
-                    background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)',
-                    color: '#94a3b8', cursor: 'pointer',
+                    padding: '13px 16px', borderRadius: 14,
+                    background: T.surfaceHi, border: `1px solid ${T.outline}`,
+                    color: T.muted, cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
                   <RefreshCw size={14} />
@@ -411,37 +409,55 @@ const DashboardTab = ({
         )}
 
         {/* ── HAFTALIK GELİŞİM ── */}
-        <div style={card}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: darkMode ? '#f1f5f9' : '#1e293b' }}>Haftalık Gelişim</p>
+        <div style={card({ padding: '18px 20px' })}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 800, color: T.text, fontFamily: 'Lexend, sans-serif' }}>Haftalık Gelişim</p>
+              <p style={{ fontSize: 10, color: T.muted, marginTop: 2 }}>Aktif kalori trendi</p>
+            </div>
             <button onClick={() => setActiveTab('stats')}
-              style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, color: '#f59e0b', background: 'none', border: 'none', cursor: 'pointer' }}>
-              Tümü <ChevronRight size={11} />
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                fontSize: 10, fontWeight: 700, color: T.accent,
+                background: T.accentDim, border: `1px solid ${T.accentBorder}`,
+                padding: '4px 10px', borderRadius: 99, cursor: 'pointer',
+              }}>
+              +{thisWeek > 0 ? Math.round(thisWeek * 12) : 0}% Artış
             </button>
           </div>
           {weeklyData.some(d => d.volume > 0) ? (
-            <ResponsiveContainer width="100%" height={100}>
+            <ResponsiveContainer width="100%" height={110}>
               <BarChart data={weeklyData} margin={{ top: 0, right: 0, left: -30, bottom: 0 }}>
-                <XAxis dataKey="day" tick={{ fontSize: 9, fill: '#475569' }} axisLine={false} tickLine={false} />
+                <XAxis
+                  dataKey="day"
+                  tick={{ fontSize: 9, fill: T.muted }}
+                  axisLine={false} tickLine={false}
+                />
                 <Tooltip
-                  contentStyle={{
-                    background: darkMode ? '#0f172a' : '#fff',
-                    border: '1px solid #334155', borderRadius: 8, fontSize: 10
-                  }}
+                  contentStyle={{ background: '#1E2226', border: `1px solid ${T.outline}`, borderRadius: 10, fontSize: 10 }}
                   formatter={(v) => [`${v > 1000 ? `${(v / 1000).toFixed(1)}t` : `${v}kg`}`, 'Hacim']}
                 />
-                <Bar dataKey="volume" radius={[6, 6, 0, 0]} fill="#f59e0b" opacity={0.85} />
+                <Bar dataKey="volume" radius={[6, 6, 0, 0]}>
+                  {weeklyData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.isToday ? T.accent : entry.active ? 'rgba(209,255,38,0.35)' : T.surfaceHi}
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div style={{ textAlign: 'center', padding: '20px 0', color: '#334155' }}>
+            <div style={{ textAlign: 'center', padding: '24px 0', color: T.muted }}>
               <p style={{ fontSize: 11 }}>Bu hafta henüz antrenman yok</p>
             </div>
           )}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-            <span style={{ fontSize: 9, color: '#475569' }}>{thisWeek} antrenman bu hafta</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}>
+            <span style={{ fontSize: 9, color: T.muted }}>
+              {weeklyData.map(d => d.isToday ? d.day : '').filter(Boolean)[0] || ''} · {thisWeek} antrenman
+            </span>
             {streak > 0 && (
-              <span style={{ fontSize: 9, color: '#f59e0b' }}>🔥 {streak} günlük seri</span>
+              <span style={{ fontSize: 9, color: T.accent, fontWeight: 700 }}>🔥 {streak} günlük seri</span>
             )}
           </div>
         </div>
@@ -451,49 +467,73 @@ const DashboardTab = ({
 
         {/* ── SON ANTRENMALAR ── */}
         {recentWorkouts.length > 0 && (
-          <div style={card}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: darkMode ? '#f1f5f9' : '#1e293b' }}>Son Antrenmalar</p>
+          <div style={card({ padding: '18px 20px' })}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <p style={{ fontSize: 14, fontWeight: 800, color: T.text, fontFamily: 'Lexend, sans-serif' }}>Geçmiş Antrenmalar</p>
               <button onClick={() => setActiveTab('workout')}
-                style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, color: '#f59e0b', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <Calendar size={11} /> Takvim
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 700,
+                  color: T.accent, background: 'none', border: 'none', cursor: 'pointer',
+                }}>
+                TÜMÜNÜ GÖR <ChevronRight size={11} />
               </button>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {recentWorkouts.map((entry) => {
                 const logCount = Object.keys(entry.exercises || {}).length;
                 const volume = Object.values(entry.exercises || {}).reduce((acc, log) => {
                   return acc + (parseFloat(log.weight) || 0) * (parseInt(log.reps) || 0);
                 }, 0);
                 const isToday = new Date(entry.timestamp).toDateString() === new Date().toDateString();
+                const focusLabel = focusLabelMap[entry.focus] || entry.focus || '';
                 return (
                   <div key={entry.id} style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    padding: '10px 12px', borderRadius: 12,
-                    background: darkMode ? 'rgba(255,255,255,0.03)' : '#f8fafc',
-                    border: `1px solid ${isToday ? 'rgba(245,158,11,0.2)' : darkMode ? 'rgba(255,255,255,0.05)' : '#f1f5f9'}`,
+                    padding: '12px 14px', borderRadius: 14,
+                    background: T.surfaceLo,
+                    border: `1px solid ${isToday ? T.accentBorder : T.outline}`,
                   }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{
-                        fontSize: 12, fontWeight: 700,
-                        color: darkMode ? '#e2e8f0' : '#1e293b',
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    {/* Left: icon + info */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                        background: T.surfaceHi,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
-                        {entry.workoutName?.split('//').pop()?.trim() || entry.workoutName}
-                      </p>
-                      <p style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>
-                        {isToday ? 'Bugün' : entry.date?.split(' ').slice(0, 3).join(' ')}
-                        {logCount > 0 && ` · ${logCount} kayıt`}
-                      </p>
+                        <Zap size={14} style={{ color: T.accent }} />
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{
+                          fontSize: 12, fontWeight: 800, color: T.text,
+                          fontFamily: 'Lexend, sans-serif',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>
+                          {entry.workoutName?.split('//').pop()?.trim() || entry.workoutName}
+                        </p>
+                        <p style={{ fontSize: 10, color: T.muted, marginTop: 2 }}>
+                          {isToday ? 'Bugün' : entry.date?.split(' ').slice(0, 3).join(' ')}
+                          {logCount > 0 && ` · ${logCount} kayıt`}
+                        </p>
+                      </div>
                     </div>
-                    {volume > 0 && (
-                      <div style={{ textAlign: 'right', marginLeft: 8 }}>
-                        <p style={{ fontSize: 13, fontWeight: 800, color: '#f59e0b', fontFamily: 'monospace' }}>
+                    {/* Right: volume + badge */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, marginLeft: 8, flexShrink: 0 }}>
+                      {focusLabel && (
+                        <span style={{
+                          fontSize: 8, fontWeight: 700, color: T.accent,
+                          background: T.accentDim, border: `1px solid ${T.accentBorder}`,
+                          padding: '2px 7px', borderRadius: 99, textTransform: 'uppercase', letterSpacing: '0.08em',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {focusLabel}
+                        </span>
+                      )}
+                      {volume > 0 && (
+                        <p style={{ fontSize: 12, fontWeight: 800, color: T.text, fontFamily: 'Lexend, sans-serif' }}>
                           {volume >= 1000 ? `${(volume / 1000).toFixed(1)}t` : `${Math.round(volume)}kg`}
                         </p>
-                        <p style={{ fontSize: 9, color: '#475569' }}>hacim</p>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 );
               })}

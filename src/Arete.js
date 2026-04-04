@@ -712,7 +712,7 @@ const MacroSummaryCard = ({ dailyMeal, workedOutToday, darkMode }) => {
   const calColor = !dailyMeal ? '#4B5563' : calPct >= 90 ? '#22C55E' : calPct >= 60 ? '#F5A623' : '#EF4444';
 
   return (
-    <div className={`rounded-2xl border mb-4 overflow-hidden ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
+    <div style={{ borderRadius: 22, border: '1px solid rgba(255,255,255,0.06)', marginBottom: 16, overflow: 'hidden', background: '#161A1D' }}>
       {/* Donut + legend */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3 gap-4">
         {/* SVG Donut */}
@@ -4391,26 +4391,29 @@ export default function App() {
           {activeTab === 'workout' && (
             <>
               {/* Collapsible Config Panel */}
-              <div className={`mb-4 rounded-xl border overflow-hidden ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'}`}>
+              <div style={{ marginBottom: 16, borderRadius: 20, border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden', background: '#161A1D' }}>
                 <button
                   onClick={() => setConfigOpen(p => !p)}
-                  className={`w-full px-4 py-2.5 flex items-center justify-between transition-colors ${darkMode ? 'hover:bg-slate-800/30' : 'hover:bg-gray-50'}`}
-                >
-                  <span className={`text-xs font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                    <Activity className="text-amber-500" size={14} /> Antrenman Ayarları
+                  style={{
+                    width: '100%', padding: '14px 16px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                  }}>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: '#F9F9FD', fontFamily: 'Lexend, sans-serif', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Activity style={{ color: '#D1FF26' }} size={14} /> Antrenman Ayarları
                   </span>
                   {configOpen
-                    ? <ChevronUp size={14} className="text-slate-400" />
-                    : <ChevronDown size={14} className="text-slate-400" />}
+                    ? <ChevronUp size={14} style={{ color: '#7A7C80' }} />
+                    : <ChevronDown size={14} style={{ color: '#7A7C80' }} />}
                 </button>
                 {configOpen && (
-                  <div className={`px-4 pb-4 border-t ${darkMode ? 'border-slate-800/30' : 'border-gray-200'}`}>
-                    <div className="grid grid-cols-3 gap-2 mt-3 mb-3">
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '14px 16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
                       <div>
-                        <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Hedef</label>
-                        <div className="relative">
+                        <label style={{ display: 'block', fontSize: 9, color: '#7A7C80', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 5 }}>Hedef</label>
+                        <div style={{ position: 'relative' }}>
                           <select value={config.focus} onChange={(e) => setConfig({ ...config, focus: e.target.value })}
-                            className={`w-full border rounded-lg p-2 text-xs appearance-none focus:border-amber-500 outline-none ${darkMode ? 'bg-slate-950 border-slate-700/50 text-slate-200' : 'bg-gray-50 border-gray-300 text-gray-800'}`}>
+                            style={{ width: '100%', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '8px 10px', fontSize: 11, background: '#111417', color: '#F9F9FD', outline: 'none', appearance: 'none' }}>
                             <optgroup label="⚡ Patlayıcı &amp; Kuvvet">
                               <option value="hanik_push_legs">Hanik – Push &amp; Legs</option>
                               <option value="hanik_pull_core">Hanik – Pull &amp; Core</option>
@@ -4434,73 +4437,75 @@ export default function App() {
                               <option value="metcon">Endurance</option>
                             </optgroup>
                           </select>
-                          <ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={11} />
+                          <ChevronDown style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#7A7C80', pointerEvents: 'none' }} size={11} />
                         </div>
                       </div>
                       <div>
-                        <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Süre</label>
-                        <div className="relative">
+                        <label style={{ display: 'block', fontSize: 9, color: '#7A7C80', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 5 }}>Süre</label>
+                        <div style={{ position: 'relative' }}>
                           <select value={config.duration} onChange={(e) => setConfig({ ...config, duration: e.target.value })}
-                            className={`w-full border rounded-lg p-2 text-xs appearance-none focus:border-amber-500 outline-none ${darkMode ? 'bg-slate-950 border-slate-700/50 text-slate-200' : 'bg-gray-50 border-gray-300 text-gray-800'}`}>
+                            style={{ width: '100%', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '8px 10px', fontSize: 11, background: '#111417', color: '#F9F9FD', outline: 'none', appearance: 'none' }}>
                             <option value="45">45 dk</option>
                             <option value="60">60 dk</option>
                             <option value="90">90 dk</option>
                           </select>
-                          <ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={11} />
+                          <ChevronDown style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#7A7C80', pointerEvents: 'none' }} size={11} />
                         </div>
                       </div>
                       <div>
-                        <label className="block text-[9px] text-slate-500 uppercase tracking-wide mb-1">Havuz</label>
+                        <label style={{ display: 'block', fontSize: 9, color: '#7A7C80', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 5 }}>Havuz</label>
                         <button
                           onClick={() => setConfig({ ...config, poolAccess: !config.poolAccess })}
-                          className={`w-full p-2 rounded-lg border flex items-center justify-center gap-1.5 transition-all text-xs ${config.poolAccess ? 'bg-blue-950/40 border-blue-500/30 text-blue-300' : darkMode ? 'bg-slate-950 border-slate-700/50 text-slate-500' : 'bg-gray-50 border-gray-300 text-gray-400'}`}>
+                          style={{
+                            width: '100%', padding: '8px 4px', borderRadius: 10,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                            fontSize: 11, cursor: 'pointer', transition: 'all 0.15s',
+                            background: config.poolAccess ? 'rgba(96,165,250,0.12)' : '#111417',
+                            border: `1px solid ${config.poolAccess ? 'rgba(96,165,250,0.25)' : 'rgba(255,255,255,0.08)'}`,
+                            color: config.poolAccess ? '#60a5fa' : '#7A7C80',
+                          }}>
                           <Waves size={12} />{config.poolAccess ? <CheckCircle size={12} /> : '—'}
                         </button>
                       </div>
                     </div>
-                    {/* Haftalık denge önerisi */}
-                    {(() => {
-                      const freq = getWeeklyMuscleFrequency();
-                      const sorted = Object.entries(freq).sort((a, b) => a[1] - b[1]);
-                      const least = sorted[0]; // En az çalışılan
-                      const most  = sorted[sorted.length - 1]; // En çok çalışılan
-
-                      if (most[1] === 0) return null; // Hiç antrenman yoksa gösterme
-
-                      const suggestions = {
-                        legs:    { label: 'Bacak günü', focus: 'gvt',      emoji: '🦵' },
-                        push:    { label: 'İtiş günü',  focus: 'ovt',      emoji: '💪' },
-                        pull:    { label: 'Çekiş günü', focus: 'hanik_pull_core', emoji: '🏋️' },
-                        core:    { label: 'Fonksiyonel', focus: 'fbb',     emoji: '🎯' },
-                        cardio:  { label: 'Kondisyon',  focus: 'engine',   emoji: '🔥' },
-                      };
-
-                      const sug = suggestions[least[0]];
-                      if (!sug || least[1] >= 2) return null; // Zaten dengeli
-
-                      return (
-                        <div style={{
-                          marginBottom: 10, padding: '8px 12px', borderRadius: 8,
-                          background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)',
-                          display: 'flex', alignItems: 'center', gap: 8,
-                        }}>
-                          <span style={{ fontSize: 16 }}>{sug.emoji}</span>
-                          <div style={{ flex: 1 }}>
-                            <p style={{ fontSize: 10, color: '#f59e0b', fontWeight: 700 }}>Bu hafta öneri</p>
-                            <p style={{ fontSize: 11, color: '#64748b' }}>{sug.label} az çalıştı</p>
+                      {(() => {
+                        const freq = getWeeklyMuscleFrequency();
+                        const sorted = Object.entries(freq).sort((a, b) => a[1] - b[1]);
+                        const least = sorted[0];
+                        const most  = sorted[sorted.length - 1];
+                        if (most[1] === 0) return null;
+                        const suggestions = {
+                          legs:    { label: 'Bacak günü', focus: 'gvt',      emoji: '🦵' },
+                          push:    { label: 'İtiş günü',  focus: 'ovt',      emoji: '💪' },
+                          pull:    { label: 'Çekiş günü', focus: 'hanik_pull_core', emoji: '🏋️' },
+                          core:    { label: 'Fonksiyonel', focus: 'fbb',     emoji: '🎯' },
+                          cardio:  { label: 'Kondisyon',  focus: 'engine',   emoji: '🔥' },
+                        };
+                        const sug = suggestions[least[0]];
+                        if (!sug || least[1] >= 2) return null;
+                        return (
+                          <div style={{
+                            marginBottom: 10, padding: '10px 14px', borderRadius: 12,
+                            background: 'rgba(209,255,38,0.06)', border: '1px solid rgba(209,255,38,0.18)',
+                            display: 'flex', alignItems: 'center', gap: 10,
+                          }}>
+                            <span style={{ fontSize: 18 }}>{sug.emoji}</span>
+                            <div style={{ flex: 1 }}>
+                              <p style={{ fontSize: 10, color: '#D1FF26', fontWeight: 800, fontFamily: 'Lexend, sans-serif' }}>Bu hafta öneri</p>
+                              <p style={{ fontSize: 11, color: '#7A7C80' }}>{sug.label} az çalıştı</p>
+                            </div>
+                            <button
+                              onClick={() => setConfig(prev => ({ ...prev, focus: sug.focus }))}
+                              style={{
+                                fontSize: 10, fontWeight: 800, padding: '6px 12px', borderRadius: 99,
+                                background: '#D1FF26', color: '#0C0E11',
+                                border: 'none', cursor: 'pointer', fontFamily: 'Lexend, sans-serif',
+                              }}>
+                              Uygula
+                            </button>
                           </div>
-                          <button
-                            onClick={() => setConfig(prev => ({ ...prev, focus: sug.focus }))}
-                            style={{
-                              fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 6,
-                              background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)',
-                              color: '#f59e0b', cursor: 'pointer',
-                            }}>
-                            Uygula
-                          </button>
-                        </div>
-                      );
-                    })()}
+                        );
+                      })()}
                                         <button onClick={() => {
                         if (Object.keys(logs).length > 0) {
                           setConfirmState({
@@ -4513,7 +4518,16 @@ export default function App() {
                           generateWorkout();
                         }
                       }} disabled={loading}
-                      className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-2.5 rounded-lg shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm">
+                      style={{
+                        width: '100%', padding: '14px 0',
+                        borderRadius: 14, border: 'none', cursor: 'pointer',
+                        background: loading ? '#8AB500' : '#D1FF26',
+                        color: '#0C0E11', fontWeight: 900, fontSize: 14,
+                        fontFamily: 'Lexend, sans-serif',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                        transition: 'all 0.15s',
+                        opacity: loading ? 0.7 : 1,
+                      }}>
                       {loading ? <RefreshCw className="animate-spin" size={15} /> : <Flame size={15} />} ANTRENMAN OLUŞTUR
                     </button>
                   </div>
@@ -4666,13 +4680,13 @@ export default function App() {
               {/* Mod bazlı beslenme stratejisi */}
               {workout && (
                 <div style={{
-                  marginBottom: 12, padding: '10px 14px', borderRadius: 12,
-                  background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)',
+                  marginBottom: 12, padding: '12px 14px', borderRadius: 14,
+                  background: 'rgba(209,255,38,0.05)', border: '1px solid rgba(209,255,38,0.15)',
                 }}>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+                  <p style={{ fontSize: 10, fontWeight: 800, color: '#D1FF26', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 4, fontFamily: 'Lexend, sans-serif' }}>
                     🍽️ Bugünkü Beslenme Stratejisi
                   </p>
-                  <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 12, color: '#7A7C80', lineHeight: 1.65 }}>
                     {(() => {
                       const f = workout.focus;
                       if (['gvt', 'gvt_legs', 'gvt_push', 'gvt_pull'].includes(f))
@@ -4693,31 +4707,42 @@ export default function App() {
                 </div>
               )}
                             {/* Diyet Modu Butonları */}
-              <div className="flex gap-2 mb-3">
+              <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
                 <button
                   onClick={() => { setDietMode('normal'); setDailyMeal(null); }}
-                  className={`flex-1 py-2 rounded-xl font-bold text-xs transition-all ${dietMode === 'normal'
-                      ? 'bg-amber-500 text-slate-900 shadow-md shadow-amber-900/30'
-                      : darkMode ? 'bg-slate-800/60 text-slate-400 border border-slate-700/50' : 'bg-gray-100 text-gray-500 border border-gray-200'
-                    }`}>
+                  style={{
+                    flex: 1, padding: '10px 0', borderRadius: 14, fontWeight: 800, fontSize: 12,
+                    transition: 'all 0.15s', fontFamily: 'Lexend, sans-serif',
+                    background: dietMode === 'normal' ? '#D1FF26' : '#161A1D',
+                    color: dietMode === 'normal' ? '#0C0E11' : '#7A7C80',
+                    border: `1px solid ${dietMode === 'normal' ? 'transparent' : 'rgba(255,255,255,0.06)'}`,
+                    cursor: 'pointer',
+                  }}>
                   🍳 Normal
                 </button>
                 <button
                   onClick={() => { setDietMode('vegan'); setDailyMeal(null); }}
-                  className={`flex-1 py-2 rounded-xl font-bold text-xs transition-all ${dietMode === 'vegan'
-                      ? 'bg-green-500 text-white shadow-md shadow-green-900/30'
-                      : darkMode ? 'bg-slate-800/60 text-slate-400 border border-slate-700/50' : 'bg-gray-100 text-gray-500 border border-gray-200'
-                    }`}>
+                  style={{
+                    flex: 1, padding: '10px 0', borderRadius: 14, fontWeight: 800, fontSize: 12,
+                    transition: 'all 0.15s', fontFamily: 'Lexend, sans-serif',
+                    background: dietMode === 'vegan' ? '#22c55e' : '#161A1D',
+                    color: dietMode === 'vegan' ? '#fff' : '#7A7C80',
+                    border: `1px solid ${dietMode === 'vegan' ? 'transparent' : 'rgba(255,255,255,0.06)'}`,
+                    cursor: 'pointer',
+                  }}>
                   🌱 Vegan
                 </button>
               </div>
 
               {/* Antrenman Durumu */}
-              <div className={`flex items-center justify-between p-3 rounded-xl mb-4 border ${darkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-gray-200'
-                }`}>
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '14px 16px', borderRadius: 16, marginBottom: 12,
+                background: '#161A1D', border: '1px solid rgba(255,255,255,0.06)',
+              }}>
                 <div>
-                  <p className={`text-xs font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Bugün antrenman yaptım</p>
-                  <p className="text-[9px] text-slate-500 mt-0.5">
+                  <p style={{ fontSize: 13, fontWeight: 800, color: '#F9F9FD', fontFamily: 'Lexend, sans-serif' }}>Bugün antrenman yaptım</p>
+                  <p style={{ fontSize: 10, color: '#7A7C80', marginTop: 3 }}>
                     {workedOutToday
                       ? '💪 Aktif gün — yüksek protein öğünleri'
                       : '😴 Dinlenme günü — hafif öğünler'}
@@ -4725,10 +4750,18 @@ export default function App() {
                 </div>
                 <button
                   onClick={() => { setWorkedOutToday(p => !p); setDailyMeal(null); }}
-                  className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 ${workedOutToday ? 'bg-amber-500' : darkMode ? 'bg-slate-700' : 'bg-gray-300'
-                    }`}>
-                  <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${workedOutToday ? 'translate-x-5' : 'translate-x-0.5'
-                    }`} />
+                  style={{
+                    position: 'relative', width: 44, height: 24, borderRadius: 99,
+                    background: workedOutToday ? '#D1FF26' : '#1E2226',
+                    border: `1px solid ${workedOutToday ? 'transparent' : 'rgba(255,255,255,0.1)'}`,
+                    transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0,
+                  }}>
+                  <div style={{
+                    position: 'absolute', top: 2, width: 18, height: 18,
+                    background: workedOutToday ? '#0C0E11' : '#7A7C80',
+                    borderRadius: '50%', transition: 'transform 0.2s',
+                    transform: workedOutToday ? 'translateX(22px)' : 'translateX(2px)',
+                  }} />
                 </button>
               </div>
 
@@ -4737,17 +4770,23 @@ export default function App() {
 
               {/* Öğün Oluşturulmadıysa */}
               {!dailyMeal && (
-                <div className="text-center py-14">
-                  <div className="mb-5 opacity-30">
-                    <Utensils size={48} className="mx-auto text-amber-500" />
+                <div style={{ textAlign: 'center', padding: '48px 0' }}>
+                  <div style={{ marginBottom: 16, opacity: 0.2 }}>
+                    <Utensils size={48} style={{ margin: '0 auto', color: '#D1FF26' }} />
                   </div>
-                  <p className={`text-sm font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Günlük Öğün Planı</p>
-                  <p className="text-[11px] text-slate-500 mb-6">
+                  <p style={{ fontSize: 14, fontWeight: 800, color: '#F9F9FD', fontFamily: 'Lexend, sans-serif', marginBottom: 6 }}>Günlük Öğün Planı</p>
+                  <p style={{ fontSize: 11, color: '#7A7C80', marginBottom: 20 }}>
                     {dietMode === 'vegan' ? 'Vegan tarifleri' : workedOutToday ? 'Yüksek proteinli aktif gün öğünleri' : 'Dinlenme günü hafif öğünleri'}
                   </p>
                   <button
                     onClick={generateDailyMeal}
-                    className="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-amber-900/30 active:scale-[0.97] transition-all flex items-center gap-2 mx-auto text-sm">
+                    style={{
+                      background: '#D1FF26', color: '#0C0E11',
+                      fontWeight: 900, padding: '14px 28px', borderRadius: 16,
+                      border: 'none', cursor: 'pointer', fontSize: 13,
+                      fontFamily: 'Lexend, sans-serif',
+                      display: 'inline-flex', alignItems: 'center', gap: 8,
+                    }}>
                     <Utensils size={16} /> Günlük Öğün Oluştur
                   </button>
                 </div>

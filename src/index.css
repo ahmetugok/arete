@@ -51,25 +51,34 @@ nav {
   
   body {
     @apply antialiased;
+    background: #0C0E11;
   }
 
+  /* Global range slider → lime */
+  input[type="range"] {
+    accent-color: #D1FF26;
+  }
+
+  /* Placeholder muted */
+  ::placeholder { color: #4A4D52; }
   
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 4px;
+    height: 4px;
   }
   
   ::-webkit-scrollbar-track {
-    @apply bg-slate-900;
+    background: #111417;
   }
   
   ::-webkit-scrollbar-thumb {
-    @apply bg-slate-700 rounded-full;
+    background: #1E2226;
+    border-radius: 99px;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-amber-600;
+    background: rgba(209,255,38,0.3);
   }
 }
 
@@ -90,7 +99,7 @@ nav {
   
   /* Glowing borders */
   .glow-border {
-    box-shadow: 0 0 20px -5px rgba(217, 119, 6, 0.5);
+    box-shadow: 0 0 20px -5px rgba(209,255,38,0.35);
   }
   
   .glow-border-blue {
@@ -98,6 +107,7 @@ nav {
   }
   
   /* Card hover effects */
+
   .card-hover {
     @apply transition-all duration-300 hover:translate-y-[-2px] hover:shadow-2xl;
   }
