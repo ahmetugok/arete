@@ -20,6 +20,8 @@ const card = (extra = {}) => ({
   borderRadius: 20,
   background: T.surface,
   border: `1px solid ${T.outline}`,
+  borderTop: '1px solid rgba(255,255,255,0.12)', // Üstten vuran ince ışık
+  boxShadow: '0 12px 32px -8px rgba(0,0,0,0.6)',  // Zemin derinliği
   ...extra,
 });
 
@@ -169,8 +171,9 @@ const WaterTracker = ({ darkMode }) => {
       <div style={{ height: 6, background: T.surfaceHi, borderRadius: 3, overflow: 'hidden', marginBottom: 14 }}>
         <div style={{
           height: '100%', borderRadius: 3, width: `${pct}%`,
-          background: `linear-gradient(90deg, #3b82f6, ${T.accent})`,
-          transition: 'width 0.4s ease',
+          background: `linear-gradient(90deg, #3b82f6 0%, ${T.accent} 100%)`,
+          boxShadow: pct > 0 ? `4px 0 12px ${T.accent}` : 'none', // Ucunda ışık hüzmesi
+          transition: 'width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)', // Yayılı animasyon
         }} />
       </div>
 
@@ -420,6 +423,8 @@ const DashboardTab = ({
                     fontWeight: 900, fontSize: 13, fontFamily: 'Lexend, sans-serif',
                     border: 'none', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    boxShadow: '0 0 24px rgba(209,255,38,0.25), inset 0 1px 1px rgba(255,255,255,0.6)',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.4)',
                   }}>
                   <Play size={14} fill="#0C0E11" /> Antrenmana Git
                 </button>
@@ -431,6 +436,8 @@ const DashboardTab = ({
                     fontWeight: 900, fontSize: 13, fontFamily: 'Lexend, sans-serif',
                     border: 'none', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    boxShadow: '0 0 24px rgba(209,255,38,0.25), inset 0 1px 1px rgba(255,255,255,0.6)',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.4)',
                   }}>
                   <Zap size={14} /> {todayProgram ? `${todayProgram.label} Başlat` : 'Antrenmanı Başlat'}
                 </button>
