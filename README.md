@@ -1,70 +1,77 @@
-# Getting Started with Create React App
+# Arete — Fitness Tracking App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern fitness tracking web application built with React, featuring workout logging, progress statistics, AI-powered coaching (Gemini API), and nutritional guidance.
+
+## Tech Stack
+
+| Category | Technology |
+|---|---|
+| Framework | React 19 |
+| Styling | **Tailwind CSS v3** (with PostCSS & Autoprefixer) |
+| Icons | Lucide React |
+| Charts | Recharts |
+| Build Tool | Create React App |
+| Deployment | Vercel |
+
+## Styling Architecture
+
+The project uses **Tailwind CSS** as its primary styling solution.
+
+### Key files
+
+| File | Purpose |
+|---|---|
+| `tailwind.config.js` | Tailwind configuration: custom colors, animations, and keyframes |
+| `postcss.config.js` | PostCSS pipeline (tailwindcss + autoprefixer) |
+| `src/index.css` | Global design tokens (CSS variables), Tailwind `@layer` component & utility overrides, keyframe definitions, and light-mode overrides |
+
+### Design tokens
+
+Custom design tokens are defined as CSS variables in `src/index.css` and registered in the Tailwind theme inside `tailwind.config.js`:
+
+```
+--accent / #f59e0b       →  text-accent, bg-accent, border-accent
+--accent-dark / #92400e  →  text-accent-dark, bg-accent-dark
+```
+
+### Custom component classes (`@layer components`)
+
+Reusable Tailwind component classes defined in `src/index.css`:
+
+- `.glass` — glass-morphism card (slate backdrop blur)
+- `.glass-amber` — amber-tinted glass card
+- `.gradient-text` — amber gradient text
+- `.glow-border` / `.glow-border-blue` — glowing box-shadow borders
+- `.card-hover` — lift-on-hover card effect
+- `.shimmer` — skeleton loading shimmer
+- `.pulse-ring` — pulsing ring indicator
+- `.float` — floating / levitating animation
+- `.progress-bar` — animated fill progress bar
+- `.animated-gradient` — shifting background gradient
+- `.text-shadow-sm` / `.text-shadow-lg` / `.text-glow` — text shadow utilities
+
+### Custom animations
+
+All animations are registered in `tailwind.config.js` so they are available as `animate-*` utilities:
+
+| Class | Effect |
+|---|---|
+| `animate-slide-up` | Slide in from below |
+| `animate-fade-in-scale` | Fade in while scaling up |
+| `animate-alarm-flash` | Pulsing glow flash |
+| `animate-shimmer` | Loading shimmer sweep |
+| `animate-pulse-ring` | Expanding ring pulse |
+| `animate-float` | Gentle floating bob |
+| `animate-gradient-shift` | Shifting gradient background |
+
+### Theming
+
+The application supports **dark mode** (default) and **light mode**, toggled by setting `data-theme="light"` on the `<html>` element. Light-mode color overrides are defined via `[data-theme="light"]` selectors in `src/index.css`.
 
 ## Available Scripts
 
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```bash
+npm start      # Start development server at http://localhost:3000
+npm run build  # Create an optimized production build
+npm test       # Run tests in interactive watch mode
+```
