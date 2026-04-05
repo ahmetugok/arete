@@ -312,15 +312,17 @@ const DashboardTab = ({
         <p style={{ fontSize: 12, color: T.muted, fontWeight: 600, marginBottom: 4, letterSpacing: '0.04em' }}>
           {greeting}
         </p>
-        <h1 style={{
-          fontSize: 32, fontWeight: 900,
-          color: T.text,
-          fontFamily: 'Lexend, sans-serif',
-          letterSpacing: '-0.03em', lineHeight: 1.1,
-          marginBottom: 6,
-        }}>
-          {userName ? `Merhaba, ${userName}!` : 'ARETE'}
-        </h1>
+        {userName && (
+          <h1 style={{
+            fontSize: 32, fontWeight: 900,
+            color: T.text,
+            fontFamily: 'Lexend, sans-serif',
+            letterSpacing: '-0.03em', lineHeight: 1.1,
+            marginBottom: 6,
+          }}>
+            {`Merhaba, ${userName}!`}
+          </h1>
+        )}
         <p style={{ fontSize: 12, color: T.muted }}>
           {new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>
