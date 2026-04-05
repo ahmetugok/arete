@@ -3622,21 +3622,18 @@ export default function App() {
     const block = [];
 
     if (mode === 'lower') {
-      // ALT VÜCUT: Bacak + Karın
+      // ALT VÜCUT: Ana bacak compound 10×10 + hafif aksesuar pump
       const _legC = UNIFIED_DB.filter(e => e.category === 'legs' && e.mechanic === 'compound');
-      const legCompounds   = _legC.length  ? _legC  : EXERCISE_DB.strength.legs.compound;
+      const legCompounds   = _legC.length ? _legC : EXERCISE_DB.strength.legs.compound;
       const _legI = UNIFIED_DB.filter(e => e.category === 'legs' && e.mechanic === 'isolation');
-      const legAccessories = _legI.length  ? _legI  : EXERCISE_DB.strength.legs.accessory;
-      const _core = UNIFIED_DB.filter(e => e.category === 'core');
-      const coreExercises  = _core.length  ? _core  : EXERCISE_DB.core;
+      const legAccessories = _legI.length ? _legI : EXERCISE_DB.strength.legs.accessory;
 
-      const mainLeg = getRandomItems(legCompounds, 1)[0]; // Bacak ana hareketi
-      const mainCore = getRandomItems(coreExercises, 1)[0]; // Karın ana hareketi
-      const legAccessory = getRandomItems(legAccessories, 1)[0];
-      const coreAccessory = getRandomItems(coreExercises.filter(e => e.name !== mainCore.name), 1)[0];
+      const mainLeg = getRandomItems(legCompounds, 1)[0];
+      const acc1 = getRandomItems(legAccessories, 1)[0];
+      const acc2 = getRandomItems(legAccessories.filter(e => e.name !== acc1?.name), 1)[0] || acc1;
 
       block.push({
-        type: 'GVT A – ALT VÜCUT BACAK (10x10)',
+        type: 'GVT A – ANA BACAK (10×10)',
         exercises: [{
           ...mainLeg,
           sets: 10,
@@ -3649,43 +3646,28 @@ export default function App() {
       });
 
       block.push({
-        type: 'GVT B – ALT VÜCUT KARIN (10x10)',
-        exercises: [{
-          ...mainCore,
-          sets: 10,
-          reps: 10,
-          rest: '60sn',
-          tempo: '3010',
-          note: 'Kontrollü ve sıkıştırarak. Her tekrarda nefes ver.'
-        }]
-      });
-
-      block.push({
-        type: 'GVT C – AKSESUAR SUPERSET (3x12)',
+        type: 'GVT B – PUMP AKSESUAR (3×12-15)',
         exercises: [
-          { ...legAccessory, sets: 3, reps: 12, rest: 'Süpersetle', tempo: '3010', note: 'C1: Tek bacak veya ikincil bacak hareketi.' },
-          { ...coreAccessory, sets: 3, reps: 15, rest: '60sn', tempo: '2010', note: 'C2: Core destekleyici.' }
+          { ...acc1, sets: 3, reps: '12-15', rest: '45sn', tempo: '2010', note: 'B1: Hafif ağırlık. Kan akışını hissettir, güç değil pump.' },
+          { ...acc2, sets: 3, reps: '15',    rest: '45sn', tempo: '2010', note: 'B2: Kontrollü sıkıştırma. GVT sonrası kas doldurma.' }
         ]
       });
 
     } else { // upper
-      // ÜST VÜCUT: Göğüs + Sırt + Omuz
+      // ÜST VÜCUT: Ana göğüs/omuz compound 10×10 + hafif izolasyon pump
       const _pushC = UNIFIED_DB.filter(e => e.category === 'push' && e.mechanic === 'compound');
       const pushCompounds   = _pushC.length ? _pushC : EXERCISE_DB.strength.push.compound;
-      const _pullC = UNIFIED_DB.filter(e => e.category === 'pull' && e.mechanic === 'compound');
-      const pullCompounds   = _pullC.length ? _pullC : EXERCISE_DB.strength.pull.compound;
       const _pushI = UNIFIED_DB.filter(e => e.category === 'push' && e.mechanic === 'isolation');
       const pushAccessories = _pushI.length ? _pushI : EXERCISE_DB.strength.push.accessory;
       const _pullI = UNIFIED_DB.filter(e => e.category === 'pull' && e.mechanic === 'isolation');
       const pullAccessories = _pullI.length ? _pullI : EXERCISE_DB.strength.pull.accessory;
 
-      const mainPush = getRandomItems(pushCompounds, 1)[0]; // Göğüs/Omuz ana
-      const mainPull = getRandomItems(pullCompounds, 1)[0]; // Sırt ana
-      const pushAccessory = getRandomItems(pushAccessories, 1)[0];
-      const pullAccessory = getRandomItems(pullAccessories, 1)[0];
+      const mainPush  = getRandomItems(pushCompounds, 1)[0];
+      const pushAcc   = getRandomItems(pushAccessories, 1)[0];
+      const pullAcc   = getRandomItems(pullAccessories, 1)[0];
 
       block.push({
-        type: 'GVT A – ÜST VÜCUT GÖĞÜS/OMUZ (10x10)',
+        type: 'GVT A – ÜST VÜCUT GÖĞÜS/OMUZ (10×10)',
         exercises: [{
           ...mainPush,
           sets: 10,
@@ -3698,23 +3680,10 @@ export default function App() {
       });
 
       block.push({
-        type: 'GVT B – ÜST VÜCUT SIRT (10x10)',
-        exercises: [{
-          ...mainPull,
-          sets: 10,
-          reps: 10,
-          rest: '90sn',
-          tempo: '3020',
-          weight_rx: '%60 1RM',
-          note: 'Kürek kemiklerini sıkıştır. Tepe noktada 1sn bekle.'
-        }]
-      });
-
-      block.push({
-        type: 'GVT C – AKSESUAR SUPERSET (3x12)',
+        type: 'GVT B – PUMP AKSESUAR (3×12-15)',
         exercises: [
-          { ...pushAccessory, sets: 3, reps: 12, rest: 'Süpersetle', tempo: '3010', note: 'C1: İzolasyon itiş.' },
-          { ...pullAccessory, sets: 3, reps: 12, rest: '60sn', tempo: '3010', note: 'C2: İzolasyon çekiş.' }
+          { ...pushAcc, sets: 3, reps: '12-15', rest: '45sn', tempo: '2010', note: 'B1: İzolasyon itiş. Hafif ağırlık, pump odaklı.' },
+          { ...pullAcc, sets: 3, reps: '12-15', rest: '45sn', tempo: '2010', note: 'B2: İzolasyon çekiş. Antagonist denge ve kan akışı.' }
         ]
       });
     }
@@ -3722,13 +3691,36 @@ export default function App() {
     return block;
   };
 
-  // MODÜL 2: construct_OVT - Optimized Volume Training (Superset + Tempo)
-  // mode: 'lower' (Bacak + Alt Sırt) | 'upper' (İtiş + Çekiş)
+  // MODÜL 2: construct_OVT - Optimized Volume Training (Nöral Primer + 5×5 Kontrast Superset)
+  // mode: 'lower' (Bacak + Hinge) | 'upper' (İtiş + Çekiş)
   const construct_OVT = (mode = 'upper') => { // eslint-disable-line no-unused-vars
     const block = [];
 
+    // ── Nöral Primer: Güç blokundan ÖNCE, 1 patlayıcı ateşleyici (3×5) ──────
+    const _allC = UNIFIED_DB.filter(e =>
+      e.mechanic === 'compound' && ['push', 'pull', 'legs'].includes(e.category)
+    );
+    const primerPool = _allC.length ? _allC : [
+      ...EXERCISE_DB.strength.push.compound,
+      ...EXERCISE_DB.strength.pull.compound,
+      ...EXERCISE_DB.strength.legs.compound,
+    ];
+    const primerMove = getRandomItems(primerPool, 1)[0];
+    block.push({
+      type: 'NÖRAL PRİMER – Sinir Sistemi Ateşleme (3×5)',
+      exercises: [{
+        ...primerMove,
+        sets: 3,
+        reps: 5,
+        rest: '2dk',
+        tempo: 'X0X0',
+        weight_rx: '%75-80 1RM',
+        note: 'Yormak değil ateşlemek için. Maksimum niyet, tam hız. OVT öncesi CNS aktivasyonu.'
+      }]
+    });
+
     if (mode === 'lower') {
-      // ALT VÜCUT: Bacak (Squat/Lunge) + Alt Sırt (Deadlift/RDL)
+      // ALT VÜCUT: Ağır Squat/Lunge + Yavaş Hinge kontrastı
       const _legC = UNIFIED_DB.filter(e => e.category === 'legs' && e.mechanic === 'compound');
       const legCompoundsAll = _legC.length ? _legC : EXERCISE_DB.strength.legs.compound;
       const _legI = UNIFIED_DB.filter(e => e.category === 'legs' && e.mechanic === 'isolation');
@@ -3742,26 +3734,26 @@ export default function App() {
       const mainSquat = getRandomItems(squatMoves.length > 0 ? squatMoves : legCompoundsAll, 1)[0];
       const mainHinge = getRandomItems(hingeMoves.length > 0 ? hingeMoves : legCompoundsAll, 1)[0];
       const acc1 = getRandomItems(legAccessories, 1)[0];
-      const acc2 = getRandomItems(legAccessories.filter(e => e.name !== acc1.name), 1)[0];
+      const acc2 = getRandomItems(legAccessories.filter(e => e.name !== acc1?.name), 1)[0];
 
       block.push({
-        type: 'OVT SUPERSET 1 – BACAK GÜÇ (5 Tur / 5-6 Tekrar)',
+        type: 'OVT A – BACAK KONTRAST SUPERSET (5×5)',
         exercises: [
-          { ...mainSquat, sets: 5, reps: 5, rest: 'Süpersetle', tempo: 'X0X0', weight_rx: 'Ağır (%80 1RM)', note: '1A: Patlayıcı kaldır. Otur yavaş, kalk patlayıcı.' },
-          { ...mainHinge, sets: 5, reps: 6, rest: '2dk sonra 1A\'ya dön', tempo: '3110', weight_rx: 'Orta-Ağır', note: '1B: 3sn iniş, 1sn alınım, nefes al, kalk. Kontrol şart.' }
+          { ...mainSquat, sets: 5, reps: 5, rest: 'Süpersetle', tempo: 'X0X0', weight_rx: 'Ağır (%80 1RM)', note: 'A1: Patlayıcı kalk. İniş yavaş, çıkış maksimum.' },
+          { ...mainHinge, sets: 5, reps: 5, rest: '2dk sonra A1\'e dön', tempo: '3110', weight_rx: 'Orta-Ağır', note: 'A2: 3sn iniş, 1sn altta bekle. Yavaş izole kontrast.' }
         ]
       });
 
       block.push({
-        type: 'OVT SUPERSET 2 – BACAK AKSESUAR (4 Tur / 8-10 Tekrar)',
+        type: 'OVT B – BACAK İZOLASYON SUPERSET (4×8-10)',
         exercises: [
-          { ...acc1, sets: 4, reps: '8-10', rest: 'Süpersetle', tempo: '3011', note: '2A: Tek bacak veya izolasyon. Tempo’ya uy.' },
-          { ...acc2, sets: 4, reps: '10-12', rest: '90sn sonra 2A\'ya dön', tempo: '2010', note: '2B: Kontrollü kasılma. Tepe noktada sıkıştır.' }
+          { ...acc1, sets: 4, reps: '8-10',  rest: 'Süpersetle', tempo: '3011', note: 'B1: Tek bacak veya izolasyon. Tempoyu koru.' },
+          { ...acc2, sets: 4, reps: '10-12', rest: '90sn sonra B1\'e dön', tempo: '2010', note: 'B2: Kontrollü kasılma. Tepe noktada sıkıştır.' }
         ]
       });
 
     } else { // upper
-      // ÜST VÜCUT: İtiş (Push) + Çekiş (Pull) – antagonist superset
+      // ÜST VÜCUT: Patlayıcı İtiş + Çok Yavaş Çekiş antagonist kontrastı
       const _pushC = UNIFIED_DB.filter(e => e.category === 'push' && e.mechanic === 'compound');
       const pushCompounds   = _pushC.length ? _pushC : EXERCISE_DB.strength.push.compound;
       const _pullC = UNIFIED_DB.filter(e => e.category === 'pull' && e.mechanic === 'compound');
@@ -3771,24 +3763,24 @@ export default function App() {
       const _pullI = UNIFIED_DB.filter(e => e.category === 'pull' && e.mechanic === 'isolation');
       const pullAccessories = _pullI.length ? _pullI : EXERCISE_DB.strength.pull.accessory;
 
-      const mainPush = getRandomItems(pushCompounds, 1)[0];
+      const mainPush = getRandomItems(pushCompounds.filter(e => e.name !== primerMove?.name), 1)[0] || getRandomItems(pushCompounds, 1)[0];
       const mainPull = getRandomItems(pullCompounds, 1)[0];
-      const pushAcc = getRandomItems(pushAccessories, 1)[0];
-      const pullAcc = getRandomItems(pullAccessories, 1)[0];
+      const pushAcc  = getRandomItems(pushAccessories, 1)[0];
+      const pullAcc  = getRandomItems(pullAccessories, 1)[0];
 
       block.push({
-        type: 'OVT SUPERSET 1 – ÜST GÜÇ İTİŞ+ÇEKİŞ (5 Tur / 5 Tekrar)',
+        type: 'OVT A – ÜST GÜÇ KONTRAST SUPERSET (5×5)',
         exercises: [
-          { ...mainPush, sets: 5, reps: 5, rest: 'Süpersetle', tempo: 'X0X0', weight_rx: 'Ağır (%80 1RM)', note: '1A: Patlayıcı it. Maksimum hız.' },
-          { ...mainPull, sets: 5, reps: 5, rest: '90sn sonra 1A\'ya dön', tempo: '5010', note: '1B: Çok yavaş çek. 5sn iniş. Kürek kemiği ıskalama.' }
+          { ...mainPush, sets: 5, reps: 5, rest: 'Süpersetle', tempo: 'X0X0', weight_rx: 'Ağır (%80 1RM)', note: 'A1: Patlayıcı it. Maksimum hız ve niyet.' },
+          { ...mainPull, sets: 5, reps: 5, rest: '90sn sonra A1\'e dön', tempo: '5010', note: 'A2: ÇOK yavaş çek. 5sn iniş. Bu kontrast OVT\'nin özü.' }
         ]
       });
 
       block.push({
-        type: 'OVT SUPERSET 2 – ÜST AKSESUAR (4 Tur / 10-12 Tekrar)',
+        type: 'OVT B – ÜST İZOLASYON SUPERSET (4×10-12)',
         exercises: [
-          { ...pushAcc, sets: 4, reps: '10-12', rest: 'Süpersetle', tempo: '3011', note: '2A: İzolasyon itiş. Kilit noktada sıkıştır.' },
-          { ...pullAcc, sets: 4, reps: '12', rest: '75sn sonra 2A\'ya dön', tempo: '3012', note: '2B: İzolasyon çekiş. Kontrollü sıkıştırma.' }
+          { ...pushAcc, sets: 4, reps: '10-12', rest: 'Süpersetle', tempo: '3011', note: 'B1: İzolasyon itiş. Kilit noktada sıkıştır.' },
+          { ...pullAcc, sets: 4, reps: '12',    rest: '75sn sonra B1\'e dön', tempo: '3012', note: 'B2: İzolasyon çekiş. Kontrollü sıkıştırma.' }
         ]
       });
     }
@@ -3915,6 +3907,71 @@ export default function App() {
         note: "Parasempatik sistem aktivasyonu. Toparlanmayı hızlandırır.",
         image: getImgUrl("Box Breathing")
       }]
+    });
+
+    return block;
+  };
+
+  // MODÜL 4: construct_Prime - Arete Prime (Patlayıcı + Ağır Kuvvet + FBB Aksesuar)
+  const construct_Prime = () => { // eslint-disable-line no-unused-vars
+    const block = [];
+
+    const _pushC = UNIFIED_DB.filter(e => e.category === 'push' && e.mechanic === 'compound');
+    const _pullC = UNIFIED_DB.filter(e => e.category === 'pull' && e.mechanic === 'compound');
+    const _legC  = UNIFIED_DB.filter(e => e.category === 'legs' && e.mechanic === 'compound');
+    const allCompounds = [
+      ...(_pushC.length ? _pushC : EXERCISE_DB.strength.push.compound),
+      ...(_pullC.length ? _pullC : EXERCISE_DB.strength.pull.compound),
+      ...(_legC.length  ? _legC  : EXERCISE_DB.strength.legs.compound),
+    ];
+
+    // A Bloku: Patlayıcı Güç — düşük tekrar, maksimum hız
+    const expMove = getRandomItems(allCompounds, 1)[0];
+    block.push({
+      type: 'A BLOKU – PATLAMALI GÜÇ (4×3)',
+      exercises: [{
+        ...expMove,
+        sets: 4,
+        reps: 3,
+        rest: '3dk',
+        tempo: 'X0X0',
+        weight_rx: '%85-90 1RM',
+        note: 'Maksimum patlayıcılık. Her tekrar tam odakla, nöral aktivasyon. Ağırlıkta taviz yok.'
+      }]
+    });
+
+    // B Bloku: Ağır Kuvvet / Cluster Set — ana compound
+    const heavyMove = getRandomItems(allCompounds.filter(e => e.name !== expMove?.name), 1)[0] || getRandomItems(allCompounds, 1)[0];
+    block.push({
+      type: 'B BLOKU – AĞIR KUVVET / CLUSTER SET (5×5)',
+      exercises: [{
+        ...heavyMove,
+        sets: 5,
+        reps: 5,
+        rest: '2dk30sn',
+        tempo: '30X0',
+        weight_rx: '%80-85 1RM',
+        note: 'Cluster set opsiyonu: 2+2+1 formatında yapılabilir. Her sette ağırlıkta taviz yok.'
+      }]
+    });
+
+    // C Bloku: FBB / Aksesuar Superset — izolasyon + kas dengesi
+    const _fbb  = UNIFIED_DB.filter(e => e.category === 'fbb');
+    const fbbPool = _fbb.length ? _fbb : EXERCISE_DB.fbb;
+    const _pushI = UNIFIED_DB.filter(e => e.category === 'push' && e.mechanic === 'isolation');
+    const _pullI = UNIFIED_DB.filter(e => e.category === 'pull' && e.mechanic === 'isolation');
+    const isoPool = [
+      ...(_pushI.length ? _pushI : EXERCISE_DB.strength.push.accessory),
+      ...(_pullI.length ? _pullI : EXERCISE_DB.strength.pull.accessory),
+    ];
+    const fbbMove = getRandomItems(fbbPool, 1)[0];
+    const isoMove = getRandomItems(isoPool, 1)[0];
+    block.push({
+      type: 'C BLOKU – FBB AKSESUAR SUPERSET (3×10-12)',
+      exercises: [
+        { ...fbbMove, sets: 3, reps: '10-12', rest: 'Süpersetle', tempo: '3011', note: 'C1: Fonksiyonel stabilite. Kaliteyi hissederek yap.' },
+        { ...isoMove, sets: 3, reps: '12-15', rest: '75sn',       tempo: '3010', note: 'C2: Kas dengesi. Zayıf taraf odaklı izolasyon.' }
+      ]
     });
 
     return block;
@@ -4106,7 +4163,7 @@ export default function App() {
     // ── Isınma — mod ve süreye göre: 45dk=2, 60dk=3, 90dk=3 ──────────────────
     const _wu = UNIFIED_DB.filter(e => e.category === 'warmup');
     const warmupSrc = _wu.length ? _wu : EXERCISE_DB.warmup;
-    const warmup = getRandomItems(warmupSrc, duration === 45 ? 2 : 3).map(ex => ({
+    let warmup = getRandomItems(warmupSrc, duration === 45 ? 2 : 3).map(ex => ({
       ...ex, sets: 2, reps: ex.reps || '30sn', rest: 'Akışkan geçiş',
     }));
 
@@ -4114,7 +4171,7 @@ export default function App() {
     const _co = UNIFIED_DB.filter(e => e.category === 'core');
     const coreSrc = _co.length ? _co : EXERCISE_DB.core;
     const coreCount = duration === 45 ? 0 : duration === 90 ? 4 : 2;
-    const core = coreCount === 0 ? [] : getRandomItems(coreSrc, coreCount).map(ex => ({
+    let core = coreCount === 0 ? [] : getRandomItems(coreSrc, coreCount).map(ex => ({
       ...ex, sets: 3, reps: ex.reps || '15', rest: '45sn',
     }));
 
@@ -4139,33 +4196,86 @@ export default function App() {
     let metcon      = null;
 
     if (focus === 'engine' || focus === 'metcon') {
-      // Pure kondisyon — güç blokları yok
-      const exCount = duration === 45 ? 3 : duration === 90 ? 6 : 4;
+      // Nöral Primer: vücudu uyandırmak için 1 hareket (3×5) — ağırlık antrenmanı değil
+      const _compC = UNIFIED_DB.filter(e =>
+        e.mechanic === 'compound' && ['push', 'pull', 'legs'].includes(e.category)
+      );
+      const primerPool = _compC.length ? _compC : [
+        ...EXERCISE_DB.strength.push.compound,
+        ...EXERCISE_DB.strength.pull.compound,
+        ...EXERCISE_DB.strength.legs.compound,
+      ];
+      const primerMove = getRandomItems(primerPool, 1)[0];
+      if (primerMove) {
+        strength = [{
+          type: 'NÖRAL PRİMER – Vücudu Uyandır (3×5)',
+          exercises: [{
+            ...primerMove,
+            sets: 3,
+            reps: 5,
+            rest: '90sn',
+            tempo: 'X0X0',
+            weight_rx: 'Orta (%70 1RM)',
+            note: 'Ağırlık antrenmanı değil — sinir sistemini uyandırmak için. Hafif tut, odaklan.',
+          }],
+        }];
+      }
+      // Büyük MetCon — antrenmanın %70'i
+      const exCount = duration === 45 ? 4 : duration === 90 ? 7 : 5;
       metcon = buildMetcon(enginePool, exCount, duration);
 
+    } else if (focus === 'prime') {
+      // Arete Prime: A (patlayıcı) + B (cluster) + C (FBB aksesuar) + Finisher MetCon
+      strength = construct_Prime();
+      const exCount = duration === 45 ? 2 : 3;
+      if (enginePool.length) {
+        metcon = buildMetcon(enginePool, exCount, duration);
+        metcon.structure = `PRIME FINISHER — ${metcon.structure}`;
+      }
+
     } else if (focus === 'gvt' || focus === 'gvt_legs') {
+      // GVT: A (10×10 compound) + B (pump aksesuar). MetCon yok.
       strength = construct_GVT('lower');
 
     } else if (focus === 'gvt_push' || focus === 'gvt_pull') {
       strength = construct_GVT('upper');
 
     } else if (focus === 'ovt' || focus === 'ovt_push') {
+      // OVT: Nöral Primer + A/B 5×5 kontrast superset. MetCon yok.
       strength = construct_OVT('upper');
 
     } else if (focus === 'ovt_pull') {
       strength = construct_OVT('lower');
 
-    } else if (focus === 'fbb' || focus === 'aesthetics') {
-      // construct_FBB strength bloklarını üretir; aksesuar FBB havuzundan
+    } else if (focus === 'fbb') {
+      // FBB Fonksiyonel: Stabilite + Carry süpersetleri. MetCon yok.
       strength = construct_FBB();
-      const _fbb = UNIFIED_DB.filter(e => e.category === 'fbb');
-      const fbbPool = _fbb.length ? _fbb : EXERCISE_DB.fbb;
-      const accCount = duration === 45 ? 1 : duration === 90 ? 4 : 2;
-      accessories = getRandomItems(fbbPool, accCount).map(ex => ({
+      const _fbbF = UNIFIED_DB.filter(e => e.category === 'fbb');
+      const fbbFPool = _fbbF.length ? _fbbF : EXERCISE_DB.fbb;
+      const accCountF = duration === 45 ? 1 : duration === 90 ? 4 : 2;
+      accessories = getRandomItems(fbbFPool, accCountF).map(ex => ({
         ...ex, sets: 3, reps: ex.reps || '12-15', rest: '60sn',
       }));
 
+    } else if (focus === 'aesthetics') {
+      // Apollon Aesthetics: 60dk'da aksesuar yerine MetCon. 45/90dk'da aksesuar.
+      strength = construct_FBB();
+      const _fbbA = UNIFIED_DB.filter(e => e.category === 'fbb');
+      const fbbAPool = _fbbA.length ? _fbbA : EXERCISE_DB.fbb;
+      if (duration === 60 && enginePool.length) {
+        metcon = buildMetcon(enginePool, 3, duration);
+        metcon.structure = `FBB KONDİSYON — ${metcon.structure}`;
+      } else {
+        const accCountA = duration === 45 ? 1 : 4;
+        accessories = getRandomItems(fbbAPool, accCountA).map(ex => ({
+          ...ex, sets: 3, reps: ex.reps || '12-15', rest: '60sn',
+        }));
+      }
+
     } else if (focus === 'recovery') {
+      // Recovery: Isınma ve Core yok — sadece mobilite + havuz + box breathing.
+      warmup = [];
+      core  = [];
       strength = construct_Recovery(config.poolAccess);
 
     } else if (focus === 'hanik_push_legs') {
@@ -4175,7 +4285,7 @@ export default function App() {
       strength = construct_Hanik('pull_core');
 
     } else {
-      // DEFAULT: strength, hybrid, prime — ağır compound + MetCon finisher
+      // DEFAULT: strength, hybrid — ağır compound + MetCon finisher
       const _compC = UNIFIED_DB.filter(e =>
         e.mechanic === 'compound' && ['push', 'pull', 'legs'].includes(e.category)
       );
@@ -4192,7 +4302,6 @@ export default function App() {
           exercises: [{ ...mainEx, sets: heavy ? 5 : 4, reps: heavy ? 5 : '6-8', rest: heavy ? '3dk' : '2dk', tempo: 'X0X0' }],
         }];
       }
-      // MetCon finisher — 45dk'da eklenmez
       if (duration > 45 && enginePool.length) {
         metcon = buildMetcon(enginePool, 2, duration);
         metcon.structure = `ENGINE FİNİŞER — ${metcon.structure}`;
