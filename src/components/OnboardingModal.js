@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Dumbbell, Flame, Trophy, TrendingUp, ChevronRight, Target } from 'lucide-react';
-
+import { Dumbbell, Flame, Trophy, TrendingUp, ChevronRight } from 'lucide-react';
+import { PROGRAM_PLANS } from '../data/programData';
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const T = {
@@ -45,39 +45,58 @@ const STEPS_INFO = [
     textColor: '#fff',
     title: 'İlerieni Takip Et',
     subtitle: 'İstatistik sekmesi seni izliyor.',
-    body: 'PR tablosu, ağırlık grafikleri, haftalık hacim ve vücut ağırlığı trendi — hepsi İstatistik sekmesinde. Kahin\'den günlük koçluk al.',
+    body: "PR tablosu, ağırlık grafikleri, haftalık hacim ve vücut ağırlığı trendi — hepsi İstatistik sekmesinde. Kahin'den günlük koçluk al.",
   },
   {
-    icon: Target,
+    icon: Dumbbell,
     color: T.accent,
     textColor: '#0C0E11',
-    title: 'Hedefinizi Belirleyin',
+    title: 'Hedefini Seç',
     subtitle: 'Program buna göre optimize edilecek.',
     body: null, // custom goal selector
   },
 ];
 
-const GOALS = [
-  { key: 'bulk',   emoji: '💪', label: 'Hacim',      sub: 'Kas kütlesi kazan',   color: '#f97316' },
-  { key: 'recomp', emoji: '⚖️', label: 'Recomp',     sub: 'Yağ yak, kas koru',   color: T.accent  },
-  { key: 'cut',    emoji: '🔥', label: 'Yağ Yakma',  sub: 'Vücut yağını düşür',  color: '#ef4444' },
-];
+// Onboarding'de gösterilecek hedef programlar (PROGRAM_PLANS'dan seç)
+const GOAL_IDS = ['fat_loss', 'recomp', 'arete_hybrid'];
+const GOAL_PLANS = PROGRAM_PLANS.filter(p => GOAL_IDS.includes(p.id));
 
 const OnboardingModal = ({ onClose }) => {
-  const [step, setStep] = useState(0);
-  const [selectedGoal, setSelectedGoal] = useState(null);
-  const current = STEPS_INFO[step];
-  const isLast = step === STEPS_INFO.length - 1;
+  const [step, setStep]             = useState(0);
+  const [selectedGoalId, setSelectedGoalId] = useState(null);
+  const current   = STEPS_INFO[step];
+  const isLast    = step === STEPS_INFO.length - 1;
   const isGoalStep = step === STEPS_INFO.length - 1;
 
   const handleFinish = () => {
-    if (selectedGoal) {
-      localStorage.setItem('arete_goal', selectedGoal);
+    if (selectedGoalId) {
+      const plan = PROGRAM_PLANS.find(p => p.id === selectedGoalId);
+      if (plan) {
+        // Hedef seçildi → localStorage'a hem goal key hem de tam program yaz
+        localStorage.setItem('arete_goal', selectedGoalId);
+        const programRecord = {
+          id:            Date.now(),
+          goal:          selectedGoalId,
+          title:         plan.title,
+          totalWeeks:    8,
+          daysPerWeek:   plan.schedule.filter(s => s.focus !== 'recovery').length,
+          startDate:     new Date().toISOString().split('T')[0],
+          completedDays: {},
+          phases: [
+            { name: 'Adaptasyon', startWeek: 1, endWeek: 2, color: '#60a5fa' },
+            { name: 'Hacim',      startWeek: 3, endWeek: 5, color: T.accent  },
+            { name: 'Yoğunluk',  startWeek: 6, endWeek: 7, color: '#f97316' },
+            { name: 'Tepe',       startWeek: 8, endWeek: 8, color: '#ef4444' },
+          ],
+          schedule: plan.schedule,
+        };
+        localStorage.setItem('arete_program', JSON.stringify(programRecord));
+      }
     }
     onClose();
   };
 
-  const canProceed = !isGoalStep || selectedGoal !== null;
+  const canProceed = !isGoalStep || selectedGoalId !== null;
 
   return (
     <div style={{
@@ -128,29 +147,30 @@ const OnboardingModal = ({ onClose }) => {
           {/* Body or Goal Selector */}
           {isGoalStep ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
-              {GOALS.map(g => (
-                <button key={g.key}
-                  onClick={() => setSelectedGoal(g.key)}
+              {GOAL_PLANS.map(plan => (
+                <button key={plan.id}
+                  onClick={() => setSelectedGoalId(plan.id)}
                   style={{
                     borderRadius: 16, padding: '14px 16px',
                     display: 'flex', alignItems: 'center', gap: 12,
                     textAlign: 'left', cursor: 'pointer',
-                    background: selectedGoal === g.key ? `${g.color}15` : T.surface,
-                    border: `1.5px solid ${selectedGoal === g.key ? g.color : T.outline}`,
+                    background: selectedGoalId === plan.id ? 'rgba(209,255,38,0.08)' : T.surface,
+                    border: `1.5px solid ${selectedGoalId === plan.id ? T.accent : T.outline}`,
                     transition: 'all 0.15s',
                   }}>
-                  <span style={{ fontSize: 24 }}>{g.emoji}</span>
+                  <span style={{ fontSize: 24, flexShrink: 0 }}>{plan.icon}</span>
                   <div style={{ flex: 1 }}>
                     <p style={{
-                      fontSize: 14, fontWeight: 800, color: selectedGoal === g.key ? g.color : T.text,
+                      fontSize: 14, fontWeight: 800,
+                      color: selectedGoalId === plan.id ? T.accent : T.text,
                       fontFamily: 'Lexend, sans-serif',
-                    }}>{g.label}</p>
-                    <p style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>{g.sub}</p>
+                    }}>{plan.title}</p>
+                    <p style={{ fontSize: 11, color: T.muted, marginTop: 3, lineHeight: 1.4 }}>{plan.desc}</p>
                   </div>
-                  {selectedGoal === g.key && (
+                  {selectedGoalId === plan.id && (
                     <div style={{
                       width: 20, height: 20, borderRadius: '50%',
-                      background: g.color, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       flexShrink: 0,
                     }}>
                       <span style={{ fontSize: 11, color: '#0C0E11', fontWeight: 900 }}>✓</span>
