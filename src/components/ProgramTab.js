@@ -1,8 +1,7 @@
 // src/components/ProgramTab.js
 import React, { useState } from 'react';
-
-import { ChevronRight, ChevronLeft, Check, Play, Trash2, Zap, BicepsFlexed, Target, Heart } from 'lucide-react';
-
+import { PROGRAM_PLANS } from '../data/programData';
+import { ChevronRight, ChevronLeft, Check, Play, Trash2, Zap } from 'lucide-react';
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const T = {
@@ -18,51 +17,8 @@ const T = {
 };
 const card = (extra = {}) => ({ borderRadius: 20, background: T.surface, border: `1px solid ${T.outline}`, ...extra });
 
-// ─── PROGRAM TEMPLATES ────────────────────────────────────────────────────────
-const PROGRAM_TEMPLATES = {
-  hypertrophy: {
-    label: 'Hipertrofi', subtitle: 'Kas kütlesi ve hacim', color: T.accent, textColor: '#0C0E11', Icon: BicepsFlexed,
-    description: 'GVT + Hanik kombinasyonu. Yüksek hacim, orta yoğunluk.',
-    schedules: {
-      3: [{ focus: 'gvt_push', label: 'GVT Push' }, { focus: 'gvt_legs', label: 'GVT Legs' }, { focus: 'aesthetics', label: 'Aesthetics' }],
-      4: [{ focus: 'hanik_push_legs', label: 'Push & Legs' }, { focus: 'hanik_pull_core', label: 'Pull & Core' }, { focus: 'gvt_legs', label: 'GVT Legs' }, { focus: 'aesthetics', label: 'Aesthetics' }],
-      5: [{ focus: 'gvt_push', label: 'GVT Push' }, { focus: 'gvt_legs', label: 'GVT Legs' }, { focus: 'hanik_pull_core', label: 'Pull & Core' }, { focus: 'aesthetics', label: 'Aesthetics' }, { focus: 'fbb', label: 'FBB' }],
-    },
-    defaultSlots: { 3: [1, 3, 5], 4: [1, 2, 4, 5], 5: [1, 2, 3, 5, 6] },
-  },
-  strength: {
-    label: 'Güç', subtitle: 'Maksimum kuvvet gelişimi', color: '#ef4444', textColor: '#fff', Icon: Zap,
-    description: 'GVT + OVT sistemi. Ağır yükler, düşük tekrar.',
-    schedules: {
-      3: [{ focus: 'gvt_push', label: 'GVT Push' }, { focus: 'gvt_legs', label: 'GVT Legs' }, { focus: 'ovt', label: 'OVT Power' }],
-      4: [{ focus: 'gvt_push', label: 'GVT Push' }, { focus: 'gvt_legs', label: 'GVT Legs' }, { focus: 'ovt', label: 'OVT Upper' }, { focus: 'ovt_pull', label: 'OVT Lower' }],
-      5: [{ focus: 'gvt_push', label: 'GVT Push' }, { focus: 'gvt_legs', label: 'GVT Legs' }, { focus: 'gvt_pull', label: 'GVT Pull' }, { focus: 'ovt', label: 'OVT Power' }, { focus: 'prime', label: 'Prime' }],
-    },
-    defaultSlots: { 3: [1, 3, 5], 4: [1, 2, 4, 5], 5: [1, 2, 3, 5, 6] },
-  },
-  athleticism: {
-    label: 'Atletizm', subtitle: 'Patlayıcılık ve kondisyon', color: '#60a5fa', textColor: '#fff', Icon: Target,
-    description: 'Prime + Hanik + Engine. Güç, hız ve dayanıklılık.',
-    schedules: {
-      3: [{ focus: 'prime', label: 'Prime' }, { focus: 'engine', label: 'Engine' }, { focus: 'hybrid', label: 'Hybrid' }],
-      4: [{ focus: 'prime', label: 'Prime' }, { focus: 'hanik_pull_core', label: 'Pull & Core' }, { focus: 'engine', label: 'Engine' }, { focus: 'hanik_push_legs', label: 'Push & Legs' }],
-      5: [{ focus: 'prime', label: 'Prime' }, { focus: 'hanik_pull_core', label: 'Pull & Core' }, { focus: 'engine', label: 'Engine' }, { focus: 'hanik_push_legs', label: 'Push & Legs' }, { focus: 'fbb', label: 'FBB' }],
-    },
-    defaultSlots: { 3: [1, 3, 5], 4: [1, 2, 4, 5], 5: [1, 2, 3, 5, 6] },
-  },
-  general: {
-    label: 'Genel Kondisyon', subtitle: 'Dengeli ve sürdürülebilir', color: '#22c55e', textColor: '#fff', Icon: Heart,
-    description: 'FBB + Engine + Hybrid. Her yeteneği dengeli geliştirir.',
-    schedules: {
-      3: [{ focus: 'fbb', label: 'FBB Full Body' }, { focus: 'engine', label: 'Engine' }, { focus: 'hybrid', label: 'Hybrid' }],
-      4: [{ focus: 'fbb', label: 'FBB' }, { focus: 'engine', label: 'Engine' }, { focus: 'hanik_push_legs', label: 'Push & Legs' }, { focus: 'hanik_pull_core', label: 'Pull & Core' }],
-      5: [{ focus: 'fbb', label: 'FBB' }, { focus: 'engine', label: 'Engine' }, { focus: 'hanik_push_legs', label: 'Push & Legs' }, { focus: 'hanik_pull_core', label: 'Pull & Core' }, { focus: 'hybrid', label: 'Hybrid' }],
-    },
-    defaultSlots: { 3: [1, 3, 5], 4: [1, 2, 4, 5], 5: [1, 2, 3, 5, 6] },
-  },
-};
-
-const buildPhases = (goal, totalWeeks) => {
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+const buildPhases = (planId, totalWeeks) => {
   if (totalWeeks === 4) return [
     { name: 'Adaptasyon', startWeek: 1, endWeek: 1, color: '#60a5fa' },
     { name: 'Hacim',      startWeek: 2, endWeek: 3, color: T.accent },
@@ -93,39 +49,61 @@ const getPhaseForWeek = (phases, w) => phases.find(p => w >= p.startWeek && w <=
 const getTodaySlot = () => { const d = new Date().getDay(); return d === 0 ? 7 : d; };
 const WEEKDAY_LABELS = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 
-const buildProgram = ({ goal, totalWeeks, daysPerWeek, customSlots }) => {
-  const template = PROGRAM_TEMPLATES[goal];
-  const sessions  = template.schedules[daysPerWeek];
-  const phases    = buildPhases(goal, totalWeeks);
-  // Sort custom slots ascending → assign sessions in order
-  const sortedSlots = [...customSlots].sort((a, b) => a - b);
-  const schedule = sessions.map((s, i) => ({
-    dayIndex: i,
-    weekdaySlot: sortedSlots[i] ?? (i + 1),
-    focus: s.focus,
-    label: s.label,
-  }));
+/**
+ * Build a program object from a PROGRAM_PLANS entry.
+ * If customSlots provided, remap training days to those slots.
+ */
+const buildProgram = ({ planId, totalWeeks, daysPerWeek, customSlots }) => {
+  const plan = PROGRAM_PLANS.find(p => p.id === planId);
+  if (!plan) return null;
+
+  let schedule;
+  if (customSlots && customSlots.length > 0) {
+    const trainingDays = plan.schedule.filter(s => s.focus !== 'recovery');
+    const sortedSlots = [...customSlots].sort((a, b) => a - b);
+    const assignedTraining = trainingDays.slice(0, sortedSlots.length).map((s, i) => ({
+      ...s, weekdaySlot: sortedSlots[i], dayIndex: i,
+    }));
+    const usedSlots = new Set(sortedSlots);
+    const restSlots = [1,2,3,4,5,6,7].filter(sl => !usedSlots.has(sl));
+    const restDays = plan.schedule.filter(s => s.focus === 'recovery');
+    const assignedRest = restDays.slice(0, restSlots.length).map((s, i) => ({
+      ...s, weekdaySlot: restSlots[i], dayIndex: trainingDays.length + i,
+    }));
+    schedule = [...assignedTraining, ...assignedRest].sort((a, b) => a.weekdaySlot - b.weekdaySlot);
+  } else {
+    schedule = plan.schedule.map((s, i) => ({ ...s, dayIndex: i }));
+  }
+
   return {
-    id: Date.now(), goal, totalWeeks, daysPerWeek,
+    id: Date.now(),
+    goal: planId,
+    title: plan.title,
+    totalWeeks,
+    daysPerWeek,
     startDate: new Date().toISOString().split('T')[0],
-    completedDays: {}, phases, schedule,
+    completedDays: {},
+    phases: buildPhases(planId, totalWeeks),
+    schedule,
   };
 };
 
 // ─── WIZARD ───────────────────────────────────────────────────────────────────
 const ProgramWizard = ({ darkMode, onCreate }) => {
-  const [step, setStep] = useState(0); // 0=goal 1=duration+days 2=day-picker 3=preview
-  const [goal, setGoal] = useState(null);
-  const [totalWeeks, setTotalWeeks] = useState(8);
-  const [daysPerWeek, setDaysPerWeek] = useState(4);
-  const [selectedSlots, setSelectedSlots] = useState([]); // array of 1-7
+  const [step, setStep]              = useState(0);
+  const [goal, setGoal]              = useState(null); // planId
+  const [totalWeeks, setTotalWeeks]  = useState(8);
+  const [daysPerWeek, setDaysPerWeek]= useState(4);
+  const [selectedSlots, setSelectedSlots] = useState([]);
 
-  const tmpl = goal ? PROGRAM_TEMPLATES[goal] : null;
-  const hasSchedule = tmpl?.schedules?.[daysPerWeek];
+  const plan = goal ? PROGRAM_PLANS.find(p => p.id === goal) : null;
+  const trainingCount = plan ? plan.schedule.filter(s => s.focus !== 'recovery').length : 0;
 
-  // When moving to day-picker, pre-fill with template defaults
   const initDayPicker = () => {
-    const defaults = tmpl?.defaultSlots?.[daysPerWeek] || [1, 3, 5].slice(0, daysPerWeek);
+    // default: plan'ın kendi weekdaySlot'larını kullan
+    const defaults = plan
+      ? plan.schedule.filter(s => s.focus !== 'recovery').map(s => s.weekdaySlot).slice(0, daysPerWeek)
+      : [1,3,5].slice(0, daysPerWeek);
     setSelectedSlots(defaults);
     setStep(2);
   };
@@ -134,7 +112,6 @@ const ProgramWizard = ({ darkMode, onCreate }) => {
     setSelectedSlots(prev => {
       if (prev.includes(slot)) return prev.filter(s => s !== slot);
       if (prev.length >= daysPerWeek) {
-        // Replace the earliest selected slot
         const sorted = [...prev].sort((a, b) => a - b);
         return [...sorted.slice(1), slot].sort((a, b) => a - b);
       }
@@ -143,37 +120,53 @@ const ProgramWizard = ({ darkMode, onCreate }) => {
   };
 
   const handleCreate = () => {
-    if (!goal || !hasSchedule) return;
-    onCreate(buildProgram({ goal, totalWeeks, daysPerWeek, customSlots: selectedSlots }));
+    if (!goal) return;
+    onCreate(buildProgram({ planId: goal, totalWeeks, daysPerWeek, customSlots: selectedSlots }));
   };
 
-  const sessions = tmpl?.schedules?.[daysPerWeek] || [];
+  const planTrainingSessions = plan
+    ? plan.schedule.filter(s => s.focus !== 'recovery').slice(0, daysPerWeek)
+    : [];
   const sortedSlots = [...selectedSlots].sort((a, b) => a - b);
 
-  // ── STEP 0: Goal ──
+  // ── STEP 0: Program Seç ──
   if (step === 0) return (
     <div style={{ padding: '16px 16px 24px' }}>
       <h3 style={{ fontSize: 22, fontWeight: 900, color: T.text, fontFamily: 'Lexend, sans-serif', marginBottom: 4 }}>
-        Hedefinizi Seçin
+        Program Seçin
       </h3>
-      <p style={{ fontSize: 12, color: T.muted, marginBottom: 20 }}>Program buna göre oluşturulacak.</p>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        {Object.entries(PROGRAM_TEMPLATES).map(([key, t]) => (
-          <button key={key} onClick={() => { setGoal(key); setStep(1); }}
+      <p style={{ fontSize: 12, color: T.muted, marginBottom: 20 }}>Hedefinize göre optimize edilmiş programı seçin.</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {PROGRAM_PLANS.map(p => (
+          <button key={p.id} onClick={() => { setGoal(p.id); setStep(1); }}
             style={{
-              ...card({ padding: '18px 14px', textAlign: 'left', cursor: 'pointer', border: `1px solid ${goal === key ? t.color : T.outline}` }),
+              ...card({
+                padding: '16px 14px',
+                textAlign: 'left',
+                cursor: 'pointer',
+                border: `1px solid ${goal === p.id ? T.accent : T.outline}`,
+                background: goal === p.id ? T.accentDim : T.surface,
+              }),
+              display: 'flex', alignItems: 'center', gap: 14,
               transition: 'all 0.15s',
             }}>
-            <t.Icon size={24} style={{ color: t.color, marginBottom: 10 }} />
-            <p style={{ fontSize: 14, fontWeight: 800, color: T.text, fontFamily: 'Lexend, sans-serif' }}>{t.label}</p>
-            <p style={{ fontSize: 10, color: T.muted, marginTop: 3 }}>{t.subtitle}</p>
+            <span style={{ fontSize: 26, flexShrink: 0 }}>{p.icon}</span>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 14, fontWeight: 800, color: goal === p.id ? T.accent : T.text, fontFamily: 'Lexend, sans-serif' }}>{p.title}</p>
+              <p style={{ fontSize: 10, color: T.muted, marginTop: 3, lineHeight: 1.4 }}>{p.desc}</p>
+            </div>
+            {goal === p.id && (
+              <div style={{ width: 20, height: 20, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ fontSize: 10, color: '#0C0E11', fontWeight: 900 }}>✓</span>
+              </div>
+            )}
           </button>
         ))}
       </div>
     </div>
   );
 
-  // ── STEP 1: Duration + Days ──
+  // ── STEP 1: Süre + Gün ──
   if (step === 1) return (
     <div style={{ padding: '16px 16px 24px' }}>
       <button onClick={() => setStep(0)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: T.muted, background: 'none', border: 'none', cursor: 'pointer', marginBottom: 16 }}>
@@ -199,10 +192,10 @@ const ProgramWizard = ({ darkMode, onCreate }) => {
           </div>
         </div>
         <div>
-          <p style={{ fontSize: 10, fontWeight: 700, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Haftada Kaç Gün</p>
+          <p style={{ fontSize: 10, fontWeight: 700, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Haftada Kaç Antrenman Günü</p>
           <div style={{ display: 'flex', gap: 8 }}>
-            {[3, 4, 5].map(d => {
-              const available = !!tmpl?.schedules?.[d];
+            {[3, 4, 5, 6].map(d => {
+              const available = trainingCount >= d;
               return (
                 <button key={d} onClick={() => available && setDaysPerWeek(d)}
                   disabled={!available}
@@ -219,13 +212,12 @@ const ProgramWizard = ({ darkMode, onCreate }) => {
             })}
           </div>
         </div>
-        <button onClick={initDayPicker} disabled={!hasSchedule}
+        <button onClick={initDayPicker}
           style={{
             width: '100%', padding: '15px 0', borderRadius: 16, border: 'none',
             background: T.accent, color: '#0C0E11', fontWeight: 900, fontSize: 14,
             fontFamily: 'Lexend, sans-serif', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            opacity: hasSchedule ? 1 : 0.5,
           }}>
           Günleri Ayarla <ChevronRight size={16} />
         </button>
@@ -233,7 +225,7 @@ const ProgramWizard = ({ darkMode, onCreate }) => {
     </div>
   );
 
-  // ── STEP 2 (NEW): Day Picker ──
+  // ── STEP 2: Gün Seçici ──
   if (step === 2) return (
     <div style={{ padding: '16px 16px 24px' }}>
       <button onClick={() => setStep(1)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: T.muted, background: 'none', border: 'none', cursor: 'pointer', marginBottom: 16 }}>
@@ -241,7 +233,7 @@ const ProgramWizard = ({ darkMode, onCreate }) => {
       </button>
       <h3 style={{ fontSize: 22, fontWeight: 900, color: T.text, fontFamily: 'Lexend, sans-serif', marginBottom: 4 }}>Antrenman Günleri</h3>
       <p style={{ fontSize: 12, color: T.muted, marginBottom: 20 }}>
-        {daysPerWeek} günü seçin — antreman tipi seçim sırasına göre atanır.
+        {daysPerWeek} günü seçin — antrenman tipi seçim sırasına göre atanır.
       </p>
 
       {/* 7 day grid */}
@@ -249,8 +241,8 @@ const ProgramWizard = ({ darkMode, onCreate }) => {
         {WEEKDAY_LABELS.map((day, i) => {
           const slot = i + 1;
           const isSelected = selectedSlots.includes(slot);
-          const orderIdx = sortedSlots.indexOf(slot); // which session
-          const session = isSelected && sessions[orderIdx] ? sessions[orderIdx] : null;
+          const orderIdx = sortedSlots.indexOf(slot);
+          const session = isSelected && planTrainingSessions[orderIdx] ? planTrainingSessions[orderIdx] : null;
           return (
             <button key={day} onClick={() => toggleSlot(slot)}
               style={{
@@ -280,11 +272,11 @@ const ProgramWizard = ({ darkMode, onCreate }) => {
         })}
       </div>
 
-      {/* Session assignment preview */}
+      {/* Assignment preview */}
       <div style={{ ...card({ padding: '14px 16px' }), marginBottom: 16 }}>
         <p style={{ fontSize: 10, fontWeight: 700, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>Atama Önizlemesi</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {sessions.map((s, i) => {
+          {planTrainingSessions.map((s, i) => {
             const assignedSlot = sortedSlots[i];
             const dayLabel = assignedSlot ? WEEKDAY_LABELS[assignedSlot - 1] : '?';
             return (
@@ -317,9 +309,9 @@ const ProgramWizard = ({ darkMode, onCreate }) => {
     </div>
   );
 
-  // ── STEP 3: Preview ──
-  const preview = buildProgram({ goal, totalWeeks, daysPerWeek, customSlots: selectedSlots });
-  const phases   = buildPhases(goal, totalWeeks);
+  // ── STEP 3: Önizleme ──
+  const preview = buildProgram({ planId: goal, totalWeeks, daysPerWeek, customSlots: selectedSlots });
+  const phases  = buildPhases(goal, totalWeeks);
 
   return (
     <div style={{ padding: '16px 16px 24px' }}>
@@ -327,7 +319,7 @@ const ProgramWizard = ({ darkMode, onCreate }) => {
         <ChevronLeft size={14} /> Geri
       </button>
       <h3 style={{ fontSize: 22, fontWeight: 900, color: T.text, fontFamily: 'Lexend, sans-serif', marginBottom: 4 }}>Program Özeti</h3>
-      <p style={{ fontSize: 12, color: T.muted, marginBottom: 20 }}>{tmpl?.description}</p>
+      <p style={{ fontSize: 12, color: T.muted, marginBottom: 20 }}>{plan?.desc}</p>
 
       {/* Weekly structure */}
       <div style={{ ...card({ padding: '14px 12px' }), marginBottom: 12 }}>
@@ -335,17 +327,18 @@ const ProgramWizard = ({ darkMode, onCreate }) => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
           {WEEKDAY_LABELS.map((day, i) => {
             const slot = i + 1;
-            const sched = preview.schedule.find(s => s.weekdaySlot === slot);
+            const sched = preview?.schedule.find(s => s.weekdaySlot === slot);
+            const isTraining = sched && sched.focus !== 'recovery';
             return (
               <div key={day} style={{ textAlign: 'center' }}>
                 <p style={{ fontSize: 8, fontWeight: 700, color: T.muted, marginBottom: 4 }}>{day}</p>
                 <div style={{
                   borderRadius: 10, padding: '8px 2px',
-                  background: sched ? T.accentDim : T.surfaceLo,
-                  border: `1px solid ${sched ? T.accentBorder : T.outline}`,
+                  background: isTraining ? T.accentDim : T.surfaceLo,
+                  border: `1px solid ${isTraining ? T.accentBorder : T.outline}`,
                   minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  {sched
+                  {isTraining
                     ? <p style={{ fontSize: 7, fontWeight: 800, color: T.accent, lineHeight: 1.2 }}>{sched.label.split(' ').slice(0, 2).join(' ')}</p>
                     : <p style={{ fontSize: 8, color: T.muted }}>—</p>}
                 </div>
@@ -374,7 +367,7 @@ const ProgramWizard = ({ darkMode, onCreate }) => {
       <button onClick={handleCreate}
         style={{
           width: '100%', padding: '15px 0', borderRadius: 16, border: 'none',
-          background: tmpl?.color || T.accent, color: tmpl?.textColor || '#0C0E11',
+          background: T.accent, color: '#0C0E11',
           fontWeight: 900, fontSize: 14, fontFamily: 'Lexend, sans-serif', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
         }}>
@@ -390,8 +383,9 @@ const ActiveProgramView = ({ program, setProgram, darkMode, setConfig, setActive
   const isComplete  = getCurrentWeek(program.startDate) > program.totalWeeks;
   const phase       = getPhaseForWeek(program.phases, currentWeek);
   const deload      = isDeloadWeek(currentWeek);
-  const tmpl        = PROGRAM_TEMPLATES[program.goal];
+  const planInfo    = PROGRAM_PLANS.find(p => p.id === program.goal);
   const todaySlot   = getTodaySlot();
+  const accentColor = T.accent;
 
   const toggleDay = (weekNum, dayIndex) => {
     const key = `W${weekNum}D${dayIndex}`;
@@ -419,15 +413,13 @@ const ActiveProgramView = ({ program, setProgram, darkMode, setConfig, setActive
     <div style={{ padding: '40px 20px', textAlign: 'center' }}>
       <div style={{ fontSize: 56, marginBottom: 16 }}>🏆</div>
       <h3 style={{ fontSize: 24, fontWeight: 900, color: T.text, fontFamily: 'Lexend, sans-serif', marginBottom: 8 }}>Program Tamamlandı!</h3>
-      <p style={{ fontSize: 13, color: T.muted, marginBottom: 24 }}>{program.totalWeeks} haftalık {tmpl?.label} programını bitirdin.</p>
+      <p style={{ fontSize: 13, color: T.muted, marginBottom: 24 }}>{program.totalWeeks} haftalık {planInfo?.title || program.goal} programını bitirdin.</p>
       <button onClick={handleDelete}
         style={{ width: '100%', padding: '15px 0', borderRadius: 16, border: 'none', background: T.accent, color: '#0C0E11', fontWeight: 900, fontSize: 14, fontFamily: 'Lexend, sans-serif', cursor: 'pointer' }}>
         Yeni Program Başlat
       </button>
     </div>
   );
-
-  const accentColor = tmpl?.color || T.accent;
 
   return (
     <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -436,8 +428,10 @@ const ActiveProgramView = ({ program, setProgram, darkMode, setConfig, setActive
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              {tmpl && <tmpl.Icon size={16} style={{ color: accentColor }} />}
-              <h3 style={{ fontSize: 16, fontWeight: 900, color: T.text, fontFamily: 'Lexend, sans-serif' }}>{tmpl?.label || program.goal}</h3>
+              <span style={{ fontSize: 18 }}>{planInfo?.icon || '🏋️'}</span>
+              <h3 style={{ fontSize: 16, fontWeight: 900, color: T.text, fontFamily: 'Lexend, sans-serif' }}>
+                {program.title || planInfo?.title || program.goal}
+              </h3>
               {deload && (
                 <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: T.surfaceHi, color: T.muted, textTransform: 'uppercase' }}>
                   Deload
@@ -471,19 +465,20 @@ const ActiveProgramView = ({ program, setProgram, darkMode, setConfig, setActive
             const slot = i + 1;
             const sched = program.schedule.find(s => s.weekdaySlot === slot);
             const isToday = slot === todaySlot;
+            const isTraining = sched && sched.focus !== 'recovery';
             const isDone = !!program.completedDays[`W${currentWeek}D${sched?.dayIndex}`];
             return (
               <div key={day} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                 <p style={{ fontSize: 8, fontWeight: 700, color: isToday ? T.accent : T.muted }}>{day}</p>
-                <div onClick={() => sched && toggleDay(currentWeek, sched.dayIndex)}
+                <div onClick={() => isTraining && toggleDay(currentWeek, sched.dayIndex)}
                   style={{
                     width: '100%', borderRadius: 12, paddingTop: 10, paddingBottom: 10,
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    cursor: sched ? 'pointer' : 'default', transition: 'all 0.15s',
-                    background: sched ? (isDone ? 'rgba(34,197,94,0.12)' : isToday ? T.accentDim : T.surfaceLo) : T.surfaceLo,
-                    border: `1.5px solid ${sched ? (isDone ? 'rgba(34,197,94,0.3)' : isToday ? T.accentBorder : T.outline) : T.outline}`,
+                    cursor: isTraining ? 'pointer' : 'default', transition: 'all 0.15s',
+                    background: isTraining ? (isDone ? 'rgba(34,197,94,0.12)' : isToday ? T.accentDim : T.surfaceLo) : T.surfaceLo,
+                    border: `1.5px solid ${isTraining ? (isDone ? 'rgba(34,197,94,0.3)' : isToday ? T.accentBorder : T.outline) : T.outline}`,
                   }}>
-                  {sched ? (
+                  {isTraining ? (
                     isDone
                       ? <Check size={14} style={{ color: '#22c55e' }} />
                       : <div style={{ width: 8, height: 8, borderRadius: '50%', background: deload ? '#475569' : accentColor }} />
@@ -491,7 +486,7 @@ const ActiveProgramView = ({ program, setProgram, darkMode, setConfig, setActive
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.surfaceHi }} />
                   )}
                 </div>
-                {sched && (
+                {isTraining && (
                   <p style={{ fontSize: 7, textAlign: 'center', lineHeight: 1.2, fontWeight: 700, color: isDone ? '#22c55e' : isToday ? T.accent : T.muted }}>
                     {sched.label.split(' ')[0]}
                   </p>
@@ -505,7 +500,8 @@ const ActiveProgramView = ({ program, setProgram, darkMode, setConfig, setActive
       {/* Today's workout */}
       {(() => {
         const todaySchedule = program.schedule.find(s => s.weekdaySlot === todaySlot);
-        if (!todaySchedule) return (
+        const isTrainingToday = todaySchedule && todaySchedule.focus !== 'recovery';
+        if (!isTrainingToday) return (
           <div style={card({ padding: '16px' })}>
             <p style={{ fontSize: 13, fontWeight: 800, color: T.text, fontFamily: 'Lexend, sans-serif', marginBottom: 4 }}>Bugün — Dinlenme Günü</p>
             <p style={{ fontSize: 12, color: T.muted }}>Kaslara toparlanma zamanı. Hafif yürüyüş veya mobilite yeterli.</p>
@@ -556,10 +552,10 @@ const ActiveProgramView = ({ program, setProgram, darkMode, setConfig, setActive
       </div>
 
       {/* Upcoming */}
-      {program.schedule.filter(s => s.weekdaySlot > todaySlot).length > 0 && (
+      {program.schedule.filter(s => s.weekdaySlot > todaySlot && s.focus !== 'recovery').length > 0 && (
         <div style={card({ padding: '14px 16px' })}>
           <p style={{ fontSize: 10, fontWeight: 700, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>Bu Haftanın Geri Kalanı</p>
-          {program.schedule.filter(s => s.weekdaySlot > todaySlot).slice(0, 3).map(s => (
+          {program.schedule.filter(s => s.weekdaySlot > todaySlot && s.focus !== 'recovery').slice(0, 3).map(s => (
             <div key={s.dayIndex} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: `1px solid ${T.outline}` }}>
               <span style={{ fontSize: 12, color: T.muted }}>{WEEKDAY_LABELS[s.weekdaySlot - 1]}</span>
               <span style={{ fontSize: 12, fontWeight: 700, color: accentColor }}>{s.label}</span>
@@ -574,6 +570,7 @@ const ActiveProgramView = ({ program, setProgram, darkMode, setConfig, setActive
 // ─── MAIN EXPORT ──────────────────────────────────────────────────────────────
 const ProgramTab = ({ darkMode, program, setProgram, setConfig, setActiveTab, toast, setConfirmState }) => {
   const handleCreate = (newProgram) => {
+    if (!newProgram) return;
     setProgram(newProgram);
     localStorage.setItem('arete_program', JSON.stringify(newProgram));
     toast.success('Program oluşturuldu!');
