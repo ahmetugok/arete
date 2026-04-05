@@ -4463,19 +4463,40 @@ export default function App() {
                 <div style={{ fontSize: 7, fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#f59e0b', marginTop: 3, opacity: 0.8 }}>Philosophy of Strength</div>
               </div>
             </div>
-            <button
-              onClick={() => setShowDrawer(true)}
-              style={{
-                width: 36, height: 36, borderRadius: 12,
-                background: darkMode ? 'rgba(255,255,255,0.04)' : '#f8fafc',
-                border: `1px solid ${darkMode ? 'rgba(255,255,255,0.07)' : '#e2e8f0'}`,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5,
-                cursor: 'pointer',
-              }}
-            >
-              <div style={{ width: 14, height: 1.5, background: darkMode ? '#3d5470' : '#94a3b8', borderRadius: 1 }} />
-              <div style={{ width: 9, height: 1.5, background: darkMode ? '#3d5470' : '#94a3b8', borderRadius: 1, alignSelf: 'flex-start', marginLeft: 10 }} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {/* Program kısayolu */}
+              <button
+                onClick={() => setActiveTab('program')}
+                style={{
+                  height: 36, padding: '0 12px', borderRadius: 12,
+                  background: activeTab === 'program'
+                    ? 'rgba(209,255,38,0.12)'
+                    : (darkMode ? 'rgba(255,255,255,0.04)' : '#f8fafc'),
+                  border: `1px solid ${activeTab === 'program' ? 'rgba(209,255,38,0.35)' : (darkMode ? 'rgba(255,255,255,0.07)' : '#e2e8f0')}`,
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  cursor: 'pointer', color: activeTab === 'program' ? '#D1FF26' : (darkMode ? '#7a8898' : '#64748b'),
+                  fontSize: 11, fontWeight: 700, fontFamily: 'Lexend, sans-serif',
+                  textTransform: 'uppercase', letterSpacing: '0.08em',
+                }}
+              >
+                <Calendar size={13} />
+                Program
+              </button>
+              {/* Hamburger */}
+              <button
+                onClick={() => setShowDrawer(true)}
+                style={{
+                  width: 36, height: 36, borderRadius: 12,
+                  background: darkMode ? 'rgba(255,255,255,0.04)' : '#f8fafc',
+                  border: `1px solid ${darkMode ? 'rgba(255,255,255,0.07)' : '#e2e8f0'}`,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5,
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{ width: 14, height: 1.5, background: darkMode ? '#3d5470' : '#94a3b8', borderRadius: 1 }} />
+                <div style={{ width: 9, height: 1.5, background: darkMode ? '#3d5470' : '#94a3b8', borderRadius: 1, alignSelf: 'flex-start', marginLeft: 10 }} />
+              </button>
+            </div>
           </div>
         </header>
 
