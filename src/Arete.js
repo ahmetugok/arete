@@ -4464,23 +4464,22 @@ export default function App() {
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {/* Program kısayolu */}
+              {/* Program kısayolu — sadece ikon */}
               <button
                 onClick={() => setActiveTab('program')}
+                title="Program"
                 style={{
-                  height: 36, padding: '0 12px', borderRadius: 12,
+                  width: 36, height: 36, borderRadius: 12,
                   background: activeTab === 'program'
                     ? 'rgba(209,255,38,0.12)'
                     : (darkMode ? 'rgba(255,255,255,0.04)' : '#f8fafc'),
                   border: `1px solid ${activeTab === 'program' ? 'rgba(209,255,38,0.35)' : (darkMode ? 'rgba(255,255,255,0.07)' : '#e2e8f0')}`,
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  cursor: 'pointer', color: activeTab === 'program' ? '#D1FF26' : (darkMode ? '#7a8898' : '#64748b'),
-                  fontSize: 11, fontWeight: 700, fontFamily: 'Lexend, sans-serif',
-                  textTransform: 'uppercase', letterSpacing: '0.08em',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: activeTab === 'program' ? '#D1FF26' : (darkMode ? '#7a8898' : '#64748b'),
                 }}
               >
-                <Calendar size={13} />
-                Program
+                <Calendar size={15} />
               </button>
               {/* Hamburger */}
               <button
