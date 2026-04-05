@@ -3451,7 +3451,14 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [configOpen, setConfigOpen] = useState(true);
   const [darkMode, setDarkMode] = useState(() => loadFromStorage('arete_darkMode', true));
-  const [workedOutToday, setWorkedOutToday] = useState(() => loadFromStorage('arete_workedOut', false));
+  const [workedOutToday, setWorkedOutToday] = useState(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const saved = loadFromStorage('arete_workedOut', { date: '', value: false });
+    // Eğer kayıtlı tarih bugün değilse sıfırla
+    if (saved && typeof saved === 'object' && saved.date === today) return saved.value;
+    // Eski format (bare boolean) veya farklı gün — sıfırla
+    return false;
+  });
   const [dietMode, setDietMode] = useState(() => loadFromStorage('arete_dietMode', 'normal'));
   const [dailyMeal, setDailyMeal] = useState(() => loadFromStorage('arete_dailyMeal', null));
   const { toasts, toast, removeToast } = useToast();
@@ -3472,7 +3479,10 @@ export default function App() {
   useEffect(() => { saveToStorage('arete_logs', logs); }, [logs]);
   useEffect(() => { saveToStorage('arete_focusMode', focusMode); }, [focusMode]);
   useEffect(() => { saveToStorage('arete_darkMode', darkMode); }, [darkMode]);
-  useEffect(() => { saveToStorage('arete_workedOut', workedOutToday); }, [workedOutToday]);
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    saveToStorage('arete_workedOut', { date: today, value: workedOutToday });
+  }, [workedOutToday]);
   useEffect(() => { saveToStorage('arete_dietMode', dietMode); }, [dietMode]);
   useEffect(() => { saveToStorage('arete_dailyMeal', dailyMeal); }, [dailyMeal]);
 
