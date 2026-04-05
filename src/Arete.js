@@ -63,155 +63,136 @@ const pick = (pool, n) => {
  *   hanik_*                → A + C(hanik) + D(hanik finisher)
  *   strength | hybrid | …  → A + B + C + D(eğer ≥60dk)
  */
-const buildWorkout = (focus, duration) => {
-  const blocks = [];
-
+const buildWorkout = (focus, duration, poolAccess = false) => {
   // Unified DB filtreler
   const byCategory  = (cat)        => UNIFIED_DB.filter(e => e.category === cat);
   const byMechanic  = (mech)       => UNIFIED_DB.filter(e => e.mechanic === mech);
   const byCatMech   = (cat, mech)  => UNIFIED_DB.filter(e => e.category === cat && e.mechanic === mech);
 
-  // ── A BLOKU: Isınma — her zaman ──────────────────────────────────────────────
-  const warmupExercises = pick(byCategory('warmup'), 2).map(ex => ({
+  // ── Sabit bölümler ────────────────────────────────────────────────────────────
+
+  // Isınma: her zaman 2-3 hareket
+  const warmup = pick(byCategory('warmup'), duration === 45 ? 2 : 3).map(ex => ({
     ...ex, sets: 2, reps: ex.reps || '30sn', rest: 'Akışkan geçiş',
   }));
-  blocks.push({ type: 'A BLOKU — AKTİVASYON', exercises: warmupExercises });
 
-  // ── ROUTER ───────────────────────────────────────────────────────────────────
+  // Core: her zaman 2 hareket
+  const core = pick(byCategory('core'), 2).map(ex => ({
+    ...ex, sets: 3, reps: ex.reps || '15', rest: '45sn',
+  }));
 
-  // 1. ENGINE / METCON → sadece A + D (kondisyon)
+  // Havuz: sadece poolAccess açıksa
+  const swim = poolAccess
+    ? (() => { const s = pick(byCategory('swim'), 1)[0]; return s ? { ...s, sets: 4, reps: '100m', rest: '30sn' } : null; })()
+    : null;
+
+  // ── Değişken bölümler (focus'a göre) ─────────────────────────────────────────
+  let strength    = [];   // [{ type, exercises }]
+  let accessories = [];   // düz dizi
+  let metcon      = null; // { type, structure, exercises }
+
+  // 1. ENGINE / METCON — sadece kondisyon
   if (focus === 'engine' || focus === 'metcon') {
     const enginePool = [
-      ...byCategory('metcon'),
-      ...byCategory('row'),
-      ...byCategory('run'),
-      ...byCategory('machine'),
+      ...byCategory('metcon'), ...byCategory('row'),
+      ...byCategory('run'),    ...byCategory('machine'),
     ];
-    const engineEx = pick(enginePool, 3).map(ex => ({
+    const engineEx = pick(enginePool, duration === 45 ? 3 : 4).map(ex => ({
       ...ex, sets: 3, reps: ex.reps || '12', rest: '60sn',
     }));
-    blocks.push({ type: 'D BLOKU — ENGINE (MetCon)', exercises: engineEx });
-    return blocks;
+    metcon = { type: 'AMRAP', structure: '20 Dakika AMRAP', exercises: engineEx };
+    return { warmup, strength: [], accessories: [], metcon, core, swim };
   }
 
-  // 2. FBB / AESTHETICS → A + uzun C (halter bloku yok)
+  // 2. FBB / AESTHETICS — aksesuar ağırlıklı, güç bloku yok
   if (focus === 'fbb' || focus === 'aesthetics') {
     const fbbPool = [...byCategory('fbb'), ...byMechanic('isolation')];
-    const count = duration === 45 ? 2 : duration === 90 ? 5 : 4;
-    const fbbEx = pick(fbbPool, count).map(ex => ({
+    const count = duration === 45 ? 3 : duration === 90 ? 6 : 4;
+    accessories = pick(fbbPool, count).map(ex => ({
       ...ex, sets: 3, reps: ex.reps || '12-15', rest: '60sn',
     }));
-    blocks.push({ type: 'C BLOKU — FBB & AKSESUAR', exercises: fbbEx });
-    return blocks;
+    return { warmup, strength: [], accessories, metcon: null, core, swim };
   }
 
-  // 3. GVT / OVT (suffix'li) → parse kas grubu
+  // 3. GVT / OVT (suffix'li) — tek büyük compound + kısa izolasyon
   if (focus.startsWith('gvt_') || focus.startsWith('ovt_')) {
     const [method, ...rest] = focus.split('_');
-    const musclePart = rest.join('_'); // 'legs', 'push', 'pull'
-
-    // ovt_pull aslında bacak günüdür (orijinal mapping'e sadık)
+    const musclePart = rest.join('_');
     const cat = (method === 'ovt' && musclePart === 'pull') ? 'legs' : musclePart;
     const isGVT = method === 'gvt';
-    const sets = isGVT ? 10 : 5;
-    const reps = isGVT ? 10 : 5;
 
     const mainEx = pick(byCatMech(cat, 'compound'), 1)[0];
     if (mainEx) {
-      blocks.push({
+      strength = [{
         type: `B BLOKU — ${isGVT ? 'GVT 10×10' : 'OVT 5×5'} (${cat.toUpperCase()})`,
-        exercises: [{ ...mainEx, sets, reps, rest: isGVT ? '90sn' : '3dk', tempo: isGVT ? '4020' : 'X0X0' }],
-      });
+        exercises: [{ ...mainEx, sets: isGVT ? 10 : 5, reps: isGVT ? 10 : 5, rest: isGVT ? '90sn' : '3dk', tempo: isGVT ? '4020' : 'X0X0' }],
+      }];
     }
-
-    // Kısa C (izolasyon) — 45dk ise 1 hareket
-    const isolEx = pick(byCatMech(cat, 'isolation'), duration === 45 ? 1 : 2).map(ex => ({
+    accessories = pick(byCatMech(cat, 'isolation'), duration === 45 ? 1 : 2).map(ex => ({
       ...ex, sets: 3, reps: '12-15', rest: '60sn',
     }));
-    if (isolEx.length) blocks.push({ type: 'C BLOKU — AKSESUAR', exercises: isolEx });
-
-    return blocks;
+    return { warmup, strength, accessories, metcon: null, core, swim };
   }
 
   // 4. GVT / OVT (suffix'siz)
   if (focus === 'gvt') {
     const mainEx = pick(byCatMech('legs', 'compound'), 1)[0];
-    if (mainEx) blocks.push({
-      type: 'B BLOKU — GVT 10×10 (LEGS)',
-      exercises: [{ ...mainEx, sets: 10, reps: 10, rest: '90sn', tempo: '4020' }],
-    });
-    const isolEx = pick(byCatMech('legs', 'isolation'), 1).map(ex => ({ ...ex, sets: 3, reps: '12-15', rest: '60sn' }));
-    if (isolEx.length) blocks.push({ type: 'C BLOKU — AKSESUAR', exercises: isolEx });
-    return blocks;
+    if (mainEx) strength = [{ type: 'B BLOKU — GVT 10×10 (LEGS)', exercises: [{ ...mainEx, sets: 10, reps: 10, rest: '90sn', tempo: '4020' }] }];
+    accessories = pick(byCatMech('legs', 'isolation'), 1).map(ex => ({ ...ex, sets: 3, reps: '12-15', rest: '60sn' }));
+    return { warmup, strength, accessories, metcon: null, core, swim };
   }
 
   if (focus === 'ovt') {
     const mainEx = pick(byCatMech('push', 'compound'), 1)[0];
-    if (mainEx) blocks.push({
-      type: 'B BLOKU — OVT 5×5 (PUSH)',
-      exercises: [{ ...mainEx, sets: 5, reps: 5, rest: '3dk', tempo: 'X0X0' }],
-    });
-    const isolEx = pick(byCatMech('push', 'isolation'), 1).map(ex => ({ ...ex, sets: 3, reps: '12-15', rest: '60sn' }));
-    if (isolEx.length) blocks.push({ type: 'C BLOKU — AKSESUAR', exercises: isolEx });
-    return blocks;
+    if (mainEx) strength = [{ type: 'B BLOKU — OVT 5×5 (PUSH)', exercises: [{ ...mainEx, sets: 5, reps: 5, rest: '3dk', tempo: 'X0X0' }] }];
+    accessories = pick(byCatMech('push', 'isolation'), 1).map(ex => ({ ...ex, sets: 3, reps: '12-15', rest: '60sn' }));
+    return { warmup, strength, accessories, metcon: null, core, swim };
   }
 
-  // 5. HANİK → A + C(hanik) + D(hanik finisher) — B bloku yok
+  // 5. HANİK — fonksiyonel güç bloku + patlayıcı finisher
   if (focus.startsWith('hanik_')) {
     const hanikPool = byCategory('hanik');
-    const count = duration === 45 ? 3 : 4;
-    const hanikEx = pick(hanikPool, count).map(ex => ({
+    const hanikEx = pick(hanikPool, duration === 45 ? 3 : 4).map(ex => ({
       ...ex, sets: 3, reps: ex.reps || '8-10', rest: '60sn',
     }));
-    blocks.push({ type: 'C BLOKU — HANİK (Fonksiyonel Güç)', exercises: hanikEx });
+    strength = [{ type: 'C BLOKU — HANİK (Fonksiyonel Güç)', exercises: hanikEx }];
 
-    // D: patlayıcı hanik finisher
     const elitePool = hanikPool.filter(e => e.level === 'advanced' || e.level === 'elite');
     const finisher = pick(elitePool.length ? elitePool : hanikPool, 1)[0];
-    if (finisher) blocks.push({
-      type: 'D BLOKU — HANİK FİNİŞER (Patlayıcı)',
-      exercises: [{ ...finisher, sets: 4, reps: '5 (son set AMRAP)', rest: '90sn' }],
-    });
-    return blocks;
+    if (finisher) {
+      metcon = { type: 'AMRAP', structure: 'HANİK FİNİŞER (Patlayıcı)', exercises: [{ ...finisher, sets: 4, reps: '5 (son set AMRAP)', rest: '90sn' }] };
+    }
+    return { warmup, strength, accessories: [], metcon, core, swim };
   }
 
-  // ── DEFAULT: strength, hybrid, prime, recovery ───────────────────────────────
+  // ── DEFAULT: strength, hybrid, prime, recovery ────────────────────────────────
 
-  // B Bloku: ağır compound
+  // B Bloku: 1 büyük compound
   const compoundPool = UNIFIED_DB.filter(e =>
     e.mechanic === 'compound' && ['push', 'pull', 'legs'].includes(e.category)
   );
   const mainEx = pick(compoundPool, 1)[0];
   if (mainEx) {
     const heavy = focus === 'strength';
-    blocks.push({
+    strength = [{
       type: `B BLOKU — ${heavy ? 'GÜÇ (5×5)' : 'STRENGTH COMPOUND'}`,
       exercises: [{ ...mainEx, sets: heavy ? 5 : 4, reps: heavy ? 5 : '6-8', rest: heavy ? '3dk' : '2dk', tempo: 'X0X0' }],
-    });
+    }];
   }
 
-  // C Bloku: FBB / izolasyon — 45dk'da 1 hareket
+  // Aksesuar
   const cPool = [...byCategory('fbb'), ...byMechanic('isolation')];
   const cCount = duration === 45 ? 1 : duration === 90 ? 3 : 2;
-  const cEx = pick(cPool, cCount).map(ex => ({ ...ex, sets: 3, reps: ex.reps || '12', rest: '60sn' }));
-  if (cEx.length) blocks.push({ type: 'C BLOKU — FBB & AKSESUAR', exercises: cEx });
+  accessories = pick(cPool, cCount).map(ex => ({ ...ex, sets: 3, reps: ex.reps || '12', rest: '60sn' }));
 
-  // D Bloku: finisher — 45dk'da eklenmez
+  // MetCon finisher — 45dk'da eklenmez
   if (duration > 45) {
-    const dPool = [
-      ...byCategory('metcon'),
-      ...byCategory('row'),
-      ...byCategory('run'),
-      ...byCategory('machine'),
-    ];
-    const dEx = pick(dPool, 1)[0];
-    if (dEx) blocks.push({
-      type: 'D BLOKU — ENGINE (Finisher)',
-      exercises: [{ ...dEx, sets: 3, reps: dEx.reps || '10', rest: '45sn' }],
-    });
+    const dPool = [...byCategory('metcon'), ...byCategory('row'), ...byCategory('run'), ...byCategory('machine')];
+    const dEx = pick(dPool, 2).map(ex => ({ ...ex, sets: 3, reps: ex.reps || '10', rest: '45sn' }));
+    if (dEx.length) metcon = { type: 'AMRAP', structure: 'ENGINE FİNİŞER', exercises: dEx };
   }
 
-  return blocks;
+  return { warmup, strength, accessories, metcon, core, swim };
 };
 
 const QUOTES = [
@@ -4204,22 +4185,22 @@ export default function App() {
     return freq;
   };
 
-    const generateWorkout = useCallback(() => {
+  const generateWorkout = useCallback(() => {
     setLoading(true);
     setLogs({});
 
     const duration = parseInt(config.duration) || 60;
-    const strengthBlocks = buildWorkout(config.focus, duration);
+    const parts = buildWorkout(config.focus, duration, config.poolAccess);
 
     const newWorkout = {
       name:        generateName(config.focus),
       quote:       QUOTES[Math.floor(Math.random() * QUOTES.length)],
-      warmup:      [],       // Isınma artık A Bloku (strength[0]) içinde
-      strength:    strengthBlocks,
-      metcon:      null,
-      accessories: null,
-      core:        [],
-      swim:        null,
+      warmup:      parts.warmup,
+      strength:    parts.strength,
+      accessories: parts.accessories,
+      metcon:      parts.metcon,
+      core:        parts.core,
+      swim:        parts.swim,
       focus:       config.focus,
       duration,
     };
@@ -4696,7 +4677,7 @@ export default function App() {
                     ))}
                   </SectionCard>
 
-                  {workout.accessories && (
+                  {workout.accessories?.length > 0 && (
                     <SectionCard title="FBB & Aksesuar" subTitle="Functional Bodybuilding" icon={BicepsFlexed} number={3}>
                       {workout.accessories.map((move, idx) => (
                         <ExerciseItem key={idx} exercise={move} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />
@@ -4705,7 +4686,7 @@ export default function App() {
                   )}
 
                   {workout.metcon && workout.metcon.exercises && (
-                    <SectionCard title="Kondisyon" subTitle={workout.metcon.structure || 'MetCon'} icon={Timer} number={workout.accessories ? 4 : 3}>
+                    <SectionCard title="Kondisyon" subTitle={workout.metcon.structure || 'MetCon'} icon={Timer} number={workout.accessories?.length > 0 ? 4 : 3}>
                       <div style={{ marginBottom: 8, padding: '8px 12px', borderRadius: 10, background: 'linear-gradient(135deg, rgba(19,22,0,0.8), rgba(23,26,29,0.8))', border: '1px solid rgba(209,255,38,0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: 12, fontWeight: 800, color: '#D1FF26', fontFamily: 'Lexend, sans-serif', letterSpacing: '0.06em' }}>{workout.metcon.structure}</span>
                         <span className="text-slate-400 text-xs">{workout.metcon.rounds ? `${workout.metcon.rounds} Tur` : ''}{workout.metcon.time ? ` • ${workout.metcon.time} dk` : ''}</span>
@@ -4717,7 +4698,7 @@ export default function App() {
                     </SectionCard>
                   )}
 
-                  <SectionCard title="Merkez Bölge" subTitle="Iron Core" icon={Activity} number={workout.accessories ? (workout.metcon ? 5 : 4) : (workout.metcon ? 4 : 3)}>
+                  <SectionCard title="Merkez Bölge" subTitle="Iron Core" icon={Activity} number={workout.accessories?.length > 0 ? (workout.metcon ? 5 : 4) : (workout.metcon ? 4 : 3)}>
                     {workout.core.map((move, idx) => (
                       <ExerciseItem key={idx} exercise={move} isMetcon={true} onLogUpdate={handleLogUpdate} currentLog={logs[move.name]} />
                     ))}
