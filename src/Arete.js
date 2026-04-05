@@ -4033,7 +4033,7 @@ export default function App() {
       const finalSinaw = (plyoShin.length > 0 ? getRandomItems(plyoShin, 1)[0] : getRandomItems(sinawExercises, 1)[0]);
       const explosiveMove = getRandomItems(explosiveExercises, 1)[0];
       block.push({
-        type: 'D – PATLAYICI FİNİŞER (Şınav + Patlayıcı)',
+        type: 'D – PATLAYICI FINISHER (Şınav + Patlayıcı)',
         exercises: [
           { ...finalSinaw, sets: 3, rest: 'Süpersetle' },
           { ...explosiveMove, sets: 3, rest: '60sn' },
@@ -4086,7 +4086,7 @@ export default function App() {
       const kompleksMove = getRandomItems(kompleksExercises, 1)[0];
       const core2Move = getRandomItems(coreExercises.filter(e => e.name !== coreMove.name), 1)[0] || getRandomItems(coreExercises, 1)[0];
       block.push({
-        type: 'D – KOMPLEKS FİNİŞER (Kompleks + Core)',
+        type: 'D – KOMPLEKS FINISHER (Kompleks + Core)',
         exercises: [
           { ...kompleksMove, sets: 3, rest: 'Süpersetle' },
           { ...core2Move, sets: 3, rest: '60sn' },
@@ -4304,7 +4304,7 @@ export default function App() {
       }
       if (duration > 45 && enginePool.length) {
         metcon = buildMetcon(enginePool, 2, duration);
-        metcon.structure = `ENGINE FİNİŞER — ${metcon.structure}`;
+        metcon.structure = `ENGINE FINISHER — ${metcon.structure}`;
       }
     }
 
