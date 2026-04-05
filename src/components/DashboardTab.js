@@ -377,53 +377,88 @@ const DashboardTab = ({
           /* Antrenman oluşturulmuş ama başlanmamış */
           <div style={{
             borderRadius: 22, overflow: 'hidden',
-            background: 'linear-gradient(140deg, #1A1F14 0%, #161A1D 60%, #0C0E11 100%)',
-            border: '1px solid rgba(209,255,38,0.18)',
+            background: todayProgram
+              ? '#D1FF26'
+              : 'linear-gradient(140deg, #1A1F14 0%, #161A1D 60%, #0C0E11 100%)',
+            border: `1px solid ${todayProgram ? 'transparent' : 'rgba(209,255,38,0.18)'}`,
             padding: '20px', position: 'relative',
+            boxShadow: todayProgram ? '0 12px 32px rgba(209,255,38,0.15)' : 'none',
+            color: todayProgram ? '#0C0E11' : '#F9F9FD',
           }}>
+            {/* Dekoratif yazı */}
             <div style={{
-              position: 'absolute', top: 10, right: 16,
+              position: 'absolute', top: 10, right: -10,
               fontSize: 52, fontWeight: 900, fontFamily: 'Lexend, sans-serif',
-              color: 'rgba(209,255,38,0.06)', letterSpacing: '-0.04em', lineHeight: 1,
+              color: todayProgram ? 'rgba(0,0,0,0.05)' : 'rgba(209,255,38,0.06)',
+              letterSpacing: '-0.04em', lineHeight: 1,
               userSelect: 'none', pointerEvents: 'none',
             }}>
               {(focusLabelMap[workout?.focus] || 'FOCUS').toUpperCase().split(' ')[0]}
             </div>
-            <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 9, color: T.accent, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.16em', marginBottom: 8, fontFamily: 'Lexend, sans-serif' }}>
-                BUGÜNKÜ ODAK
-              </p>
-              <h2 style={{ fontSize: 28, fontWeight: 900, color: T.text, fontFamily: 'Lexend, sans-serif', letterSpacing: '-0.02em', lineHeight: 1.15, marginBottom: 6 }}>
+
+            <div style={{ marginBottom: 14, position: 'relative', zIndex: 1 }}>
+              {/* Program badge — sadece aktif program varsa */}
+              {todayProgram && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+                  <span style={{
+                    fontSize: 9, fontWeight: 900,
+                    background: '#0C0E11', color: '#D1FF26',
+                    padding: '4px 10px', borderRadius: 99,
+                    textTransform: 'uppercase', letterSpacing: '0.12em',
+                  }}>AKTİF PROGRAM</span>
+                  <span style={{ fontSize: 10, fontWeight: 800, opacity: 0.6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    {program?.title || 'ARETE SİSTEMİ'}
+                  </span>
+                </div>
+              )}
+              {!todayProgram && (
+                <p style={{ fontSize: 9, color: T.accent, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.16em', marginBottom: 8, fontFamily: 'Lexend, sans-serif' }}>
+                  BUGÜNKÜ ODAK
+                </p>
+              )}
+              <h2 style={{
+                fontSize: 28, fontWeight: 900,
+                color: todayProgram ? '#0C0E11' : T.text,
+                fontFamily: 'Lexend, sans-serif', letterSpacing: '-0.02em', lineHeight: 1.15, marginBottom: 6,
+              }}>
                 {workout.name.split('//').pop()?.trim() || workout.name}
               </h2>
-              <p style={{ fontSize: 11, color: T.muted }}>
+              <p style={{ fontSize: 11, color: todayProgram ? 'rgba(0,0,0,0.6)' : T.muted }}>
                 {workout.duration} Dakika · {focusLabelMap[workout.focus] || workout.focus}
               </p>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+
+            <div style={{ display: 'flex', gap: 8, position: 'relative', zIndex: 1 }}>
               <button onClick={() => setActiveTab('workout')}
                 style={{
-                  flex: 1, padding: '13px 0', borderRadius: 14,
-                  background: T.accent, color: '#0C0E11',
+                  flex: 1, padding: '14px 0', borderRadius: 14,
+                  background: todayProgram ? '#0C0E11' : T.accent,
+                  color: todayProgram ? '#D1FF26' : '#0C0E11',
                   fontWeight: 900, fontSize: 13, fontFamily: 'Lexend, sans-serif',
                   border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  boxShadow: '0 0 24px rgba(209,255,38,0.25), inset 0 1px 1px rgba(255,255,255,0.6)',
-                  textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+                  boxShadow: todayProgram
+                    ? '0 8px 24px rgba(0,0,0,0.3)'
+                    : '0 0 24px rgba(209,255,38,0.25), inset 0 1px 1px rgba(255,255,255,0.6)',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.25)',
                 }}>
-                <Play size={14} fill="#0C0E11" /> Antrenmana Git
+                <Play size={14} fill={todayProgram ? '#D1FF26' : '#0C0E11'} />
+                {todayProgram ? 'GÖREVİ SÜRDÜR' : 'Antrenmana Git'}
               </button>
               <button onClick={() => generateWorkout()}
                 style={{
                   padding: '13px 16px', borderRadius: 14,
-                  background: T.surfaceHi, border: `1px solid ${T.outline}`,
-                  color: T.muted, cursor: 'pointer',
+                  background: todayProgram ? 'rgba(0,0,0,0.15)' : T.surfaceHi,
+                  border: `1px solid ${todayProgram ? 'rgba(0,0,0,0.1)' : T.outline}`,
+                  color: todayProgram ? 'rgba(0,0,0,0.5)' : T.muted,
+                  cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                 <RefreshCw size={14} />
               </button>
             </div>
           </div>
+
         ) : (
           /* ── GÖREV EMRİ / MISSION BRIEF ── */
           <div style={{
