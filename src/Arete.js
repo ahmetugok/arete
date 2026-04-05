@@ -1633,7 +1633,7 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog, onS
             <div className="flex-1 flex flex-col gap-1.5 pl-1">
               {/* Demo + kas etiketleri */}
               <div className="flex flex-wrap gap-1">
-                <a href={getGifSearchUrl(exercise.name)} target="_blank" rel="noopener noreferrer"
+                <a href={exercise.video || getGifSearchUrl(exercise.name)} target="_blank" rel="noopener noreferrer"
                   style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9, fontWeight: 700, color: '#D1FF26', background: 'rgba(209,255,38,0.08)', border: '1px solid rgba(209,255,38,0.18)', padding: '3px 8px', borderRadius: 99, transition: 'background 0.15s', textDecoration: 'none' }}>
                   <PlayCircle size={10} /> Demo
                 </a>
@@ -1644,7 +1644,14 @@ const ExerciseItem = ({ exercise, isMetcon = false, onLogUpdate, currentLog, onS
                 ))}
               </div>
               {/* Açıklama */}
-              <p className={`${darkMode ? 'text-slate-400' : 'text-gray-500'} text-[11px] leading-relaxed line-clamp-3`}>{exercise.description}</p>
+              <p className={`${darkMode ? 'text-slate-400' : 'text-gray-500'} text-[11px] leading-relaxed line-clamp-3`}>{exercise.desc || exercise.description}</p>
+              {/* PRO TIP */}
+              {exercise.tip && (
+                <div style={{ background: 'rgba(209,255,38,0.06)', border: '1px solid rgba(209,255,38,0.15)', borderRadius: 8, padding: '8px 10px', marginTop: 8 }}>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: '#D1FF26', textTransform: 'uppercase', letterSpacing: '0.12em', marginRight: 6 }}>💡 PRO TIP</span>
+                  <span style={{ fontSize: 11, color: '#cbd5e1' }}>{exercise.tip}</span>
+                </div>
+              )}
               {/* Not */}
               {exercise.note && (
                 <p style={{ fontSize: 10, color: '#D1FF26', background: 'rgba(209,255,38,0.07)', border: '1px solid rgba(209,255,38,0.15)', padding: '4px 8px', borderRadius: 6 }}>
