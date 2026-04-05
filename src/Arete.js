@@ -52,148 +52,6 @@ const pick = (pool, n) => {
   return shuffled.slice(0, Math.min(n, shuffled.length));
 };
 
-/**
- * buildWorkout(focus, duration) → workout.strength array
- *
- * Router mantığı:
- *   engine | metcon        → A + D (sadece kondisyon)
- *   fbb | aesthetics       → A + uzun C (izolasyon/FBB, halter yok)
- *   gvt | gvt_*            → A + B(10×10) + kısa C
- *   ovt | ovt_*            → A + B(5×5)   + kısa C
- *   hanik_*                → A + C(hanik) + D(hanik finisher)
- *   strength | hybrid | …  → A + B + C + D(eğer ≥60dk)
- */
-const buildWorkout = (focus, duration, poolAccess = false) => {
-  // Unified DB filtreler
-  const byCategory  = (cat)        => UNIFIED_DB.filter(e => e.category === cat);
-  const byMechanic  = (mech)       => UNIFIED_DB.filter(e => e.mechanic === mech);
-  const byCatMech   = (cat, mech)  => UNIFIED_DB.filter(e => e.category === cat && e.mechanic === mech);
-
-  // ── Sabit bölümler ────────────────────────────────────────────────────────────
-
-  // Isınma: her zaman 2-3 hareket
-  const warmup = pick(byCategory('warmup'), duration === 45 ? 2 : 3).map(ex => ({
-    ...ex, sets: 2, reps: ex.reps || '30sn', rest: 'Akışkan geçiş',
-  }));
-
-  // Core: her zaman 2 hareket
-  const core = pick(byCategory('core'), 2).map(ex => ({
-    ...ex, sets: 3, reps: ex.reps || '15', rest: '45sn',
-  }));
-
-  // Havuz: sadece poolAccess açıksa
-  const swim = poolAccess
-    ? (() => { const s = pick(byCategory('swim'), 1)[0]; return s ? { ...s, sets: 4, reps: '100m', rest: '30sn' } : null; })()
-    : null;
-
-  // ── Değişken bölümler (focus'a göre) ─────────────────────────────────────────
-  let strength    = [];   // [{ type, exercises }]
-  let accessories = [];   // düz dizi
-  let metcon      = null; // { type, structure, exercises }
-
-  // 1. ENGINE / METCON — sadece kondisyon
-  if (focus === 'engine' || focus === 'metcon') {
-    const enginePool = [
-      ...byCategory('metcon'), ...byCategory('row'),
-      ...byCategory('run'),    ...byCategory('machine'),
-    ];
-    const engineEx = pick(enginePool, duration === 45 ? 3 : 4).map(ex => ({
-      ...ex, sets: 3, reps: ex.reps || '12', rest: '60sn',
-    }));
-    metcon = { type: 'AMRAP', structure: '20 Dakika AMRAP', exercises: engineEx };
-    return { warmup, strength: [], accessories: [], metcon, core, swim };
-  }
-
-  // 2. FBB / AESTHETICS — aksesuar ağırlıklı, güç bloku yok
-  if (focus === 'fbb' || focus === 'aesthetics') {
-    const fbbPool = [...byCategory('fbb'), ...byMechanic('isolation')];
-    const count = duration === 45 ? 3 : duration === 90 ? 6 : 4;
-    accessories = pick(fbbPool, count).map(ex => ({
-      ...ex, sets: 3, reps: ex.reps || '12-15', rest: '60sn',
-    }));
-    return { warmup, strength: [], accessories, metcon: null, core, swim };
-  }
-
-  // 3. GVT / OVT (suffix'li) — tek büyük compound + kısa izolasyon
-  if (focus.startsWith('gvt_') || focus.startsWith('ovt_')) {
-    const [method, ...rest] = focus.split('_');
-    const musclePart = rest.join('_');
-    const cat = (method === 'ovt' && musclePart === 'pull') ? 'legs' : musclePart;
-    const isGVT = method === 'gvt';
-
-    const mainEx = pick(byCatMech(cat, 'compound'), 1)[0];
-    if (mainEx) {
-      strength = [{
-        type: `B BLOKU — ${isGVT ? 'GVT 10×10' : 'OVT 5×5'} (${cat.toUpperCase()})`,
-        exercises: [{ ...mainEx, sets: isGVT ? 10 : 5, reps: isGVT ? 10 : 5, rest: isGVT ? '90sn' : '3dk', tempo: isGVT ? '4020' : 'X0X0' }],
-      }];
-    }
-    accessories = pick(byCatMech(cat, 'isolation'), duration === 45 ? 1 : 2).map(ex => ({
-      ...ex, sets: 3, reps: '12-15', rest: '60sn',
-    }));
-    return { warmup, strength, accessories, metcon: null, core, swim };
-  }
-
-  // 4. GVT / OVT (suffix'siz)
-  if (focus === 'gvt') {
-    const mainEx = pick(byCatMech('legs', 'compound'), 1)[0];
-    if (mainEx) strength = [{ type: 'B BLOKU — GVT 10×10 (LEGS)', exercises: [{ ...mainEx, sets: 10, reps: 10, rest: '90sn', tempo: '4020' }] }];
-    accessories = pick(byCatMech('legs', 'isolation'), 1).map(ex => ({ ...ex, sets: 3, reps: '12-15', rest: '60sn' }));
-    return { warmup, strength, accessories, metcon: null, core, swim };
-  }
-
-  if (focus === 'ovt') {
-    const mainEx = pick(byCatMech('push', 'compound'), 1)[0];
-    if (mainEx) strength = [{ type: 'B BLOKU — OVT 5×5 (PUSH)', exercises: [{ ...mainEx, sets: 5, reps: 5, rest: '3dk', tempo: 'X0X0' }] }];
-    accessories = pick(byCatMech('push', 'isolation'), 1).map(ex => ({ ...ex, sets: 3, reps: '12-15', rest: '60sn' }));
-    return { warmup, strength, accessories, metcon: null, core, swim };
-  }
-
-  // 5. HANİK — fonksiyonel güç bloku + patlayıcı finisher
-  if (focus.startsWith('hanik_')) {
-    const hanikPool = byCategory('hanik');
-    const hanikEx = pick(hanikPool, duration === 45 ? 3 : 4).map(ex => ({
-      ...ex, sets: 3, reps: ex.reps || '8-10', rest: '60sn',
-    }));
-    strength = [{ type: 'C BLOKU — HANİK (Fonksiyonel Güç)', exercises: hanikEx }];
-
-    const elitePool = hanikPool.filter(e => e.level === 'advanced' || e.level === 'elite');
-    const finisher = pick(elitePool.length ? elitePool : hanikPool, 1)[0];
-    if (finisher) {
-      metcon = { type: 'AMRAP', structure: 'HANİK FİNİŞER (Patlayıcı)', exercises: [{ ...finisher, sets: 4, reps: '5 (son set AMRAP)', rest: '90sn' }] };
-    }
-    return { warmup, strength, accessories: [], metcon, core, swim };
-  }
-
-  // ── DEFAULT: strength, hybrid, prime, recovery ────────────────────────────────
-
-  // B Bloku: 1 büyük compound
-  const compoundPool = UNIFIED_DB.filter(e =>
-    e.mechanic === 'compound' && ['push', 'pull', 'legs'].includes(e.category)
-  );
-  const mainEx = pick(compoundPool, 1)[0];
-  if (mainEx) {
-    const heavy = focus === 'strength';
-    strength = [{
-      type: `B BLOKU — ${heavy ? 'GÜÇ (5×5)' : 'STRENGTH COMPOUND'}`,
-      exercises: [{ ...mainEx, sets: heavy ? 5 : 4, reps: heavy ? 5 : '6-8', rest: heavy ? '3dk' : '2dk', tempo: 'X0X0' }],
-    }];
-  }
-
-  // Aksesuar
-  const cPool = [...byCategory('fbb'), ...byMechanic('isolation')];
-  const cCount = duration === 45 ? 1 : duration === 90 ? 3 : 2;
-  accessories = pick(cPool, cCount).map(ex => ({ ...ex, sets: 3, reps: ex.reps || '12', rest: '60sn' }));
-
-  // MetCon finisher — 45dk'da eklenmez
-  if (duration > 45) {
-    const dPool = [...byCategory('metcon'), ...byCategory('row'), ...byCategory('run'), ...byCategory('machine')];
-    const dEx = pick(dPool, 2).map(ex => ({ ...ex, sets: 3, reps: ex.reps || '10', rest: '45sn' }));
-    if (dEx.length) metcon = { type: 'AMRAP', structure: 'ENGINE FİNİŞER', exercises: dEx };
-  }
-
-  return { warmup, strength, accessories, metcon, core, swim };
-};
 
 const QUOTES = [
   "Bedenin eğitilmesi, zihnin eğitilmesidir. - Arete",
@@ -3765,9 +3623,12 @@ export default function App() {
 
     if (mode === 'lower') {
       // ALT VÜCUT: Bacak + Karın
-      const legCompounds = EXERCISE_DB.strength.legs.compound;
-      const legAccessories = EXERCISE_DB.strength.legs.accessory;
-      const coreExercises = EXERCISE_DB.core;
+      const _legC = UNIFIED_DB.filter(e => e.category === 'legs' && e.mechanic === 'compound');
+      const legCompounds   = _legC.length  ? _legC  : EXERCISE_DB.strength.legs.compound;
+      const _legI = UNIFIED_DB.filter(e => e.category === 'legs' && e.mechanic === 'isolation');
+      const legAccessories = _legI.length  ? _legI  : EXERCISE_DB.strength.legs.accessory;
+      const _core = UNIFIED_DB.filter(e => e.category === 'core');
+      const coreExercises  = _core.length  ? _core  : EXERCISE_DB.core;
 
       const mainLeg = getRandomItems(legCompounds, 1)[0]; // Bacak ana hareketi
       const mainCore = getRandomItems(coreExercises, 1)[0]; // Karın ana hareketi
@@ -3809,10 +3670,14 @@ export default function App() {
 
     } else { // upper
       // ÜST VÜCUT: Göğüs + Sırt + Omuz
-      const pushCompounds = EXERCISE_DB.strength.push.compound;
-      const pullCompounds = EXERCISE_DB.strength.pull.compound;
-      const pushAccessories = EXERCISE_DB.strength.push.accessory;
-      const pullAccessories = EXERCISE_DB.strength.pull.accessory;
+      const _pushC = UNIFIED_DB.filter(e => e.category === 'push' && e.mechanic === 'compound');
+      const pushCompounds   = _pushC.length ? _pushC : EXERCISE_DB.strength.push.compound;
+      const _pullC = UNIFIED_DB.filter(e => e.category === 'pull' && e.mechanic === 'compound');
+      const pullCompounds   = _pullC.length ? _pullC : EXERCISE_DB.strength.pull.compound;
+      const _pushI = UNIFIED_DB.filter(e => e.category === 'push' && e.mechanic === 'isolation');
+      const pushAccessories = _pushI.length ? _pushI : EXERCISE_DB.strength.push.accessory;
+      const _pullI = UNIFIED_DB.filter(e => e.category === 'pull' && e.mechanic === 'isolation');
+      const pullAccessories = _pullI.length ? _pullI : EXERCISE_DB.strength.pull.accessory;
 
       const mainPush = getRandomItems(pushCompounds, 1)[0]; // Göğüs/Omuz ana
       const mainPull = getRandomItems(pullCompounds, 1)[0]; // Sırt ana
@@ -3864,14 +3729,18 @@ export default function App() {
 
     if (mode === 'lower') {
       // ALT VÜCUT: Bacak (Squat/Lunge) + Alt Sırt (Deadlift/RDL)
-      const squatMoves = EXERCISE_DB.strength.legs.compound.filter(e =>
-        e.name.toLowerCase().includes('squat') || e.name.toLowerCase().includes('lunge'));
-      const hingeMoves = EXERCISE_DB.strength.legs.compound.filter(e =>
-        e.name.toLowerCase().includes('deadlift') || e.name.toLowerCase().includes('rdl') || e.name.toLowerCase().includes('hip'));
-      const legAccessories = EXERCISE_DB.strength.legs.accessory;
+      const _legC = UNIFIED_DB.filter(e => e.category === 'legs' && e.mechanic === 'compound');
+      const legCompoundsAll = _legC.length ? _legC : EXERCISE_DB.strength.legs.compound;
+      const _legI = UNIFIED_DB.filter(e => e.category === 'legs' && e.mechanic === 'isolation');
+      const legAccessories = _legI.length ? _legI : EXERCISE_DB.strength.legs.accessory;
 
-      const mainSquat = getRandomItems(squatMoves.length > 0 ? squatMoves : EXERCISE_DB.strength.legs.compound, 1)[0];
-      const mainHinge = getRandomItems(hingeMoves.length > 0 ? hingeMoves : EXERCISE_DB.strength.legs.compound, 1)[0];
+      const squatMoves = legCompoundsAll.filter(e =>
+        e.name.toLowerCase().includes('squat') || e.name.toLowerCase().includes('lunge'));
+      const hingeMoves = legCompoundsAll.filter(e =>
+        e.name.toLowerCase().includes('deadlift') || e.name.toLowerCase().includes('rdl') || e.name.toLowerCase().includes('hip'));
+
+      const mainSquat = getRandomItems(squatMoves.length > 0 ? squatMoves : legCompoundsAll, 1)[0];
+      const mainHinge = getRandomItems(hingeMoves.length > 0 ? hingeMoves : legCompoundsAll, 1)[0];
       const acc1 = getRandomItems(legAccessories, 1)[0];
       const acc2 = getRandomItems(legAccessories.filter(e => e.name !== acc1.name), 1)[0];
 
@@ -3893,10 +3762,14 @@ export default function App() {
 
     } else { // upper
       // ÜST VÜCUT: İtiş (Push) + Çekiş (Pull) – antagonist superset
-      const pushCompounds = EXERCISE_DB.strength.push.compound;
-      const pullCompounds = EXERCISE_DB.strength.pull.compound;
-      const pushAccessories = EXERCISE_DB.strength.push.accessory;
-      const pullAccessories = EXERCISE_DB.strength.pull.accessory;
+      const _pushC = UNIFIED_DB.filter(e => e.category === 'push' && e.mechanic === 'compound');
+      const pushCompounds   = _pushC.length ? _pushC : EXERCISE_DB.strength.push.compound;
+      const _pullC = UNIFIED_DB.filter(e => e.category === 'pull' && e.mechanic === 'compound');
+      const pullCompounds   = _pullC.length ? _pullC : EXERCISE_DB.strength.pull.compound;
+      const _pushI = UNIFIED_DB.filter(e => e.category === 'push' && e.mechanic === 'isolation');
+      const pushAccessories = _pushI.length ? _pushI : EXERCISE_DB.strength.push.accessory;
+      const _pullI = UNIFIED_DB.filter(e => e.category === 'pull' && e.mechanic === 'isolation');
+      const pullAccessories = _pullI.length ? _pullI : EXERCISE_DB.strength.pull.accessory;
 
       const mainPush = getRandomItems(pushCompounds, 1)[0];
       const mainPull = getRandomItems(pullCompounds, 1)[0];
@@ -3927,14 +3800,28 @@ export default function App() {
   const construct_FBB = () => { // eslint-disable-line no-unused-vars
     const block = [];
 
-    const stabilityMoves = EXERCISE_DB.fbb.filter(m => m.type === "Stabilite" || m.type === "Anti-Rotasyon");
-    const carryMoves = EXERCISE_DB.fbb.filter(m => m.type === "Taşıma" || m.type === "Grip/Core");
-    const fullBodyMoves = EXERCISE_DB.fbb.filter(m => m.type === "Full Body" || m.type === "Mobility" || m.type === "Hybrid");
+    // UNIFIED_DB fbb havuzu, fallback: EXERCISE_DB.fbb
+    const _fbb  = UNIFIED_DB.filter(e => e.category === 'fbb');
+    const fbbPool = _fbb.length ? _fbb : EXERCISE_DB.fbb;
+    const _core = UNIFIED_DB.filter(e => e.category === 'core');
+    const corePool = _core.length ? _core : EXERCISE_DB.core;
 
-    const stabilityMove = getRandomItems(stabilityMoves.length > 0 ? stabilityMoves : EXERCISE_DB.fbb, 1)[0];
-    const carryMove = getRandomItems(carryMoves.length > 0 ? carryMoves : EXERCISE_DB.fbb, 1)[0];
-    const fullBody = getRandomItems(fullBodyMoves.length > 0 ? fullBodyMoves : EXERCISE_DB.fbb, 2);
-    const coreExercises = getRandomItems(EXERCISE_DB.core, 3);
+    // Tip bazlı filtreler — her iki DB formatıyla çalışır
+    const stabilityMoves = fbbPool.filter(m =>
+      m.type === 'Stabilite' || m.type === 'Anti-Rotasyon' ||
+      m.name?.toLowerCase().includes('landmine') || m.name?.toLowerCase().includes('z-press') ||
+      m.name?.toLowerCase().includes('pallof') || m.mechanic === 'compound');
+    const carryMoves = fbbPool.filter(m =>
+      m.type === 'Taşıma' || m.type === 'Grip/Core' ||
+      m.name?.toLowerCase().includes('carry') || m.name?.toLowerCase().includes('walk'));
+    const fullBodyMoves = fbbPool.filter(m =>
+      m.type === 'Full Body' || m.type === 'Mobility' || m.type === 'Hybrid' ||
+      (!m.type && !m.name?.toLowerCase().includes('carry') && !m.name?.toLowerCase().includes('walk')));
+
+    const stabilityMove = getRandomItems(stabilityMoves.length > 0 ? stabilityMoves : fbbPool, 1)[0];
+    const carryMove     = getRandomItems(carryMoves.length > 0     ? carryMoves     : fbbPool, 1)[0];
+    const fullBody      = getRandomItems(fullBodyMoves.length > 0  ? fullBodyMoves  : fbbPool, 2);
+    const coreExercises = getRandomItems(corePool, 3);
 
     block.push({
       type: "A BLOK (Stabilite & Tempo)",
@@ -3969,12 +3856,16 @@ export default function App() {
   const construct_Recovery = (hasPool = true) => { // eslint-disable-line no-unused-vars
     const block = [];
 
-    const spinalMoves = EXERCISE_DB.warmup.filter(m =>
+    // UNIFIED_DB warmup havuzu, fallback: EXERCISE_DB.warmup
+    const _warmup = UNIFIED_DB.filter(e => e.category === 'warmup');
+    const warmupPool = _warmup.length ? _warmup : EXERCISE_DB.warmup;
+
+    const spinalMoves = warmupPool.filter(m =>
       m.name.toLowerCase().includes('camel') ||
       m.name.toLowerCase().includes('cobra') ||
       m.name.toLowerCase().includes('rotation')
     );
-    const hipMoves = EXERCISE_DB.warmup.filter(m =>
+    const hipMoves = warmupPool.filter(m =>
       m.name.toLowerCase().includes('hip') ||
       m.name.toLowerCase().includes('lizard') ||
       m.name.toLowerCase().includes('squat') ||
@@ -3983,8 +3874,8 @@ export default function App() {
     );
 
     const mobilityMoves = [
-      ...getRandomItems(spinalMoves.length > 0 ? spinalMoves : EXERCISE_DB.warmup, 2),
-      ...getRandomItems(hipMoves.length > 0 ? hipMoves : EXERCISE_DB.warmup, 2)
+      ...getRandomItems(spinalMoves.length > 0 ? spinalMoves : warmupPool, 2),
+      ...getRandomItems(hipMoves.length > 0 ? hipMoves : warmupPool, 2)
     ];
 
     block.push({
@@ -4000,7 +3891,9 @@ export default function App() {
     });
 
     if (hasPool) {
-      const mainSwim = getRandomItems(EXERCISE_DB.swim, 1)[0];
+      const _swim = UNIFIED_DB.filter(e => e.category === 'swim');
+      const swimPool = _swim.length ? _swim : EXERCISE_DB.swim;
+      const mainSwim = getRandomItems(swimPool, 1)[0];
 
       block.push({
         type: "HAVUZ PROTOKOLÜ",
@@ -4190,18 +4083,120 @@ export default function App() {
     setLogs({});
 
     const duration = parseInt(config.duration) || 60;
-    const parts = buildWorkout(config.focus, duration, config.poolAccess);
+    const focus    = config.focus;
+
+    // ── Sabit bölümler — her antrenmanда dolu ──────────────────────────────────
+    const _wu   = UNIFIED_DB.filter(e => e.category === 'warmup');
+    const warmupSrc = _wu.length   ? _wu   : EXERCISE_DB.warmup;
+    const _co   = UNIFIED_DB.filter(e => e.category === 'core');
+    const coreSrc   = _co.length   ? _co   : EXERCISE_DB.core;
+
+    const warmup = getRandomItems(warmupSrc, duration === 45 ? 2 : 3).map(ex => ({
+      ...ex, sets: 2, reps: ex.reps || '30sn', rest: 'Akışkan geçiş',
+    }));
+    const core = getRandomItems(coreSrc, 2).map(ex => ({
+      ...ex, sets: 3, reps: ex.reps || '15', rest: '45sn',
+    }));
+
+    // Havuz — sadece poolAccess açık ve engine/hanik/recovery değilse
+    const _sw  = UNIFIED_DB.filter(e => e.category === 'swim');
+    const swimSrc = _sw.length ? _sw : (EXERCISE_DB.swim || []);
+    const swim = config.poolAccess && swimSrc.length && focus !== 'recovery'
+      ? { ...getRandomItems(swimSrc, 1)[0], sets: 4, reps: '100m', rest: '30sn' }
+      : null;
+
+    // ── Değişken bölümler — focus'a göre ──────────────────────────────────────
+    let strength    = [];
+    let accessories = [];
+    let metcon      = null;
+
+    if (focus === 'engine' || focus === 'metcon') {
+      // Pure kondisyon — güç blokları yok
+      const enginePool = [
+        ...UNIFIED_DB.filter(e => e.category === 'metcon'),
+        ...UNIFIED_DB.filter(e => e.category === 'row'),
+        ...UNIFIED_DB.filter(e => e.category === 'run'),
+        ...UNIFIED_DB.filter(e => e.category === 'machine'),
+      ];
+      const engineEx = getRandomItems(enginePool, duration === 45 ? 3 : 5).map(ex => ({
+        ...ex, sets: 4, reps: ex.reps || '10', rest: '60sn',
+      }));
+      metcon = { type: 'AMRAP', structure: '20 Dakika AMRAP', exercises: engineEx };
+
+    } else if (focus === 'gvt' || focus === 'gvt_legs') {
+      strength = construct_GVT('lower');
+
+    } else if (focus === 'gvt_push' || focus === 'gvt_pull') {
+      strength = construct_GVT('upper');
+
+    } else if (focus === 'ovt' || focus === 'ovt_push') {
+      strength = construct_OVT('upper');
+
+    } else if (focus === 'ovt_pull') {
+      // ovt_pull orijinal mantıkta bacak günüdür
+      strength = construct_OVT('lower');
+
+    } else if (focus === 'fbb' || focus === 'aesthetics') {
+      strength = construct_FBB();
+
+    } else if (focus === 'recovery') {
+      strength = construct_Recovery(config.poolAccess);
+
+    } else if (focus === 'hanik_push_legs') {
+      strength = construct_Hanik('push_legs');
+
+    } else if (focus === 'hanik_pull_core') {
+      strength = construct_Hanik('pull_core');
+
+    } else {
+      // DEFAULT: strength, hybrid, prime — ağır compound + aksesuar + finisher
+      const _compC = UNIFIED_DB.filter(e =>
+        e.mechanic === 'compound' && ['push', 'pull', 'legs'].includes(e.category)
+      );
+      const compoundPool = _compC.length ? _compC : [
+        ...EXERCISE_DB.strength.push.compound,
+        ...EXERCISE_DB.strength.pull.compound,
+        ...EXERCISE_DB.strength.legs.compound,
+      ];
+      const mainEx = getRandomItems(compoundPool, 1)[0];
+      if (mainEx) {
+        const heavy = focus === 'strength';
+        strength = [{
+          type: `B BLOKU — ${heavy ? 'GÜÇ (5×5)' : 'STRENGTH COMPOUND'}`,
+          exercises: [{ ...mainEx, sets: heavy ? 5 : 4, reps: heavy ? 5 : '6-8', rest: heavy ? '3dk' : '2dk', tempo: 'X0X0' }],
+        }];
+      }
+      const _accP = [
+        ...UNIFIED_DB.filter(e => e.category === 'push' && e.mechanic === 'isolation'),
+        ...UNIFIED_DB.filter(e => e.category === 'pull' && e.mechanic === 'isolation'),
+      ];
+      const accPool = _accP.length ? _accP : [
+        ...EXERCISE_DB.strength.push.accessory,
+        ...EXERCISE_DB.strength.pull.accessory,
+      ];
+      const accCount = duration === 45 ? 1 : duration === 90 ? 3 : 2;
+      accessories = getRandomItems(accPool, accCount).map(ex => ({
+        ...ex, sets: 3, reps: ex.reps || '12', rest: '60sn',
+      }));
+      if (duration > 45) {
+        const dPool = [
+          ...UNIFIED_DB.filter(e => ['metcon', 'row', 'run', 'machine'].includes(e.category)),
+        ];
+        const dEx = getRandomItems(dPool, 2).map(ex => ({ ...ex, sets: 3, reps: ex.reps || '10', rest: '45sn' }));
+        if (dEx.length) metcon = { type: 'AMRAP', structure: 'ENGINE FİNİŞER', exercises: dEx };
+      }
+    }
 
     const newWorkout = {
-      name:        generateName(config.focus),
+      name:        generateName(focus),
       quote:       QUOTES[Math.floor(Math.random() * QUOTES.length)],
-      warmup:      parts.warmup,
-      strength:    parts.strength,
-      accessories: parts.accessories,
-      metcon:      parts.metcon,
-      core:        parts.core,
-      swim:        parts.swim,
-      focus:       config.focus,
+      warmup,
+      strength,
+      accessories,
+      metcon,
+      core,
+      swim,
+      focus,
       duration,
     };
 
