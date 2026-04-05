@@ -356,23 +356,60 @@ const DashboardTab = ({
         {/* ── BUGÜNKÜ ANTRENMAN ── */}
         {workedOutToday ? (
           <div style={card({
-            padding: '18px 20px',
-            background: 'linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.04))',
+            padding: '20px',
+            background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(34,197,94,0.03))',
             border: '1px solid rgba(34,197,94,0.2)',
+            position: 'relative', overflow: 'hidden',
           })}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Dekoratif arka plan */}
+            <div style={{
+              position: 'absolute', top: 8, right: -8,
+              fontSize: 52, fontWeight: 900, fontFamily: 'Lexend, sans-serif',
+              color: 'rgba(34,197,94,0.06)', letterSpacing: '-0.04em', lineHeight: 1,
+              userSelect: 'none', pointerEvents: 'none',
+            }}>DONE</div>
+
+            {/* Tamamlandı header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: todayProgram ? 14 : 0 }}>
               <div style={{
-                width: 42, height: 42, borderRadius: 12,
+                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
                 background: 'rgba(34,197,94,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ fontSize: 20 }}>✅</span>
+                <span style={{ fontSize: 18 }}>✅</span>
               </div>
               <div>
-                <p style={{ fontSize: 14, fontWeight: 800, color: '#22c55e', fontFamily: 'Lexend, sans-serif' }}>Bugün tamamlandı!</p>
+                <p style={{ fontSize: 14, fontWeight: 800, color: '#22c55e', fontFamily: 'Lexend, sans-serif' }}>Bugün Tamamlandı!</p>
                 <p style={{ fontSize: 11, color: T.muted }}>Harika iş. Dinlenme zamanı.</p>
               </div>
             </div>
+
+            {/* Program özeti — sadece aktif program varsa */}
+            {todayProgram && (
+              <div style={{
+                borderTop: '1px solid rgba(34,197,94,0.15)',
+                paddingTop: 12, marginTop: 4,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
+              }}>
+                <div>
+                  <p style={{ fontSize: 9, color: '#22c55e', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 3 }}>
+                    PROGRAM MODÜLÜ
+                  </p>
+                  <p style={{ fontSize: 14, fontWeight: 900, color: T.text, fontFamily: 'Lexend, sans-serif', letterSpacing: '-0.02em' }}>
+                    {todayProgram.label}
+                  </p>
+                  <p style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>
+                    {focusLabelMap[todayProgram.focus] || todayProgram.focus}
+                  </p>
+                </div>
+                <span style={{
+                  fontSize: 9, fontWeight: 900, padding: '5px 12px', borderRadius: 99,
+                  background: 'rgba(34,197,94,0.12)', color: '#22c55e',
+                  border: '1px solid rgba(34,197,94,0.25)', textTransform: 'uppercase', letterSpacing: '0.1em',
+                }}>✓ Tamamlandı</span>
+              </div>
+            )}
           </div>
+
         ) : workout ? (
           /* Antrenman oluşturulmuş ama başlanmamış */
           <div style={{
