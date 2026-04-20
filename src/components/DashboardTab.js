@@ -30,7 +30,7 @@ const getHistory = () => JSON.parse(localStorage.getItem('arete_history') || '[]
 
 const getWeeklyVolumeData = (history) => {
   const days = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
-  const data = days.map(d => ({ day: d, volume: 0, active: false }));
+  const data = days.map(d => ({ day: d, sessions: 0, volume: 0, active: false }));
   const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   history.filter(h => h.timestamp > oneWeekAgo).forEach(entry => {
     const d = new Date(entry.timestamp);
@@ -38,6 +38,7 @@ const getWeeklyVolumeData = (history) => {
     const v = Object.values(entry.exercises || {}).reduce((acc, log) => {
       return acc + (parseFloat(log.weight) || 0) * (parseInt(log.reps) || 0);
     }, 0);
+    data[idx].sessions += 1;
     data[idx].volume += Math.round(v);
     data[idx].active = true;
   });
@@ -90,17 +91,18 @@ const focusLabelMap = {
 
 const getMuscleFreq = (history) => {
   const focusMap = {
-    gvt: 'legs', gvt_legs: 'legs', gvt_push: 'push', gvt_pull: 'pull',
-    ovt: 'push', ovt_push: 'push', ovt_pull: 'legs',
-    hanik_push_legs: 'push', hanik_pull_core: 'pull',
-    aesthetics: 'push', prime: 'push', hybrid: 'push',
-    fbb: 'core', engine: 'cardio', metcon: 'cardio', recovery: 'core', strength: 'push',
+    gvt: ['legs'], gvt_legs: ['legs'], gvt_push: ['push'], gvt_pull: ['pull'],
+    ovt: ['push'], ovt_push: ['push'], ovt_pull: ['pull'],
+    hanik_push_legs: ['push', 'legs'], hanik_pull_core: ['pull', 'core'],
+    aesthetics: ['push'], prime: ['push', 'pull'], hybrid: ['push', 'legs', 'pull'],
+    fbb: ['core', 'cardio'], engine: ['cardio'], metcon: ['cardio'],
+    recovery: ['core'], strength: ['push'],
   };
   const freq = { push: 0, pull: 0, legs: 0, core: 0, cardio: 0 };
   const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   history.filter(h => h.timestamp > oneWeekAgo).forEach(w => {
-    const cat = focusMap[w.focus];
-    if (cat) freq[cat]++;
+    const cats = focusMap[w.focus];
+    if (cats) cats.forEach(cat => { freq[cat]++; });
   });
   return freq;
 };
@@ -569,7 +571,7 @@ const DashboardTab = ({
               +{thisWeek > 0 ? Math.round(thisWeek * 12) : 0}% Artış
             </button>
           </div>
-          {weeklyData.some(d => d.volume > 0) ? (
+          {weeklyData.some(d => d.active) ? (
             <ResponsiveContainer width="100%" height={110}>
               <BarChart data={weeklyData} margin={{ top: 0, right: 0, left: -30, bottom: 0 }}>
                 <XAxis
@@ -579,9 +581,15 @@ const DashboardTab = ({
                 />
                 <Tooltip
                   contentStyle={{ background: '#1E2226', border: `1px solid ${T.outline}`, borderRadius: 10, fontSize: 10 }}
-                  formatter={(v) => [`${v > 1000 ? `${(v / 1000).toFixed(1)}t` : `${v}kg`}`, 'Hacim']}
+                  formatter={(v, _name, props) => {
+                    const vol = props.payload?.volume;
+                    const label = vol > 0
+                      ? `${v} antrenman · ${vol >= 1000 ? `${(vol / 1000).toFixed(1)}t` : `${vol}kg`}`
+                      : `${v} antrenman`;
+                    return [label, 'Aktivite'];
+                  }}
                 />
-                <Bar dataKey="volume" radius={[6, 6, 0, 0]}>
+                <Bar dataKey="sessions" radius={[6, 6, 0, 0]} minPointSize={4}>
                   {weeklyData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}

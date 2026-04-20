@@ -3502,11 +3502,19 @@ export default function App() {
   const [configOpen, setConfigOpen] = useState(true);
   const [darkMode, setDarkMode] = useState(() => loadFromStorage('arete_darkMode', true));
   const [workedOutToday, setWorkedOutToday] = useState(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const saved = loadFromStorage('arete_workedOut', { date: '', value: false });
-    // Eğer kayıtlı tarih bugün değilse sıfırla
+    const today = new Date().toDateString();
+    // History'den hesapla — stale flag'e güvenme
+    const history = JSON.parse(localStorage.getItem('arete_history') || '[]');
+    if (history.some(h => new Date(h.timestamp).toDateString() === today)) return true;
+    // Sadece program günü işaretlendiyse (history'de değil) kontrol et
+    const saved = loadFromStorage('arete_programDoneToday', { date: '', value: false });
     if (saved && typeof saved === 'object' && saved.date === today) return saved.value;
-    // Eski format (bare boolean) veya farklı gün — sıfırla
+    return false;
+  });
+  const [nutritionWorkedOut, setNutritionWorkedOut] = useState(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const saved = loadFromStorage('arete_nutritionWorkedOut', { date: '', value: false });
+    if (saved && typeof saved === 'object' && saved.date === today) return saved.value;
     return false;
   });
   const [dietMode, setDietMode] = useState(() => loadFromStorage('arete_dietMode', 'normal'));
@@ -3530,9 +3538,14 @@ export default function App() {
   useEffect(() => { saveToStorage('arete_focusMode', focusMode); }, [focusMode]);
   useEffect(() => { saveToStorage('arete_darkMode', darkMode); }, [darkMode]);
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    saveToStorage('arete_workedOut', { date: today, value: workedOutToday });
+    // Sadece program günü işaretlemesi için persist et (history'den gelmeyenler)
+    const today = new Date().toDateString();
+    if (workedOutToday) saveToStorage('arete_programDoneToday', { date: today, value: true });
   }, [workedOutToday]);
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    saveToStorage('arete_nutritionWorkedOut', { date: today, value: nutritionWorkedOut });
+  }, [nutritionWorkedOut]);
   useEffect(() => { saveToStorage('arete_dietMode', dietMode); }, [dietMode]);
   useEffect(() => { saveToStorage('arete_dailyMeal', dailyMeal); }, [dailyMeal]);
 
@@ -3540,7 +3553,7 @@ export default function App() {
     const pick = arr => arr[Math.floor(Math.random() * arr.length)];
     const aksamPool = dietMode === 'vegan'
       ? BESLENME_DB.vegan
-      : workedOutToday ? BESLENME_DB.anaYemek : BESLENME_DB.bowl;
+      : nutritionWorkedOut ? BESLENME_DB.anaYemek : BESLENME_DB.bowl;
     setDailyMeal({
       kahvaltilik: pick(dietMode === 'vegan' ? BESLENME_DB.vegan : BESLENME_DB.kahvaltilik),
       tatli: pick(dietMode === 'vegan' ? BESLENME_DB.vegan : BESLENME_DB.tatli),
@@ -3595,6 +3608,7 @@ export default function App() {
     if (!workout) return;
     const doSave = () => {
       saveToHistory({ ...workout, focus: config.focus }, logs);
+      setWorkedOutToday(true);
       toast.success('🏆 Zafer kaydedildi! Helal olsun!');
       setShowHistory(true);
     };
@@ -4941,30 +4955,30 @@ export default function App() {
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 800, color: '#F9F9FD', fontFamily: 'Lexend, sans-serif' }}>Bugün antrenman yaptım</p>
                   <p style={{ fontSize: 10, color: '#7A7C80', marginTop: 3 }}>
-                    {workedOutToday
+                    {nutritionWorkedOut
                       ? '💪 Aktif gün — yüksek protein öğünleri'
                       : '😴 Dinlenme günü — hafif öğünler'}
                   </p>
                 </div>
                 <button
-                  onClick={() => { setWorkedOutToday(p => !p); setDailyMeal(null); }}
+                  onClick={() => { setNutritionWorkedOut(p => !p); setDailyMeal(null); }}
                   style={{
                     position: 'relative', width: 44, height: 24, borderRadius: 99,
-                    background: workedOutToday ? '#D1FF26' : '#1E2226',
-                    border: `1px solid ${workedOutToday ? 'transparent' : 'rgba(255,255,255,0.1)'}`,
+                    background: nutritionWorkedOut ? '#D1FF26' : '#1E2226',
+                    border: `1px solid ${nutritionWorkedOut ? 'transparent' : 'rgba(255,255,255,0.1)'}`,
                     transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0,
                   }}>
                   <div style={{
                     position: 'absolute', top: 2, width: 18, height: 18,
-                    background: workedOutToday ? '#0C0E11' : '#7A7C80',
+                    background: nutritionWorkedOut ? '#0C0E11' : '#7A7C80',
                     borderRadius: '50%', transition: 'transform 0.2s',
-                    transform: workedOutToday ? 'translateX(22px)' : 'translateX(2px)',
+                    transform: nutritionWorkedOut ? 'translateX(22px)' : 'translateX(2px)',
                   }} />
                 </button>
               </div>
 
               {/* Makro Özet Kartı */}
-              <MacroSummaryCard dailyMeal={dailyMeal} workedOutToday={workedOutToday} darkMode={darkMode} />
+              <MacroSummaryCard dailyMeal={dailyMeal} workedOutToday={nutritionWorkedOut} darkMode={darkMode} />
 
               {/* Öğün Oluşturulmadıysa */}
               {!dailyMeal && (
@@ -4974,7 +4988,7 @@ export default function App() {
                   </div>
                   <p style={{ fontSize: 14, fontWeight: 800, color: '#F9F9FD', fontFamily: 'Lexend, sans-serif', marginBottom: 6 }}>Günlük Öğün Planı</p>
                   <p style={{ fontSize: 11, color: '#7A7C80', marginBottom: 20 }}>
-                    {dietMode === 'vegan' ? 'Vegan tarifleri' : workedOutToday ? 'Yüksek proteinli aktif gün öğünleri' : 'Dinlenme günü hafif öğünleri'}
+                    {dietMode === 'vegan' ? 'Vegan tarifleri' : nutritionWorkedOut ? 'Yüksek proteinli aktif gün öğünleri' : 'Dinlenme günü hafif öğünleri'}
                   </p>
                   <button
                     onClick={generateDailyMeal}
@@ -5008,8 +5022,8 @@ export default function App() {
                     darkMode={darkMode}
                   />
                   <MealSection
-                    emoji={dietMode === 'vegan' ? '🌱' : workedOutToday ? '🍲' : '🥗'}
-                    title={workedOutToday ? 'Akşam Yemeği' : 'Akşam (Hafif)'}
+                    emoji={dietMode === 'vegan' ? '🌱' : nutritionWorkedOut ? '🍲' : '🥗'}
+                    title={nutritionWorkedOut ? 'Akşam Yemeği' : 'Akşam (Hafif)'}
                     time="19:00 - 20:00 Arası"
                     recipes={[dailyMeal.aksam]}
                     darkMode={darkMode}
@@ -5050,6 +5064,7 @@ export default function App() {
               setActiveTab={setActiveTab}
               toast={toast}
               setConfirmState={setConfirmState}
+              setWorkedOutToday={setWorkedOutToday}
             />
           )}
 

@@ -378,7 +378,10 @@ const ProgramWizard = ({ darkMode, onCreate }) => {
 };
 
 // ─── ACTIVE PROGRAM VIEW ──────────────────────────────────────────────────────
-const ActiveProgramView = ({ program, setProgram, darkMode, setConfig, setActiveTab, toast, setConfirmState }) => {
+const ActiveProgramView = ({ program, setProgram, darkMode, setConfig, setActiveTab, toast, setConfirmState, setWorkedOutToday }) => {
+  const [editingSlots, setEditingSlots] = useState(false);
+  const [pendingSlots, setPendingSlots]  = useState(null);
+
   const currentWeek = Math.min(getCurrentWeek(program.startDate), program.totalWeeks);
   const isComplete  = getCurrentWeek(program.startDate) > program.totalWeeks;
   const phase       = getPhaseForWeek(program.phases, currentWeek);
@@ -387,11 +390,53 @@ const ActiveProgramView = ({ program, setProgram, darkMode, setConfig, setActive
   const todaySlot   = getTodaySlot();
   const accentColor = T.accent;
 
-  const toggleDay = (weekNum, dayIndex) => {
+  const trainingSlots = program.schedule
+    .filter(s => s.focus !== 'recovery')
+    .map(s => s.weekdaySlot)
+    .sort((a, b) => a - b);
+  const daysPerWeek = trainingSlots.length;
+
+  const toggleDay = (weekNum, dayIndex, slotNum) => {
     const key = `W${weekNum}D${dayIndex}`;
-    const updated = { ...program, completedDays: { ...program.completedDays, [key]: !program.completedDays[key] } };
+    const nowDone = !program.completedDays[key];
+    const updated = { ...program, completedDays: { ...program.completedDays, [key]: nowDone } };
     setProgram(updated);
     localStorage.setItem('arete_program', JSON.stringify(updated));
+    if (nowDone && slotNum === todaySlot && setWorkedOutToday) {
+      setWorkedOutToday(true);
+    }
+  };
+
+  const openSlotEditor = () => {
+    setPendingSlots(trainingSlots);
+    setEditingSlots(true);
+  };
+
+  const togglePendingSlot = (slot) => {
+    setPendingSlots(prev => {
+      if (prev.includes(slot)) return prev.filter(s => s !== slot);
+      if (prev.length >= daysPerWeek) {
+        return [...prev.slice(1), slot].sort((a, b) => a - b);
+      }
+      return [...prev, slot].sort((a, b) => a - b);
+    });
+  };
+
+  const applySlots = () => {
+    if (!pendingSlots || pendingSlots.length !== daysPerWeek) return;
+    const trainingDays = program.schedule.filter(s => s.focus !== 'recovery');
+    const sortedSlots  = [...pendingSlots].sort((a, b) => a - b);
+    const newTraining  = trainingDays.map((s, i) => ({ ...s, weekdaySlot: sortedSlots[i] }));
+    const usedSlots    = new Set(sortedSlots);
+    const restSlots    = [1,2,3,4,5,6,7].filter(sl => !usedSlots.has(sl));
+    const restDays     = program.schedule.filter(s => s.focus === 'recovery');
+    const newRest      = restDays.map((s, i) => ({ ...s, weekdaySlot: restSlots[i] ?? s.weekdaySlot }));
+    const newSchedule  = [...newTraining, ...newRest].sort((a, b) => a.weekdaySlot - b.weekdaySlot);
+    const updated      = { ...program, schedule: newSchedule };
+    setProgram(updated);
+    localStorage.setItem('arete_program', JSON.stringify(updated));
+    setEditingSlots(false);
+    toast.success('Antrenman günleri güncellendi!');
   };
 
   const handleStartDay = (focus) => {
@@ -457,9 +502,62 @@ const ActiveProgramView = ({ program, setProgram, darkMode, setConfig, setActive
 
       {/* Weekly Calendar */}
       <div style={card({ padding: '16px 12px' })}>
-        <p style={{ fontSize: 10, fontWeight: 700, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
-          Bu Hafta — Hafta {currentWeek}
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            Bu Hafta — Hafta {currentWeek}
+          </p>
+          <button onClick={openSlotEditor} style={{
+            fontSize: 9, fontWeight: 700, color: T.accent,
+            background: T.accentDim, border: `1px solid ${T.accentBorder}`,
+            padding: '3px 10px', borderRadius: 99, cursor: 'pointer',
+          }}>
+            Günleri Düzenle
+          </button>
+        </div>
+
+        {/* Slot editor */}
+        {editingSlots && (
+          <div style={{ marginBottom: 14, padding: '12px', background: T.surfaceLo, borderRadius: 14, border: `1px solid ${T.accentBorder}` }}>
+            <p style={{ fontSize: 10, color: T.accent, fontWeight: 700, marginBottom: 10 }}>
+              {daysPerWeek} antrenman günü seç
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 10 }}>
+              {WEEKDAY_LABELS.map((day, i) => {
+                const slot = i + 1;
+                const isSelected = (pendingSlots || []).includes(slot);
+                return (
+                  <button key={day} onClick={() => togglePendingSlot(slot)} style={{
+                    borderRadius: 10, padding: '8px 2px', textAlign: 'center',
+                    border: `1.5px solid ${isSelected ? T.accentBorder : T.outline}`,
+                    background: isSelected ? T.accentDim : T.surfaceHi,
+                    cursor: 'pointer', fontSize: 8, fontWeight: 700,
+                    color: isSelected ? T.accent : T.muted,
+                  }}>
+                    {day}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setEditingSlots(false)} style={{
+                flex: 1, padding: '9px 0', borderRadius: 10, border: `1px solid ${T.outline}`,
+                background: 'transparent', color: T.muted, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+              }}>İptal</button>
+              <button
+                onClick={applySlots}
+                disabled={(pendingSlots || []).length !== daysPerWeek}
+                style={{
+                  flex: 2, padding: '9px 0', borderRadius: 10, border: 'none',
+                  background: (pendingSlots || []).length === daysPerWeek ? T.accent : T.surfaceHi,
+                  color: (pendingSlots || []).length === daysPerWeek ? '#0C0E11' : T.muted,
+                  fontSize: 11, fontWeight: 900, cursor: 'pointer',
+                }}>
+                Kaydet
+              </button>
+            </div>
+          </div>
+        )}
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
           {WEEKDAY_LABELS.map((day, i) => {
             const slot = i + 1;
@@ -470,7 +568,7 @@ const ActiveProgramView = ({ program, setProgram, darkMode, setConfig, setActive
             return (
               <div key={day} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                 <p style={{ fontSize: 8, fontWeight: 700, color: isToday ? T.accent : T.muted }}>{day}</p>
-                <div onClick={() => isTraining && toggleDay(currentWeek, sched.dayIndex)}
+                <div onClick={() => isTraining && toggleDay(currentWeek, sched.dayIndex, slot)}
                   style={{
                     width: '100%', borderRadius: 12, paddingTop: 10, paddingBottom: 10,
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
